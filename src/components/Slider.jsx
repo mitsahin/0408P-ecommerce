@@ -2,6 +2,10 @@ import Slider from 'react-slick'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import heroImage from '../assets/shop-hero-1-product-slide-1.jpg'
+import heroImageAlt from '../assets/vv2.jpg'
+import heroImageAlt2 from '../assets/vv1.jpg'
+import heroImageAlt3 from '../assets/card-cover-7-11.jpg'
+
 
 const slides = [
   {
@@ -17,14 +21,23 @@ const slides = [
     season: 'SUMMER 2020',
     title: 'STYLE EDIT',
     description: 'Curated looks inspired by the season.',
-    image: heroImage,
+    image: heroImageAlt,
   },
   {
     id: 3,
     season: 'SUMMER 2020',
     title: 'HOT DEALS',
     description: 'Limited-time offers across our catalog.',
-    image: heroImage,
+    image: heroImageAlt2,
+    position: '80% center',
+  },
+  {
+    id: 4,
+    season: 'SUMMER 2020',
+    title: 'NEW ARRIVALS',
+    description: 'Fresh picks designed for the season.',
+    image: heroImageAlt3,
+    position: '80% center',
   },
 ]
 
@@ -64,7 +77,7 @@ const HomeSlider = () => {
       </div>
     ),
     customPaging: () => (
-      <span className="block h-1.5 w-12 rounded-full bg-white/80" />
+      <span className="block h-1.5 w-12 rounded-full bg-white/70" />
     ),
   }
 
@@ -74,22 +87,25 @@ const HomeSlider = () => {
         {slides.map((slide) => (
           <div key={slide.id}>
             <div
-              className="flex min-h-[520px] w-full overflow-hidden rounded-none bg-cover bg-center text-white sm:min-h-[560px] lg:min-h-[620px]"
-              style={{ backgroundImage: `url(${slide.image})` }}
+              className="relative flex min-h-[520px] w-full overflow-hidden rounded-[56px] bg-cover bg-right text-white sm:min-h-[560px] lg:min-h-[620px]"
+              style={{
+                backgroundImage: `url(${slide.image})`,
+                backgroundPosition: slide.position || 'right center',
+              }}
             >
-              <div className="flex w-full flex-col items-center justify-center gap-4 px-6 py-10 text-center sm:w-[48%] sm:items-start sm:px-12 sm:text-left lg:w-[45%] lg:px-16">
-                <p className="text-xs font-semibold uppercase tracking-[0.35em] sm:text-sm">
+              <div className="relative z-10 flex w-full flex-col items-center justify-center gap-5 px-6 py-12 text-center sm:w-[52%] sm:items-start sm:px-12 sm:text-left lg:w-[48%] lg:px-16">
+                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/80 sm:text-sm">
                   {slide.season}
                 </p>
-                <h2 className="text-4xl font-bold uppercase sm:text-5xl lg:text-6xl">
+                <h2 className="text-4xl font-bold uppercase tracking-[0.02em] sm:text-5xl lg:text-6xl">
                   {slide.title}
                 </h2>
-                <p className="text-sm text-white/90 sm:text-base">
+                <p className="text-sm text-white/85 sm:text-base">
                   {slide.description}
                 </p>
                 <Link
                   to="/shop"
-                  className="flex w-fit items-center justify-center rounded bg-emerald-500 px-8 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-400"
+                  className="flex w-fit items-center justify-center rounded bg-emerald-500 px-8 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-white shadow-sm transition hover:bg-emerald-400"
                 >
                   Shop now
                 </Link>

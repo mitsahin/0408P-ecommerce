@@ -1,24 +1,21 @@
-import productCover7 from '../assets/fixed-height.png'
-import productCover8 from '../assets/a1.png'
-import productCover9 from '../assets/p1.png'
-import productAlt1 from '../assets/a2.jpg'
-import productAlt2 from '../assets/accc.jpg'
-import productAlt3 from '../assets/p5.png'
-import productAlt4 from '../assets/a3.jpg'
+import productCover from '../assets/product-cover-5.png'
+import productCover1 from '../assets/product-cover-5 (1).png'
+import productCover2 from '../assets/product-cover-5 (2).png'
+import productCover3 from '../assets/product-cover-5 (3).png'
+import productCover4 from '../assets/product-cover-5 (4).png'
+import productCover5 from '../assets/product-cover-5 (5).png'
+import productCover6 from '../assets/product-cover-5 (6).png'
+import productCover7 from '../assets/product-cover-5 (7).png'
 
 const baseProducts = [
+  productCover,
+  productCover1,
+  productCover2,
+  productCover3,
+  productCover4,
+  productCover5,
+  productCover6,
   productCover7,
-  productCover8,
-  productCover9,
-  productAlt1,
-  productAlt2,
-  productAlt3,
-  productAlt4,
-  productCover8,
-  productCover7,
-  productAlt1,
-  productAlt2,
-  productCover9,
 ]
 
 export const products = baseProducts.map((image, index) => ({

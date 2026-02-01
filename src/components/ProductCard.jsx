@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 
 const ProductCard = ({ product }) => {
   return (
-    <article className="mx-auto flex w-full max-w-[320px] flex-col gap-3 border border-slate-100 bg-white sm:max-w-none lg:h-[442px]">
+    <article className="mx-auto flex w-full max-w-[332px] flex-col gap-3 rounded-lg border border-slate-100 bg-white shadow-sm transition-shadow hover:shadow-md sm:max-w-none lg:h-[442px]">
       <Link to={`/product/${product.id}`} className="flex w-full">
         <img
           src={product.image}
