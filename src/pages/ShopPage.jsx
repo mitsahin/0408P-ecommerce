@@ -1,12 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { LayoutGrid, List } from 'lucide-react'
 import ProductCard from '../components/ProductCard.jsx'
-import { products } from '../data/products'
+import { products as localProducts } from '../data/products'
+import { fetchProducts } from '../store/actions/productActions'
 import categoryOne from '../assets/card-cover-5-1.jpg'
 import categoryTwo from '../assets/card-cover-6-1.jpg'
 import categoryThree from '../assets/card-cover-7-1.jpg'
-import categoryFour from '../assets/card-cover-8.jpg'
+import categoryFour from '../assets/vv1.jpg'
 import categoryFive from '../assets/card-cover-7-3.jpg'
 import brandOne from '../assets/fa-brands-1.png'
 import brandTwo from '../assets/fa-brands-2.png'
@@ -14,13 +16,34 @@ import brandThree from '../assets/fa-brands-3.png'
 import brandFour from '../assets/fa-brands-4.png'
 import brandFive from '../assets/fa-brands-5.png'
 
+const normalizeProduct = (p) => ({
+  id: String(p?.id ?? p?.name ?? Math.random()),
+  image: p?.image ?? p?.thumbnail ?? p?.img ?? '',
+  title: p?.title ?? p?.name ?? 'Product',
+  department: p?.department ?? p?.brand ?? '',
+  price: String(p?.price ?? p?.list_price ?? '0'),
+  oldPrice: String(p?.oldPrice ?? p?.sale_price ?? p?.price ?? '0'),
+  colors: p?.colors ?? ['bg-sky-500', 'bg-emerald-500'],
+})
+
 const ShopPage = () => {
-  const catalog = products
+  const dispatch = useDispatch()
+  const { productList, total } = useSelector((s) => s.products ?? {})
+
+  useEffect(() => {
+    dispatch(fetchProducts())
+  }, [dispatch])
+
+  const catalog = useMemo(() => {
+    const list = Array.isArray(productList) && productList.length > 0 ? productList : localProducts
+    return list.map(normalizeProduct)
+  }, [productList])
+
   const pageSize = 8
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState('popularity')
   const [filterOn, setFilterOn] = useState(false)
-  const totalPages = Math.max(1, Math.ceil(catalog.length / pageSize))
+  const totalPages = Math.max(1, Math.ceil((total ?? catalog.length) / pageSize))
   const filteredProducts = useMemo(() => {
     if (!filterOn) return catalog
     return catalog.filter((item) => Number(item.price) <= 10)
@@ -74,7 +97,7 @@ const ShopPage = () => {
             {categories.map((category) => (
               <article
                 key={category.id}
-                className="relative flex h-[300px] w-full max-w-[332px] overflow-hidden rounded bg-white sm:h-[223px] sm:w-[206px] sm:max-w-none"
+                className="relative flex h-[300px] w-full max-w-[332px] overflow-hidden rounded bg-white sm:mx-0 sm:h-[223px] sm:w-[206px] sm:max-w-none"
               >
                 <img
                   src={category.image}

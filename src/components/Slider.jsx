@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import Slider from 'react-slick'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
@@ -60,6 +61,8 @@ const SliderArrow = ({ onClick, direction }) => {
 }
 
 const HomeSlider = () => {
+  const sliderRef = useRef(null)
+  const [activeIndex, setActiveIndex] = useState(0)
   const settings = {
     arrows: true,
     dots: true,
@@ -69,6 +72,12 @@ const HomeSlider = () => {
     slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 4000,
+    beforeChange: (current, next) => {
+      setActiveIndex(next)
+      if (sliderRef.current && sliderRef.current.contains(document.activeElement)) {
+        document.activeElement.blur()
+      }
+    },
     nextArrow: <SliderArrow direction="right" />,
     prevArrow: <SliderArrow direction="left" />,
     appendDots: (dots) => (
@@ -82,29 +91,31 @@ const HomeSlider = () => {
   }
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex w-full flex-col" ref={sliderRef}>
       <Slider {...settings}>
-        {slides.map((slide) => (
-          <div key={slide.id}>
+      {slides.map((slide, index) => (
+        <div key={slide.id}>
             <div
-              className="relative flex min-h-[520px] w-full overflow-hidden rounded-[56px] bg-cover bg-right text-white sm:min-h-[560px] lg:min-h-[620px]"
+              className="relative flex min-h-[520px] w-full overflow-hidden rounded-none bg-cover bg-right text-white sm:min-h-[560px] lg:min-h-[620px]"
               style={{
                 backgroundImage: `url(${slide.image})`,
                 backgroundPosition: slide.position || 'right center',
               }}
             >
-              <div className="relative z-10 flex w-full flex-col items-center justify-center gap-5 px-6 py-12 text-center sm:w-[52%] sm:items-start sm:px-12 sm:text-left lg:w-[48%] lg:px-16">
-                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/80 sm:text-sm">
+              <div className="relative z-10 flex w-full max-w-[320px] flex-col items-center justify-center gap-4 px-6 py-12 text-center sm:w-[52%] sm:max-w-none sm:items-start sm:px-12 sm:text-left lg:w-[48%] lg:px-16">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.45em] text-white/85 sm:text-sm">
                   {slide.season}
                 </p>
-                <h2 className="text-4xl font-bold uppercase tracking-[0.02em] sm:text-5xl lg:text-6xl">
+                <h2 className="text-[32px] font-bold uppercase leading-[40px] tracking-[0.02em] sm:text-5xl sm:leading-[56px] lg:text-6xl lg:leading-[64px]">
                   {slide.title}
                 </h2>
-                <p className="text-sm text-white/85 sm:text-base">
+                <p className="text-sm text-white/85 sm:max-w-[420px] sm:text-base">
                   {slide.description}
                 </p>
                 <Link
                   to="/shop"
+                tabIndex={activeIndex === index ? 0 : -1}
+                aria-hidden={activeIndex === index ? 'false' : 'true'}
                   className="flex w-fit items-center justify-center rounded bg-emerald-500 px-8 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-white shadow-sm transition hover:bg-emerald-400"
                 >
                   Shop now

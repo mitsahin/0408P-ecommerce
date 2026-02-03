@@ -21,7 +21,7 @@ const Header = () => {
   return (
     <header className="flex w-full flex-col">
       <div className="hidden w-full bg-[#252B42] text-white sm:block">
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-3 px-4 py-2 text-xs sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-3 px-4 py-2 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-10">
           <div className="flex flex-wrap items-center gap-4">
             <span className="flex items-center gap-2">
               <Phone className="h-3.5 w-3.5" />
@@ -53,7 +53,7 @@ const Header = () => {
         </div>
       </div>
       <div className="w-full border-b border-slate-200 bg-white text-slate-900">
-        <div className="mx-auto flex w-full max-w-[1042px] flex-col gap-4 px-4 py-4 lg:h-[58px] lg:flex-row lg:items-center lg:justify-between">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4 px-4 py-4 sm:px-6 lg:h-[58px] lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div className="flex w-full items-center justify-between lg:w-auto">
             <Link to="/" className="text-xl font-bold text-slate-900">
             Bandage
@@ -82,14 +82,6 @@ const Header = () => {
             }`}
           >
             <nav className="flex flex-col items-center gap-6 pt-4 text-lg font-semibold text-slate-600">
-                <NavLink
-                  exact
-                  to="/"
-                  className="transition hover:text-slate-900"
-                  activeClassName="text-slate-900"
-                >
-                  Home
-                </NavLink>
                 <NavLink
                   to="/shop"
                   className="transition hover:text-slate-900"
@@ -148,14 +140,6 @@ const Header = () => {
             </div>
           </div>
           <nav className="hidden flex-wrap items-center gap-6 text-[13px] font-semibold text-slate-500 lg:flex">
-            <NavLink
-              exact
-              to="/"
-              className="text-slate-600 transition hover:text-slate-900"
-              activeClassName="text-slate-900"
-            >
-              Home
-            </NavLink>
             <NavLink
               to="/shop"
               className="flex items-center gap-1 text-slate-600 transition hover:text-slate-900"

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
-import axiosClient from '../api/axiosClient.jsx'
+import { fetchRolesIfNeeded } from '../store/actions/clientActions'
 
 const passwordPattern =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/
@@ -12,7 +13,8 @@ const ibanPattern = /^TR\d{24}$/
 
 const SignupPage = () => {
   const history = useHistory()
-  const [roles, setRoles] = useState([])
+  const dispatch = useDispatch()
+  const roles = useSelector((state) => state.client?.roles ?? [])
   const [submitError, setSubmitError] = useState('')
 
   const {
@@ -37,27 +39,16 @@ const SignupPage = () => {
     selectedRole?.name?.toLowerCase()?.includes('mağaza')
 
   useEffect(() => {
-    const loadRoles = async () => {
-      try {
-        const response = await axiosClient.get('/roles')
-        setRoles(response.data || [])
-        const customer = (response.data || []).find(
-          (role) => role.code === 'customer'
-        )
-        if (customer) {
-          setValue('role_id', String(customer.id))
-        }
-      } catch (error) {
-        setSubmitError(
-          error?.response?.data?.message ||
-            error?.message ||
-            'Roles could not be loaded.'
-        )
-      }
-    }
+    dispatch(fetchRolesIfNeeded())
+  }, [dispatch])
 
-    loadRoles()
-  }, [setValue])
+  useEffect(() => {
+    if (roles.length === 0) return
+    const customer = roles.find((role) => role.code === 'customer')
+    if (customer) {
+      setValue('role_id', String(customer.id), { shouldValidate: false })
+    }
+  }, [roles, setValue])
 
   const onSubmit = async (formData) => {
     setSubmitError('')

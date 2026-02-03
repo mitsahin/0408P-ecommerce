@@ -24,7 +24,7 @@ const ProductCard = ({ product }) => {
           <span className="text-emerald-600">${product.price}</span>
         </div>
         <div className="flex items-center justify-center gap-2 pt-2">
-          {product.colors.map((color) => (
+          {(product.colors ?? []).map((color) => (
             <span
               key={color}
               className={`h-2.5 w-2.5 rounded-full ${color}`}

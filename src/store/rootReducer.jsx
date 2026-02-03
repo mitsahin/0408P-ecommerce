@@ -1,10 +1,12 @@
 import { combineReducers } from 'redux'
-import uiReducer from './uiReducer'
+import clientReducer from './clientReducer'
 import productsReducer from './productsReducer'
+import shoppingCartReducer from './shoppingCartReducer'
 
 const rootReducer = combineReducers({
-  ui: uiReducer,
+  client: clientReducer,
   products: productsReducer,
+  shoppingCart: shoppingCartReducer,
 })
 
 export default rootReducer

@@ -16,7 +16,7 @@ import NotFound from '../pages/NotFound.js'
 
 const PageContent = () => {
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6">
+    <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-4 py-6 sm:px-6 lg:px-10">
       <Switch>
         <Route exact path="/" component={HomePage} />
         <Route path="/shop" component={ShopPage} />

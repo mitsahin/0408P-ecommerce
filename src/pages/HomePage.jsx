@@ -19,7 +19,7 @@ import { products as allProducts } from '../data/products'
 
 const HomePage = () => {
   const dispatch = useDispatch()
-  const { loading, error } = useSelector((state) => state.products)
+  const { fetchState } = useSelector((state) => state.products)
 
   useEffect(() => {
     dispatch(fetchProducts())
@@ -192,14 +192,14 @@ const HomePage = () => {
             Problems trying to resolve the conflict between
           </p>
         </div>
-        {loading ? (
+        {fetchState === 'FETCHING' ? (
           <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
             Loading
           </span>
         ) : null}
-        {error ? (
+        {fetchState === 'FAILED' ? (
           <div className="flex items-center rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-600">
-            {error}
+            Something went wrong while loading products.
           </div>
         ) : null}
         <div className="flex w-full flex-wrap gap-[30px]">

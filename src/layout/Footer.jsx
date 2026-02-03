@@ -4,7 +4,7 @@ import { Facebook, Instagram, Twitter } from 'lucide-react'
 const Footer = () => {
   return (
     <footer className="border-t border-slate-200 bg-white text-slate-500">
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center gap-6 px-4 py-10 lg:h-[488px] lg:justify-center">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center gap-6 px-4 py-10 sm:px-6 lg:h-[488px] lg:justify-center lg:px-10">
         <div className="flex w-full flex-col items-center gap-4 text-center sm:flex-row sm:justify-center lg:justify-between">
           <Link to="/" className="text-lg font-semibold text-slate-900">
             Bandage
