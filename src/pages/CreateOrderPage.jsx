@@ -116,6 +116,7 @@ const CreateOrderPage = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(null)
   const [selectedCardId, setSelectedCardId] = useState(null)
   const [addressForm, setAddressForm] = useState(emptyAddress)
+  const [addressType, setAddressType] = useState('shipping')
   const [editingAddressId, setEditingAddressId] = useState(null)
   const [cardForm, setCardForm] = useState(emptyCard)
   const [editingCardId, setEditingCardId] = useState(null)
@@ -153,6 +154,23 @@ const CreateOrderPage = () => {
 
     loadData()
   }, [])
+
+  const getAddressTypeFromTitle = (title) => {
+    if (title?.toLowerCase().startsWith('shipping -')) return 'shipping'
+    if (title?.toLowerCase().startsWith('billing -')) return 'billing'
+    return 'shipping'
+  }
+
+  const stripAddressPrefix = (title) =>
+    String(title ?? '')
+      .replace(/^shipping\s-\s/i, '')
+      .replace(/^billing\s-\s/i, '')
+
+  const formatAddressTitle = (title, type) => {
+    const cleanTitle = stripAddressPrefix(title).trim()
+    const prefix = type === 'billing' ? 'Billing - ' : 'Shipping - '
+    return `${prefix}${cleanTitle || 'Address'}`
+  }
 
   const validateAddressForm = () => {
     const nextErrors = {}
@@ -193,17 +211,22 @@ const CreateOrderPage = () => {
     event.preventDefault()
     if (!validateAddressForm()) return
     try {
+      const payloadBase = {
+        ...addressForm,
+        title: formatAddressTitle(addressForm.title, addressType),
+      }
       if (editingAddressId) {
-        const payload = { id: editingAddressId, ...addressForm }
+        const payload = { id: editingAddressId, ...payloadBase }
         await axiosClient.put('/user/address', payload)
         setAddresses((prev) =>
           prev.map((item) => (item.id === editingAddressId ? payload : item))
         )
       } else {
-        const response = await axiosClient.post('/user/address', addressForm)
-        setAddresses((prev) => [...prev, response?.data ?? addressForm])
+        const response = await axiosClient.post('/user/address', payloadBase)
+        setAddresses((prev) => [...prev, response?.data ?? payloadBase])
       }
       setAddressForm(emptyAddress)
+      setAddressType('shipping')
       setEditingAddressId(null)
       setAddressErrors({})
     } catch (error) {
@@ -213,8 +236,9 @@ const CreateOrderPage = () => {
 
   const handleAddressEdit = (address) => {
     setEditingAddressId(address.id)
+    setAddressType(getAddressTypeFromTitle(address.title))
     setAddressForm({
-      title: address.title ?? '',
+      title: stripAddressPrefix(address.title ?? ''),
       name: address.name ?? '',
       surname: address.surname ?? '',
       phone: address.phone ?? '',
@@ -237,15 +261,20 @@ const CreateOrderPage = () => {
     event.preventDefault()
     if (!validateCardForm()) return
     try {
+      const payloadBase = {
+        ...cardForm,
+        expire_month: Number(cardForm.expire_month),
+        expire_year: Number(cardForm.expire_year),
+      }
       if (editingCardId) {
-        const payload = { id: editingCardId, ...cardForm }
+        const payload = { id: editingCardId, ...payloadBase }
         await axiosClient.put('/user/card', payload)
         setCards((prev) =>
           prev.map((item) => (item.id === editingCardId ? payload : item))
         )
       } else {
-        const response = await axiosClient.post('/user/card', cardForm)
-        setCards((prev) => [...prev, response?.data ?? cardForm])
+        const response = await axiosClient.post('/user/card', payloadBase)
+        setCards((prev) => [...prev, response?.data ?? payloadBase])
       }
       setCardForm(emptyCard)
       setEditingCardId(null)
@@ -354,65 +383,150 @@ const CreateOrderPage = () => {
 
         {step === 1 ? (
           <div className="flex w-full flex-col gap-6">
-            <div className="flex w-full flex-col gap-4">
+            <div className="flex w-full flex-col gap-6">
               <h2 className="text-lg font-semibold text-slate-900">Saved Addresses</h2>
               {isLoading ? (
                 <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
                   Loading
                 </span>
               ) : null}
-              <div className="flex w-full flex-wrap gap-4">
-                {addresses.length === 0 ? (
-                  <span className="text-sm text-slate-400">No addresses found.</span>
-                ) : (
-                  addresses.map((address) => (
-                    <button
-                      key={address.id}
-                      type="button"
-                      onClick={() => setSelectedAddressId(address.id)}
-                      className={`flex w-full flex-col gap-2 rounded border p-3 text-left sm:w-[calc(50%-8px)] ${
-                        selectedAddressId === address.id
-                          ? 'border-amber-500'
-                          : 'border-slate-200'
-                      }`}
-                    >
-                      <span className="text-sm font-semibold text-slate-800">
-                        {address.title}
-                      </span>
-                      <span className="text-xs text-slate-500">
-                        {address.name} {address.surname}
-                      </span>
-                      <span className="text-xs text-slate-500">{address.phone}</span>
-                      <span className="text-xs text-slate-500">
-                        {address.city} / {address.district}
-                      </span>
-                      <span className="text-xs text-slate-400">
-                        {address.neighborhood}
-                      </span>
-                      <div className="flex items-center gap-2 text-xs">
-                        <button
-                          type="button"
-                          onClick={() => handleAddressEdit(address)}
-                          className="text-sky-500"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAddressDelete(address.id)}
-                          className="text-rose-500"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </button>
-                  ))
-                )}
+              {addresses.length === 0 ? (
+                <span className="text-sm text-slate-400">No addresses found.</span>
+              ) : null}
+              <div className="flex w-full flex-col gap-4">
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Shipping Addresses
+                </span>
+                <div className="flex w-full flex-wrap gap-4">
+                  {addresses
+                    .filter((address) =>
+                      String(address.title ?? '').toLowerCase().startsWith('shipping -')
+                    )
+                    .map((address) => (
+                      <button
+                        key={address.id}
+                        type="button"
+                        onClick={() => setSelectedAddressId(address.id)}
+                        className={`flex w-full flex-col gap-2 rounded border p-3 text-left sm:w-[calc(50%-8px)] ${
+                          selectedAddressId === address.id
+                            ? 'border-amber-500'
+                            : 'border-slate-200'
+                        }`}
+                      >
+                        <span className="text-sm font-semibold text-slate-800">
+                          {address.title}
+                        </span>
+                        <span className="text-xs text-slate-500">
+                          {address.name} {address.surname}
+                        </span>
+                        <span className="text-xs text-slate-500">{address.phone}</span>
+                        <span className="text-xs text-slate-500">
+                          {address.city} / {address.district}
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          {address.neighborhood}
+                        </span>
+                        <div className="flex items-center gap-2 text-xs">
+                          <button
+                            type="button"
+                            onClick={() => handleAddressEdit(address)}
+                            className="text-sky-500"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleAddressDelete(address.id)}
+                            className="text-rose-500"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              </div>
+              <div className="flex w-full flex-col gap-4">
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Billing Addresses
+                </span>
+                <div className="flex w-full flex-wrap gap-4">
+                  {addresses
+                    .filter((address) =>
+                      String(address.title ?? '').toLowerCase().startsWith('billing -')
+                    )
+                    .map((address) => (
+                      <button
+                        key={address.id}
+                        type="button"
+                        onClick={() => setSelectedAddressId(address.id)}
+                        className={`flex w-full flex-col gap-2 rounded border p-3 text-left sm:w-[calc(50%-8px)] ${
+                          selectedAddressId === address.id
+                            ? 'border-amber-500'
+                            : 'border-slate-200'
+                        }`}
+                      >
+                        <span className="text-sm font-semibold text-slate-800">
+                          {address.title}
+                        </span>
+                        <span className="text-xs text-slate-500">
+                          {address.name} {address.surname}
+                        </span>
+                        <span className="text-xs text-slate-500">{address.phone}</span>
+                        <span className="text-xs text-slate-500">
+                          {address.city} / {address.district}
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          {address.neighborhood}
+                        </span>
+                        <div className="flex items-center gap-2 text-xs">
+                          <button
+                            type="button"
+                            onClick={() => handleAddressEdit(address)}
+                            className="text-sky-500"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleAddressDelete(address.id)}
+                            className="text-rose-500"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </button>
+                    ))}
+                </div>
               </div>
             </div>
 
             <form className="flex w-full flex-col gap-4" onSubmit={handleAddressSubmit}>
               <h2 className="text-lg font-semibold text-slate-900">Add Address</h2>
+              <div className="flex w-full flex-wrap gap-2 text-xs font-semibold text-slate-500">
+                <button
+                  type="button"
+                  onClick={() => setAddressType('shipping')}
+                  className={`rounded-full px-4 py-2 ${
+                    addressType === 'shipping'
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-slate-100'
+                  }`}
+                >
+                  Shipping
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAddressType('billing')}
+                  className={`rounded-full px-4 py-2 ${
+                    addressType === 'billing'
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-slate-100'
+                  }`}
+                >
+                  Billing
+                </button>
+              </div>
               <div className="flex w-full flex-col gap-3 sm:flex-row">
                 <input
                   value={addressForm.title}

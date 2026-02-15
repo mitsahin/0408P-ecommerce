@@ -24,7 +24,7 @@ const ProductDetailPage = () => {
 
   useEffect(() => {
     const resolvedId = productId || id
-    if (resolvedId) {
+    if (resolvedId && /^\d+$/.test(String(resolvedId))) {
       dispatch(fetchProductById(resolvedId))
     }
   }, [dispatch, productId, id])
@@ -38,10 +38,6 @@ const ProductDetailPage = () => {
   const [activeImage, setActiveImage] = useState(galleryImages[0])
   const [activeTab, setActiveTab] = useState('description')
   const brandLogos = [brandOne, brandTwo, brandThree, brandFour, brandFive]
-
-  useEffect(() => {
-    setActiveImage(galleryImages[0])
-  }, [galleryImages])
 
   useEffect(() => {
     if (galleryImages.length > 0) {
