@@ -10,6 +10,11 @@ export const setProductList = (products) => ({
   payload: products,
 })
 
+export const setProduct = (product) => ({
+  type: 'products/setProduct',
+  payload: product,
+})
+
 export const setTotal = (total) => ({
   type: 'products/setTotal',
   payload: total,
@@ -35,15 +40,47 @@ export const setFilter = (filter) => ({
   payload: filter,
 })
 
-export const fetchProducts = () => async (dispatch) => {
+export const fetchCategories = () => async (dispatch) => {
+  try {
+    const response = await axiosClient.get('/categories')
+    dispatch(setCategories(response?.data ?? []))
+  } catch (error) {
+    dispatch(setCategories([]))
+  }
+}
+
+const buildQueryParams = (params = {}) => {
+  const query = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') return
+    query.set(key, String(value))
+  })
+  const queryString = query.toString()
+  return queryString ? `?${queryString}` : ''
+}
+
+export const fetchProducts = (params = {}) => async (dispatch) => {
   dispatch(setFetchState('FETCHING'))
 
   try {
-    const response = await axiosClient.get('/products')
+    const queryString = buildQueryParams(params)
+    const response = await axiosClient.get(`/products${queryString}`)
     const list = response?.data?.products ?? response?.data ?? []
     const total = response?.data?.total ?? list?.length ?? 0
     dispatch(setProductList(list))
     dispatch(setTotal(total))
+    dispatch(setFetchState('FETCHED'))
+  } catch (error) {
+    dispatch(setFetchState('FAILED'))
+  }
+}
+
+export const fetchProductById = (productId) => async (dispatch) => {
+  dispatch(setFetchState('FETCHING'))
+
+  try {
+    const response = await axiosClient.get(`/products/${productId}`)
+    dispatch(setProduct(response?.data ?? null))
     dispatch(setFetchState('FETCHED'))
   } catch (error) {
     dispatch(setFetchState('FAILED'))

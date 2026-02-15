@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { toast } from 'react-toastify'
+import axiosClient from '../api/axiosClient'
 import { fetchRolesIfNeeded } from '../store/actions/clientActions'
 
 const passwordPattern =

@@ -94,20 +94,20 @@ const AboutPage = () => {
           </p>
         </div>
 
-        <div className="grid w-full grid-cols-2 gap-6 text-center sm:grid-cols-4">
-          <div className="flex flex-col gap-1">
+        <div className="flex w-full flex-wrap gap-6 text-center">
+          <div className="flex w-[calc(50%-12px)] flex-col gap-1 sm:w-[calc(25%-18px)]">
             <span className="text-2xl font-bold text-slate-900">15K</span>
             <span className="text-xs text-slate-500">Happy Customers</span>
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex w-[calc(50%-12px)] flex-col gap-1 sm:w-[calc(25%-18px)]">
             <span className="text-2xl font-bold text-slate-900">150K</span>
             <span className="text-xs text-slate-500">Monthly Visitors</span>
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex w-[calc(50%-12px)] flex-col gap-1 sm:w-[calc(25%-18px)]">
             <span className="text-2xl font-bold text-slate-900">15</span>
             <span className="text-xs text-slate-500">Countries Worldwide</span>
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex w-[calc(50%-12px)] flex-col gap-1 sm:w-[calc(25%-18px)]">
             <span className="text-2xl font-bold text-slate-900">100+</span>
             <span className="text-xs text-slate-500">Top Partners</span>
           </div>

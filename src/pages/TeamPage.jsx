@@ -6,14 +6,14 @@ const teamMembers = [
     name: 'Gökhan Özdemir',
     role: 'Project Manager',
     image:
-      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=facearea&w=300&h=300&q=80',
+      'https://i.pravatar.cc/300?img=12',
   },
   {
     id: 'assistant',
-    name: 'OpenAI Assistant',
+    name: 'GitHub Copilot',
     role: 'Full Stack Developer',
     image:
-      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=facearea&w=300&h=300&q=80',
+      'https://i.pravatar.cc/300?img=32',
   },
   {
     id: 'member-1',

@@ -1,19 +1,22 @@
 import { Link } from 'react-router-dom'
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, to }) => {
+  const productLink = to || `/product/${product.id}`
   return (
-    <article className="mx-auto flex w-full max-w-[332px] flex-col gap-3 rounded-lg border border-slate-100 bg-white shadow-sm transition-shadow hover:shadow-md sm:max-w-none lg:h-[442px]">
-      <Link to={`/product/${product.id}`} className="flex w-full">
-        <img
-          src={product.image}
-          alt={product.title}
-          className="h-[260px] w-full bg-white object-contain object-center sm:h-[300px]"
-        />
-      </Link>
+    <Link
+      to={productLink}
+      className="mx-auto flex w-full max-w-[332px] cursor-pointer flex-col gap-3 rounded-lg border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:max-w-none lg:h-[442px]"
+      aria-label={`View ${product.title}`}
+    >
+      <img
+        src={product.image}
+        alt={product.title}
+        className="h-[260px] w-full bg-white object-contain object-center sm:h-[300px]"
+      />
       <div className="flex w-full flex-col gap-2 px-4 pb-6 text-center">
-        <Link to={`/product/${product.id}`} className="text-[13px] font-semibold text-slate-900">
+        <span className="text-[13px] font-semibold text-slate-900">
           {product.title}
-        </Link>
+        </span>
         <p className="text-[11px] font-medium text-slate-500">
           {product.department}
         </p>
@@ -32,7 +35,7 @@ const ProductCard = ({ product }) => {
           ))}
         </div>
       </div>
-    </article>
+    </Link>
   )
 }
 

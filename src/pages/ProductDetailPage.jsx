@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { Link, useHistory, useParams } from 'react-router-dom'
 import { products } from '../data/products'
-import ProductCard from '../components/ProductCard.jsx'
+import ProductCard from '../components/ProductCard.js'
+import { fetchProductById } from '../store/actions/productActions'
+import { setCart } from '../store/actions/shoppingCartActions'
 import thumbOne from '../assets/product-cover-5.png'
 import thumbTwo from '../assets/product-cover-5 (1).png'
 import thumbThree from '../assets/product-cover-5 (2).png'
@@ -13,15 +16,66 @@ import brandFour from '../assets/fa-brands-4.png'
 import brandFive from '../assets/fa-brands-5.png'
 
 const ProductDetailPage = () => {
-  const { id } = useParams()
-  const product = products.find((item) => item.id === id) || products[0]
+  const dispatch = useDispatch()
+  const history = useHistory()
+  const { productId, id } = useParams()
+  const { product, fetchState } = useSelector((state) => state.products ?? {})
+  const cartItems = useSelector((state) => state.shoppingCart?.cart ?? [])
+
+  useEffect(() => {
+    const resolvedId = productId || id
+    if (resolvedId) {
+      dispatch(fetchProductById(resolvedId))
+    }
+  }, [dispatch, productId, id])
+
+  const fallbackProduct = products.find((item) => item.id === id) || products[0]
+  const activeProduct = product || fallbackProduct
   const galleryImages = useMemo(
-    () => [product.image, thumbOne, thumbTwo, thumbThree, thumbFour],
-    [product.image]
+    () => [activeProduct?.images?.[0]?.url || activeProduct.image, thumbOne, thumbTwo, thumbThree, thumbFour].filter(Boolean),
+    [activeProduct]
   )
   const [activeImage, setActiveImage] = useState(galleryImages[0])
   const [activeTab, setActiveTab] = useState('description')
   const brandLogos = [brandOne, brandTwo, brandThree, brandFour, brandFive]
+
+  useEffect(() => {
+    setActiveImage(galleryImages[0])
+  }, [galleryImages])
+
+  useEffect(() => {
+    if (galleryImages.length > 0) {
+      setActiveImage(galleryImages[0])
+    }
+  }, [galleryImages])
+
+  const handleAddToCart = () => {
+    if (!activeProduct) return
+    const existing = cartItems.find(
+      (item) => String(item.product?.id) === String(activeProduct.id)
+    )
+    const updatedCart = existing
+      ? cartItems.map((item) =>
+          String(item.product?.id) === String(activeProduct.id)
+            ? { ...item, count: item.count + 1 }
+            : item
+        )
+      : [
+          ...cartItems,
+          {
+            count: 1,
+            checked: true,
+            product: {
+              ...activeProduct,
+              image:
+                activeProduct?.images?.[0]?.url ||
+                activeProduct?.image ||
+                activeProduct?.thumbnail,
+            },
+          },
+        ]
+    dispatch(setCart(updatedCart))
+  }
 
   return (
     <section className="flex w-full flex-col gap-8">
@@ -35,10 +89,23 @@ const ProductDetailPage = () => {
             Shop
           </Link>
           <span>/</span>
-          <span className="text-slate-400">{product.title}</span>
+          <span className="text-slate-400">{activeProduct?.title ?? 'Product'}</span>
         </div>
 
+        <button
+          type="button"
+          onClick={() => history.goBack()}
+          className="flex w-fit items-center rounded border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700"
+        >
+          Back
+        </button>
+
         <div className="flex w-full flex-col gap-6 rounded border border-slate-200 bg-white p-6 sm:flex-row sm:items-start sm:gap-10 sm:p-8">
+          {fetchState === 'FETCHING' ? (
+            <div className="flex w-full items-center justify-center py-10 text-xs uppercase tracking-[0.3em] text-slate-400">
+              Loading
+            </div>
+          ) : null}
           <div className="flex w-full flex-col gap-4 sm:w-[50%] sm:flex-row sm:items-start">
             <div className="order-2 flex w-full gap-3 overflow-x-auto sm:order-1 sm:w-[90px] sm:flex-col sm:overflow-visible">
               {galleryImages.map((image, index) => (
@@ -54,7 +121,7 @@ const ProductDetailPage = () => {
                 >
                   <img
                     src={image}
-                    alt={`${product.title} ${index + 1}`}
+                    alt={`${activeProduct?.title ?? 'Product'} ${index + 1}`}
                     className="h-full w-full object-contain object-center"
                   />
                 </button>
@@ -63,7 +130,7 @@ const ProductDetailPage = () => {
             <div className="order-1 flex w-full items-center justify-center rounded bg-slate-50 p-4 sm:order-2">
               <img
                 src={activeImage}
-                alt={product.title}
+                alt={activeProduct?.title ?? 'Product'}
                 className="h-[320px] w-full object-contain object-center sm:h-[420px]"
               />
             </div>
@@ -71,32 +138,37 @@ const ProductDetailPage = () => {
           <div className="flex w-full flex-col gap-4 sm:w-[45%]">
             <div className="flex flex-col gap-2">
               <h1 className="text-3xl font-semibold text-slate-900">
-                {product.title}
+                {activeProduct?.title ?? 'Product'}
               </h1>
-              <p className="text-sm text-slate-500">{product.department}</p>
+              <p className="text-sm text-slate-500">
+                {activeProduct?.department ?? activeProduct?.category?.name}
+              </p>
             </div>
             <div className="flex items-center gap-3 text-xl font-semibold">
               <span className="text-slate-400 line-through">
-                ${product.oldPrice}
+                ${activeProduct?.oldPrice ?? activeProduct?.price}
               </span>
-              <span className="text-emerald-600">${product.price}</span>
+              <span className="text-emerald-600">${activeProduct?.price}</span>
             </div>
             <p className="text-sm text-slate-500">
               We focus on ergonomics and meeting you where you work. It&apos;s only a
               keystroke away.
             </p>
             <div className="flex items-center gap-2">
-              {product.colors.map((color) => (
-                <span key={color} className={`h-3 w-3 rounded-full ${color}`} />
-              ))}
+              {(activeProduct?.colors ?? ['bg-sky-500', 'bg-emerald-500']).map(
+                (color) => (
+                  <span key={color} className={`h-3 w-3 rounded-full ${color}`} />
+                )
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link
-                to="/cart"
+              <button
+                type="button"
+                onClick={handleAddToCart}
                 className="rounded bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white"
               >
                 Add to cart
-              </Link>
+              </button>
               <button
                 type="button"
                 className="rounded border border-slate-300 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600"

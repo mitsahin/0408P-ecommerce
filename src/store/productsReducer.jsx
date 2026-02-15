@@ -1,6 +1,7 @@
 const initialState = {
   categories: [],
   productList: [],
+  product: null,
   total: 0,
   limit: 25,
   offset: 0,
@@ -14,6 +15,8 @@ const productsReducer = (state = initialState, action) => {
       return { ...state, categories: action.payload }
     case 'products/setProductList':
       return { ...state, productList: action.payload }
+    case 'products/setProduct':
+      return { ...state, product: action.payload }
     case 'products/setTotal':
       return { ...state, total: action.payload }
     case 'products/setFetchState':

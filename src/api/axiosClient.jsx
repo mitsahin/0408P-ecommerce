@@ -5,4 +5,14 @@ const axiosClient = axios.create({
   timeout: 10000,
 })
 
+export const setAuthToken = (token) => {
+  if (token) {
+    axiosClient.defaults.headers.common.Authorization = token
+  }
+}
+
+export const clearAuthToken = () => {
+  delete axiosClient.defaults.headers.common.Authorization
+}
+
 export default axiosClient

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { ChevronLeft, ChevronRight, Clock, MessageSquare, Truck } from 'lucide-react'
@@ -17,9 +17,30 @@ import blogCover2 from '../assets/y2.png'
 import blogCover3 from '../assets/u.png'
 import { products as allProducts } from '../data/products'
 
+const normalizeProduct = (p) => ({
+  id: String(p?.id ?? p?.name ?? Math.random()),
+  image:
+    p?.images?.[0]?.url ?? p?.image ?? p?.thumbnail ?? p?.img ?? '',
+  title: p?.title ?? p?.name ?? 'Product',
+  department: p?.department ?? p?.brand ?? p?.category?.name ?? '',
+  price: String(p?.price ?? p?.list_price ?? '0'),
+  oldPrice: String(p?.oldPrice ?? p?.sale_price ?? p?.price ?? '0'),
+  colors: p?.colors ?? ['bg-sky-500', 'bg-emerald-500'],
+  categoryId: p?.category_id ?? p?.category?.id,
+})
+
+const toSlug = (value) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '')
+
 const HomePage = () => {
   const dispatch = useDispatch()
-  const { fetchState } = useSelector((state) => state.products)
+  const { fetchState, productList, categories } = useSelector((state) => state.products)
 
   useEffect(() => {
     dispatch(fetchProducts())
@@ -88,7 +109,21 @@ const HomePage = () => {
     },
   ]
 
-  const featuredProducts = allProducts.slice(0, 8)
+  const featuredProducts = useMemo(() => {
+    const list = Array.isArray(productList) && productList.length > 0 ? productList : allProducts
+    return list.map(normalizeProduct).slice(0, 8)
+  }, [productList])
+
+  const buildProductLink = (product) => {
+    const category = categories?.find(
+      (item) => String(item.id) === String(product.categoryId)
+    )
+    if (!category) return `/product/${product.id}`
+    const genderSlug = toSlug(category.gender ?? 'kadin') || 'kadin'
+    const categorySlug = toSlug(category.title ?? category.name)
+    const productSlug = toSlug(product.title)
+    return `/shop/${genderSlug}/${categorySlug}/${category.id}/${productSlug}/${product.id}`
+  }
 
   const featuredPosts = [
     {
@@ -208,7 +243,7 @@ const HomePage = () => {
               key={product.id}
               className="flex w-full sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)]"
             >
-              <ProductCard product={product} />
+              <ProductCard product={product} to={buildProductLink(product)} />
             </div>
           ))}
         </div>
