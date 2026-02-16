@@ -21,6 +21,7 @@ const SignupPage = () => {
   const {
     register,
     handleSubmit,
+    getValues,
     watch,
     setValue,
     formState: { errors, isSubmitting },
@@ -172,7 +173,7 @@ const SignupPage = () => {
               {...register('password_confirm', {
                 required: 'Please confirm your password',
                 validate: (value) =>
-                  value === watch('password') || 'Passwords do not match',
+                  value === getValues('password') || 'Passwords do not match',
               })}
             />
             {errors.password_confirm ? (

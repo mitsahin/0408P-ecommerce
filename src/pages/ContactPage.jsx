@@ -1,6 +1,13 @@
 import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 const ContactPage = () => {
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    toast.success('Message sent. We will get back to you soon!')
+    event.currentTarget.reset()
+  }
+
   return (
     <section className="flex w-full flex-col gap-8">
       <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
@@ -25,7 +32,10 @@ const ContactPage = () => {
             <span>Address: 123 Main Street, Istanbul</span>
           </div>
         </div>
-        <form className="flex w-full flex-col gap-4 sm:w-[55%]">
+        <form
+          className="flex w-full flex-col gap-4 sm:w-[55%]"
+          onSubmit={handleSubmit}
+        >
           <div className="flex flex-col gap-2">
             <label className="text-xs text-slate-500">Full name</label>
             <input
@@ -48,7 +58,7 @@ const ContactPage = () => {
             />
           </div>
           <button
-            type="button"
+            type="submit"
             className="rounded bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white"
           >
             Send message

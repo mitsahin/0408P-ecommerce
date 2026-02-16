@@ -93,9 +93,9 @@ const LoginPage = () => {
               />
               Remember me
             </label>
-            <button type="button" className="text-sky-500">
+            <Link to="/pages" className="text-sky-500">
               Forgot password?
-            </button>
+            </Link>
           </div>
           <button
             type="submit"

@@ -48,15 +48,11 @@ const ShopPage = () => {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState('price:asc')
   const [filterText, setFilterText] = useState('')
-  const [gridVisible, setGridVisible] = useState(false)
+  const [viewMode, setViewMode] = useState('grid')
 
   useEffect(() => {
     dispatch(setLimit(defaultLimit))
   }, [dispatch, defaultLimit])
-
-  useEffect(() => {
-    setPage(1)
-  }, [categoryId, sortBy, filterText])
 
   useEffect(() => {
     const offset = (page - 1) * defaultLimit
@@ -72,15 +68,6 @@ const ShopPage = () => {
       })
     )
   }, [dispatch, page, defaultLimit, categoryId, sortBy, filterText])
-
-  useEffect(() => {
-    if (fetchState === 'FETCHING') {
-      setGridVisible(false)
-      return
-    }
-    const timer = setTimeout(() => setGridVisible(true), 30)
-    return () => clearTimeout(timer)
-  }, [fetchState])
 
   const catalog = useMemo(() => {
     const list = Array.isArray(productList) && productList.length > 0 ? productList : localProducts
@@ -200,13 +187,25 @@ const ShopPage = () => {
               <span className="text-xs text-slate-500">Views:</span>
               <button
                 type="button"
-                className="flex items-center justify-center rounded border border-slate-200 px-2.5 py-2 text-slate-500"
+                onClick={() => setViewMode('grid')}
+                aria-pressed={viewMode === 'grid'}
+                className={`flex items-center justify-center rounded border px-2.5 py-2 ${
+                  viewMode === 'grid'
+                    ? 'border-slate-900 text-slate-900'
+                    : 'border-slate-200 text-slate-500'
+                }`}
               >
                 <LayoutGrid className="h-4 w-4" />
               </button>
               <button
                 type="button"
-                className="flex items-center justify-center rounded border border-slate-200 px-2.5 py-2 text-slate-500"
+                onClick={() => setViewMode('list')}
+                aria-pressed={viewMode === 'list'}
+                className={`flex items-center justify-center rounded border px-2.5 py-2 ${
+                  viewMode === 'list'
+                    ? 'border-slate-900 text-slate-900'
+                    : 'border-slate-200 text-slate-500'
+                }`}
               >
                 <List className="h-4 w-4" />
               </button>
@@ -225,7 +224,10 @@ const ShopPage = () => {
               </select>
               <input
                 value={filterText}
-                onChange={(event) => setFilterText(event.target.value)}
+                onChange={(event) => {
+                  setFilterText(event.target.value)
+                  setPage(1)
+                }}
                 className="rounded border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600"
                 placeholder="Filter"
               />
@@ -272,17 +274,23 @@ const ShopPage = () => {
               className={`flex w-full flex-wrap justify-center gap-[18px] sm:mx-auto sm:w-[1048px] sm:justify-between sm:gap-[30px] transition-opacity duration-300 ${
                 fetchState === 'FETCHING'
                   ? 'pointer-events-none opacity-0'
-                  : gridVisible
-                  ? 'opacity-100'
-                  : 'opacity-0'
+                  : 'opacity-100'
               }`}
             >
               {catalog.map((product) => (
                 <div
                   key={product.id}
-                  className="flex w-full sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)]"
+                  className={`flex w-full ${
+                    viewMode === 'list'
+                      ? 'sm:w-full lg:w-full'
+                      : 'sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)]'
+                  }`}
                 >
-                  <ProductCard product={product} to={buildProductLink(product)} />
+                  <ProductCard
+                    product={product}
+                    to={buildProductLink(product)}
+                    layout={viewMode}
+                  />
                 </div>
               ))}
             </div>

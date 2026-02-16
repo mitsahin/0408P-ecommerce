@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 import { Redirect, Route } from 'react-router-dom'
 
-const ProtectedRoute = ({ component: Component, ...rest }) => {
+const ProtectedRoute = ({ component: RouteComponent, ...rest }) => {
   const user = useSelector((state) => state.client?.user ?? {})
   const isAuthenticated = Boolean(user && (user.id || user.email))
 
@@ -10,7 +10,7 @@ const ProtectedRoute = ({ component: Component, ...rest }) => {
       {...rest}
       render={(props) =>
         isAuthenticated ? (
-          <Component {...props} />
+          <RouteComponent {...props} />
         ) : (
           <Redirect
             to={{

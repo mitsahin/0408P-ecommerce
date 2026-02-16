@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useHistory } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { ChevronLeft, ChevronRight, Clock, MessageSquare, Truck } from 'lucide-react'
 import HomeSlider from '../components/Slider.js'
@@ -38,6 +38,7 @@ const toSlug = (value) =>
     .replace(/(^-|-$)+/g, '')
 
 const HomePage = () => {
+  const history = useHistory()
   const dispatch = useDispatch()
   const { fetchState, productList, categories } = useSelector((state) => state.products)
 
@@ -58,19 +59,27 @@ const HomePage = () => {
   ]
   const [vitaIndex, setVitaIndex] = useState(0)
   const [vitaFading, setVitaFading] = useState(false)
+  const vitaFadeTimerRef = useRef(null)
+
+  const triggerVitaChange = (nextIndex) => {
+    setVitaFading(true)
+    if (vitaFadeTimerRef.current) {
+      clearTimeout(vitaFadeTimerRef.current)
+    }
+    vitaFadeTimerRef.current = setTimeout(() => setVitaFading(false), 120)
+    setVitaIndex((prev) =>
+      typeof nextIndex === 'function' ? nextIndex(prev) : nextIndex
+    )
+  }
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setVitaIndex((prev) => (prev + 1) % vitaSlides.length)
+      triggerVitaChange((prev) => (prev + 1) % vitaSlides.length)
     }, 4000)
     return () => clearInterval(timer)
   }, [vitaSlides.length])
 
-  useEffect(() => {
-    setVitaFading(true)
-    const timer = setTimeout(() => setVitaFading(false), 60)
-    return () => clearTimeout(timer)
-  }, [vitaIndex])
+  useEffect(() => () => clearTimeout(vitaFadeTimerRef.current), [])
 
   const editorPicks = [
     {
@@ -270,7 +279,9 @@ const HomePage = () => {
           <button
             type="button"
             onClick={() =>
-              setVitaIndex((prev) => (prev - 1 + vitaSlides.length) % vitaSlides.length)
+              triggerVitaChange(
+                (prev) => (prev - 1 + vitaSlides.length) % vitaSlides.length
+              )
             }
             className="absolute left-6 top-1/2 hidden h-[44.4706px] w-[24px] -translate-y-1/2 items-center justify-center text-white lg:flex"
             aria-label="Previous slide"
@@ -279,7 +290,9 @@ const HomePage = () => {
           </button>
           <button
             type="button"
-            onClick={() => setVitaIndex((prev) => (prev + 1) % vitaSlides.length)}
+            onClick={() =>
+              triggerVitaChange((prev) => (prev + 1) % vitaSlides.length)
+            }
             className="absolute right-6 top-1/2 hidden h-[44.4706px] w-[24px] -translate-y-1/2 items-center justify-center text-white lg:flex"
             aria-label="Next slide"
           >
@@ -356,12 +369,14 @@ const HomePage = () => {
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
+                onClick={() => history.push('/shop')}
                 className="flex items-center justify-center rounded bg-emerald-500 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white"
               >
                 Buy now
               </button>
               <button
                 type="button"
+                onClick={() => history.push('/blog')}
                 className="flex items-center justify-center rounded border border-emerald-500 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600"
               >
                 Read more
@@ -420,12 +435,12 @@ const HomePage = () => {
                       10 comments
                     </span>
                   </div>
-                  <button
-                    type="button"
+                  <Link
+                    to="/blog"
                     className="flex items-center gap-2 text-[12px] font-semibold text-slate-500 transition hover:text-slate-700"
                   >
                     Learn More
-                  </button>
+                  </Link>
                 </div>
               </article>
             ))}

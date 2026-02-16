@@ -45,7 +45,7 @@ export const fetchCategories = () => async (dispatch) => {
   try {
     const response = await axiosClient.get('/categories')
     dispatch(setCategories(response?.data ?? []))
-  } catch (error) {
+  } catch (_error) {
     dispatch(setCategories([]))
   }
 }
@@ -99,7 +99,7 @@ export const fetchProductById = (productId) => async (dispatch) => {
     const response = await axiosClient.get(`/products/${productId}`)
     dispatch(setProduct(response?.data ?? null))
     dispatch(setFetchState('FETCHED'))
-  } catch (error) {
+  } catch (_error) {
     dispatch(setFetchState('FAILED'))
   }
 }

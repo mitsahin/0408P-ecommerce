@@ -10,13 +10,13 @@ React + Vite storefront scaffold with Redux, React Router v5, Tailwind v4, Axios
 npm install
 ```
 
-2. Add environment variables
+1. Add environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-3. Run the dev server
+1. Run the dev server
 
 ```bash
 npm run dev
@@ -30,13 +30,13 @@ npm run dev
 
 `GET /products` response shape:
 
-```
+```json
 {
-	"total": 185,
-	"products": [
-		{ "id": 1 },
-		{ "id": 2 }
-	]
+  "total": 185,
+  "products": [
+    { "id": 1 },
+    { "id": 2 }
+  ]
 }
 ```
 

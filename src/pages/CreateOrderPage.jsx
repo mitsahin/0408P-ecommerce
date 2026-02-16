@@ -2,11 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import axiosClient from '../api/axiosClient'
-import {
-  setAppliedCoupon,
-  setCart,
-  setCouponCode,
-} from '../store/actions/shoppingCartActions'
+import { setCart } from '../store/actions/shoppingCartActions'
 
 const emptyAddress = {
   title: '',
@@ -441,10 +437,17 @@ const CreateOrderPage = () => {
                       String(address.title ?? '').toLowerCase().startsWith('shipping -')
                     )
                     .map((address) => (
-                      <button
+                      <div
                         key={address.id}
-                        type="button"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setSelectedAddressId(address.id)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            setSelectedAddressId(address.id)
+                          }
+                        }}
                         className={`flex w-full flex-col gap-2 rounded border p-3 text-left sm:w-[calc(50%-8px)] ${
                           selectedAddressId === address.id
                             ? 'border-amber-500'
@@ -467,20 +470,26 @@ const CreateOrderPage = () => {
                         <div className="flex items-center gap-2 text-xs">
                           <button
                             type="button"
-                            onClick={() => handleAddressEdit(address)}
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              handleAddressEdit(address)
+                            }}
                             className="text-sky-500"
                           >
                             Duzenle
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleAddressDelete(address.id)}
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              handleAddressDelete(address.id)
+                            }}
                             className="text-rose-500"
                           >
                             Sil
                           </button>
                         </div>
-                      </button>
+                      </div>
                     ))}
                 </div>
               </div>
@@ -494,10 +503,17 @@ const CreateOrderPage = () => {
                       String(address.title ?? '').toLowerCase().startsWith('billing -')
                     )
                     .map((address) => (
-                      <button
+                      <div
                         key={address.id}
-                        type="button"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setSelectedAddressId(address.id)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            setSelectedAddressId(address.id)
+                          }
+                        }}
                         className={`flex w-full flex-col gap-2 rounded border p-3 text-left sm:w-[calc(50%-8px)] ${
                           selectedAddressId === address.id
                             ? 'border-amber-500'
@@ -520,20 +536,26 @@ const CreateOrderPage = () => {
                         <div className="flex items-center gap-2 text-xs">
                           <button
                             type="button"
-                            onClick={() => handleAddressEdit(address)}
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              handleAddressEdit(address)
+                            }}
                             className="text-sky-500"
                           >
                             Duzenle
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleAddressDelete(address.id)}
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              handleAddressDelete(address.id)
+                            }}
                             className="text-rose-500"
                           >
                             Sil
                           </button>
                         </div>
-                      </button>
+                      </div>
                     ))}
                 </div>
               </div>
@@ -847,10 +869,17 @@ const CreateOrderPage = () => {
                   <span className="text-sm text-slate-400">Kart bulunamadi.</span>
                 ) : (
                   cards.map((card) => (
-                    <button
+                    <div
                       key={card.id}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
                       onClick={() => setSelectedCardId(card.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          setSelectedCardId(card.id)
+                        }
+                      }}
                       className={`flex w-full flex-col gap-2 rounded border p-3 text-left sm:w-[calc(50%-8px)] ${
                         selectedCardId === card.id
                           ? 'border-amber-500'
@@ -869,20 +898,26 @@ const CreateOrderPage = () => {
                       <div className="flex items-center gap-2 text-xs">
                         <button
                           type="button"
-                          onClick={() => handleCardEdit(card)}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            handleCardEdit(card)
+                          }}
                           className="text-sky-500"
                         >
                           Duzenle
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleCardDelete(card.id)}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            handleCardDelete(card.id)
+                          }}
                           className="text-rose-500"
                         >
                           Sil
                         </button>
                       </div>
-                    </button>
+                    </div>
                   ))
                 )}
               </div>

@@ -27,7 +27,7 @@ export const fetchRolesIfNeeded = () => async (dispatch, getState) => {
   try {
     const response = await axiosClient.get('/roles')
     dispatch(setRoles(response?.data ?? []))
-  } catch (error) {
+  } catch (_error) {
     dispatch(setRoles([]))
   }
 }
@@ -63,7 +63,7 @@ export const verifyTokenIfExists = () => async (dispatch) => {
     }
     dispatch(setUser(user ?? {}))
     return user
-  } catch (error) {
+  } catch (_error) {
     localStorage.removeItem('token')
     clearAuthToken()
     dispatch(setUser({}))

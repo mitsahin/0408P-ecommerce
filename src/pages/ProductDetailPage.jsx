@@ -52,15 +52,14 @@ const ProductDetailPage = () => {
       ].filter(Boolean),
     [activeProduct]
   )
-  const [activeImage, setActiveImage] = useState(galleryImages[0])
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const resolvedImageIndex = Math.min(
+    activeImageIndex,
+    Math.max(galleryImages.length - 1, 0)
+  )
+  const activeImage = galleryImages[resolvedImageIndex] || galleryImages[0]
   const [activeTab, setActiveTab] = useState('description')
   const brandLogos = [brandOne, brandTwo, brandThree, brandFour, brandFive]
-
-  useEffect(() => {
-    if (galleryImages.length > 0) {
-      setActiveImage(galleryImages[0])
-    }
-  }, [galleryImages])
 
   const handleAddToCart = () => {
     if (!activeProduct) return
@@ -161,9 +160,9 @@ const ProductDetailPage = () => {
                 <button
                   type="button"
                   key={`${image}-${index}`}
-                  onClick={() => setActiveImage(image)}
+                  onClick={() => setActiveImageIndex(index)}
                   className={`flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center rounded border bg-white ${
-                    activeImage === image
+                    resolvedImageIndex === index
                       ? 'border-slate-900'
                       : 'border-slate-200'
                   }`}
@@ -221,12 +220,12 @@ const ProductDetailPage = () => {
               >
                 Add to cart
               </button>
-              <button
-                type="button"
+              <Link
+                to="/wishlist"
                 className="rounded border border-slate-300 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600"
               >
                 Add to wishlist
-              </button>
+              </Link>
             </div>
           </div>
           ) : null}

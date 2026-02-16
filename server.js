@@ -23,7 +23,7 @@ app.post("/chat", async (req, res) => {
 
     const data = await response.json();
     res.json({ reply: data.response });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ error: "Chatbot yanıt veremedi" });
   }
 });

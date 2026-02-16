@@ -1,8 +1,10 @@
 import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import { setAppliedCoupon, setCart, setCouponCode } from '../store/actions/shoppingCartActions'
 
 const CartPage = () => {
   const dispatch = useDispatch()
+  const history = useHistory()
   const cartItems = useSelector((state) => state.shoppingCart?.cart ?? [])
   const appliedCoupon = useSelector(
     (state) => state.shoppingCart?.appliedCoupon ?? ''
@@ -50,6 +52,8 @@ const CartPage = () => {
   const couponDiscount = itemsTotal * couponRate
   const totalDiscount = freeShippingDiscount + couponDiscount
   const grandTotal = itemsTotal + shipping - totalDiscount
+
+  const canCheckout = selectedItems.length > 0
 
   return (
     <section className="flex w-full flex-col gap-6">
@@ -169,8 +173,9 @@ const CartPage = () => {
         <aside className="flex w-full flex-col gap-4 lg:w-[30%]">
           <button
             type="button"
-            disabled
-            className="rounded bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white opacity-70"
+            disabled={!canCheckout}
+            onClick={() => history.push('/order')}
+            className="rounded bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white disabled:opacity-70"
           >
             Sepeti Onayla
           </button>
@@ -230,8 +235,9 @@ const CartPage = () => {
           </div>
           <button
             type="button"
-            disabled
-            className="rounded bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white opacity-70"
+            disabled={!canCheckout}
+            onClick={() => history.push('/order')}
+            className="rounded bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white disabled:opacity-70"
           >
             Sepeti Onayla
           </button>

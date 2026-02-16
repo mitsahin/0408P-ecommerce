@@ -1,7 +1,21 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Facebook, Instagram, Twitter } from 'lucide-react'
+import { toast } from 'react-toastify'
 
 const Footer = () => {
+  const [email, setEmail] = useState('')
+
+  const handleSubscribe = () => {
+    const trimmed = email.trim()
+    if (!trimmed || !trimmed.includes('@')) {
+      toast.error('Please enter a valid email address.')
+      return
+    }
+    toast.success('Thanks for subscribing!')
+    setEmail('')
+  }
+
   return (
     <footer className="border-t border-slate-200 bg-white text-slate-500">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center gap-6 px-4 py-10 sm:px-6 lg:h-[488px] lg:justify-center lg:px-10">
@@ -88,11 +102,14 @@ const Footer = () => {
             <div className="flex w-full">
               <input
                 type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 placeholder="Your Email"
                 className="w-full border border-slate-200 px-3 py-2 text-xs text-slate-500"
               />
               <button
                 type="button"
+                onClick={handleSubscribe}
                 className="flex items-center justify-center bg-sky-500 px-4 py-2 text-xs font-semibold text-white"
               >
                 Subscribe

@@ -26,8 +26,16 @@ const PageContent = () => {
           path="/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId"
           component={ProductDetailPage}
         />
-        <Route path="/shop/:gender/:categoryName/:categoryId" component={ShopPage} />
-        <Route path="/shop" component={ShopPage} />
+        <Route
+          path="/shop/:gender/:categoryName/:categoryId"
+          render={(props) => (
+            <ShopPage
+              key={props.match.params.categoryId || 'all'}
+              {...props}
+            />
+          )}
+        />
+        <Route path="/shop" render={(props) => <ShopPage key="all" {...props} />} />
         <Route path="/about" component={AboutPage} />
         <Route path="/blog" component={BlogPage} />
         <Route path="/contact" component={ContactPage} />
