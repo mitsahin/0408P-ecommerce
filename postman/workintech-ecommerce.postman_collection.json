@@ -13,6 +13,10 @@
       "value": ""
     },
     {
+      "key": "userEmail",
+      "value": ""
+    },
+    {
       "key": "customerRoleId",
       "value": ""
     },
@@ -165,11 +169,18 @@
         }
       },
       "event": [
+                    "pm.test('token is returned', function () {",
+                    "  const data = pm.response.json();",
+                    "  pm.expect(data.token).to.be.a('string').and.not.empty;",
+                    "});",
         {
           "listen": "test",
           "script": {
             "exec": [
               "pm.test('status is 200', function () {",
+                    "if (data.user && data.user.email) {",
+                    "  pm.collectionVariables.set('userEmail', data.user.email);",
+                    "}"
               "  pm.response.to.have.status(200);",
               "});",
               "",
@@ -195,7 +206,31 @@
         ],
         "url": {
           "raw": "{{baseUrl}}/verify",
-          "host": [
+            },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "pm.test('status is 200', function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});",
+                    "",
+                    "const data = pm.response.json();",
+                    "pm.test('user object exists', function () {",
+                    "  pm.expect(data.user || data).to.exist;",
+                    "});",
+                    "if (data.token) {",
+                    "  pm.collectionVariables.set('token', data.token);",
+                    "}",
+                    "if (data.user && data.user.email) {",
+                    "  pm.collectionVariables.set('userEmail', data.user.email);",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
             "{{baseUrl}}"
           ],
           "path": [
