@@ -17,12 +17,17 @@ import {
   Youtube,
 } from 'lucide-react'
 import { logoutUser } from '../store/actions/clientActions'
+import { setAppliedCoupon, setCouponCode } from '../store/actions/shoppingCartActions'
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const dispatch = useDispatch()
   const categories = useSelector((state) => state.products?.categories ?? [])
   const cartItems = useSelector((state) => state.shoppingCart?.cart ?? [])
+  const couponCode = useSelector((state) => state.shoppingCart?.couponCode ?? '')
+  const appliedCoupon = useSelector(
+    (state) => state.shoppingCart?.appliedCoupon ?? ''
+  )
   const user = useSelector((state) => state.client?.user ?? {})
 
   const toSlug = (value) =>
@@ -34,31 +39,39 @@ const Header = () => {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '')
 
-  const groupedCategories = useMemo(() => {
-    const groups = { kadin: [], erkek: [], other: [] }
-    categories.forEach((category) => {
-      const gender = toSlug(category?.gender ?? category?.code ?? '')
-      if (gender === 'kadin' || gender === 'kadinlar' || gender === 'women') {
-        groups.kadin.push(category)
-      } else if (gender === 'erkek' || gender === 'erkekler' || gender === 'men') {
-        groups.erkek.push(category)
-      } else {
-        groups.other.push(category)
-      }
+  const menuItems = [
+    { label: 'Çanta', matchKeys: ['canta', 'bags'] },
+    { label: 'Kemer', matchKeys: ['kemer', 'belts'] },
+    { label: 'Kozmetik', matchKeys: ['kozmetik', 'cosmetics'] },
+    { label: 'Şapka', matchKeys: ['sapka', 'hats'] },
+  ]
+  const buildMenuLink = (gender, item) => {
+    const matchSlugs = Array.from(
+      new Set([toSlug(item.label), ...(item.matchKeys ?? []).map((key) => toSlug(key))])
+    )
+    const match = categories.find((category) => {
+      const titleSlug = toSlug(category.title ?? category.name ?? '')
+      const categoryGender = toSlug(category.gender ?? '')
+      const genderMatch = categoryGender === gender
+      return genderMatch && matchSlugs.includes(titleSlug)
     })
-    return groups
-  }, [categories])
+    const fallback = categories.find((category) => {
+      const titleSlug = toSlug(category.title ?? category.name ?? '')
+      return matchSlugs.includes(titleSlug)
+    })
+    const categoryId = (match ?? fallback)?.id ?? '0'
+    const categorySlug = matchSlugs[0] ?? toSlug(item.label)
+    return `/shop/${gender}/${categorySlug}/${categoryId}`
+  }
 
-  const getCategoryImage = (category, index) =>
-    category?.image ||
-    category?.img ||
-    `https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=facearea&w=80&h=80&q=80&sig=${index}`
 
   const cartCount = cartItems.reduce((sum, item) => sum + (item.count ?? 0), 0)
   const cartTotal = cartItems.reduce(
     (sum, item) => sum + (item.count ?? 0) * Number(item.product?.price ?? 0),
     0
   )
+  const discountRate = appliedCoupon === 'SAVE10' ? 0.1 : 0
+  const discountedTotal = cartTotal * (1 - discountRate)
   const userName = user?.name || user?.email || ''
   const gravatarHash = user?.email
     ? md5(String(user.email).trim().toLowerCase())
@@ -138,13 +151,47 @@ const Header = () => {
                 >
                   Shop
                 </NavLink>
+                <div className="flex w-full flex-col items-center gap-4 text-sm text-slate-500">
+                  <div className="flex w-full flex-col items-center gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                      Kadin
+                    </span>
+                    <div className="flex w-full flex-col gap-2">
+                      {menuItems.map((item) => (
+                        <Link
+                          key={`mobile-kadin-${item.label}`}
+                          to={buildMenuLink('kadin', item)}
+                          className="text-center text-sm text-slate-600"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex w-full flex-col items-center gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                      Erkek
+                    </span>
+                    <div className="flex w-full flex-col gap-2">
+                      {menuItems.map((item) => (
+                        <Link
+                          key={`mobile-erkek-${item.label}`}
+                          to={buildMenuLink('erkek', item)}
+                          className="text-center text-sm text-slate-600"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
                 {categories.length > 0 ? (
                   <div className="flex w-full flex-col items-center gap-3 text-sm text-slate-500">
                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
                       Categories
                     </span>
                     <div className="flex w-full flex-col gap-2">
-                      {categories.slice(0, 8).map((category) => {
+                      {categories.map((category) => {
                         const gender = toSlug(category?.gender ?? 'kadin') || 'kadin'
                         const categorySlug = toSlug(category?.title ?? category?.name)
                         return (
@@ -240,68 +287,37 @@ const Header = () => {
                 Shop
                 <ChevronDown className="h-4 w-4" />
               </NavLink>
-              <div className="absolute left-0 top-full z-20 hidden w-[420px] flex-col gap-4 rounded border border-slate-200 bg-white p-4 text-slate-700 shadow-lg group-hover:flex">
-                <div className="flex w-full gap-6">
-                  <div className="flex w-1/2 flex-col gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+              <div className="absolute left-1/2 top-full z-20 mt-3 hidden w-[500px] -translate-x-1/2 flex-col gap-5 border border-slate-100 bg-white px-8 py-7 text-slate-700 shadow-md before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-[''] group-hover:flex group-focus-within:flex">
+                <div className="flex w-full justify-center gap-12">
+                  <div className="flex w-1/2 flex-col gap-3">
+                    <span className="text-[15px] font-semibold text-slate-800">
                       Kadin
                     </span>
-                    {groupedCategories.kadin.length === 0 ? (
-                      <span className="text-xs text-slate-400">No categories</span>
-                    ) : (
-                      groupedCategories.kadin.slice(0, 6).map((category, index) => (
-                        <Link
-                          key={category.id}
-                          to={`/shop/kadin/${toSlug(category.title ?? category.name)}/${category.id}`}
-                          className="flex items-center gap-2 text-sm text-slate-600 transition hover:text-slate-900"
-                        >
-                          <img
-                            src={getCategoryImage(category, index)}
-                            alt={category.title ?? category.name}
-                            className="h-8 w-8 rounded bg-slate-100 object-cover"
-                          />
-                          {category.title ?? category.name}
-                        </Link>
-                      ))
-                    )}
-                  </div>
-                  <div className="flex w-1/2 flex-col gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                      Erkek
-                    </span>
-                    {groupedCategories.erkek.length === 0 ? (
-                      <span className="text-xs text-slate-400">No categories</span>
-                    ) : (
-                      groupedCategories.erkek.slice(0, 6).map((category, index) => (
-                        <Link
-                          key={category.id}
-                          to={`/shop/erkek/${toSlug(category.title ?? category.name)}/${category.id}`}
-                          className="flex items-center gap-2 text-sm text-slate-600 transition hover:text-slate-900"
-                        >
-                          <img
-                            src={getCategoryImage(category, index + 6)}
-                            alt={category.title ?? category.name}
-                            className="h-8 w-8 rounded bg-slate-100 object-cover"
-                          />
-                          {category.title ?? category.name}
-                        </Link>
-                      ))
-                    )}
-                  </div>
-                </div>
-                {groupedCategories.other.length > 0 ? (
-                  <div className="flex flex-wrap gap-3 border-t border-slate-100 pt-3 text-xs text-slate-500">
-                    {groupedCategories.other.slice(0, 6).map((category) => (
+                    {menuItems.map((item) => (
                       <Link
-                        key={category.id}
-                        to={`/shop/kadin/${toSlug(category.title ?? category.name)}/${category.id}`}
-                        className="transition hover:text-slate-900"
+                        key={`kadin-${item.label}`}
+                        to={buildMenuLink('kadin', item)}
+                        className="text-[13px] font-semibold text-slate-500 transition hover:text-slate-900"
                       >
-                        {category.title ?? category.name}
+                        {item.label}
                       </Link>
                     ))}
                   </div>
-                ) : null}
+                  <div className="flex w-1/2 flex-col gap-3">
+                    <span className="text-[15px] font-semibold text-slate-800">
+                      Erkek
+                    </span>
+                    {menuItems.map((item) => (
+                      <Link
+                        key={`erkek-${item.label}`}
+                        to={buildMenuLink('erkek', item)}
+                        className="text-[13px] font-semibold text-slate-500 transition hover:text-slate-900"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
             <NavLink
@@ -387,50 +403,105 @@ const Header = () => {
                 <ShoppingCart className="h-4 w-4" />
                 <span className="text-xs">{cartCount}</span>
               </Link>
-              <div className="absolute right-0 top-full z-20 hidden w-[280px] flex-col gap-3 rounded border border-slate-200 bg-white p-3 text-slate-700 shadow-lg group-hover:flex">
-                <span className="text-xs font-semibold text-slate-500">
+              <div className="absolute right-0 top-full z-20 hidden w-[320px] flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 text-slate-700 shadow-lg group-hover:flex">
+                <span className="text-sm font-semibold text-slate-800">
                   Sepetim ({cartCount} Urun)
                 </span>
-                <div className="flex max-h-[220px] flex-col gap-3 overflow-auto">
+                <div className="flex max-h-[260px] flex-col gap-3 overflow-auto">
                   {cartItems.length === 0 ? (
                     <span className="text-xs text-slate-400">Cart is empty.</span>
                   ) : (
-                    cartItems.map((item) => (
-                      <div key={item.product?.id} className="flex gap-3">
-                        <img
-                          src={item.product?.image}
-                          alt={item.product?.name ?? item.product?.title}
-                          className="h-12 w-12 rounded bg-slate-100 object-contain"
-                        />
-                        <div className="flex flex-1 flex-col gap-1 text-xs">
-                          <span className="font-semibold text-slate-700">
-                            {item.product?.name ?? item.product?.title}
-                          </span>
-                          <span className="text-slate-400">Adet: {item.count}</span>
-                          <span className="text-amber-600">
-                            {Number(item.product?.price ?? 0).toFixed(2)} TL
-                          </span>
+                    cartItems.map((item, index) => {
+                      const productTitle = item.product?.name ?? item.product?.title
+                      const productDetail =
+                        item.product?.description ?? item.product?.category?.name
+                      const productSize =
+                        item.product?.size ?? item.product?.detail ?? 'Tek Ebat'
+                      return (
+                        <div
+                          key={`${item.product?.id}-${index}`}
+                          className="flex gap-3 border-b border-slate-100 pb-3 last:border-b-0 last:pb-0"
+                        >
+                          <img
+                            src={item.product?.image}
+                            alt={productTitle}
+                            className="h-14 w-14 rounded border border-slate-100 bg-white object-contain"
+                          />
+                          <div className="flex flex-1 flex-col gap-1 text-xs">
+                            <span className="font-semibold text-slate-800">
+                              {productTitle}
+                            </span>
+                            {productDetail ? (
+                              <span className="text-slate-500">
+                                {productDetail}
+                              </span>
+                            ) : null}
+                            <span className="text-slate-400">
+                              Beden: {productSize} Adet: {item.count}
+                            </span>
+                            <span className="text-orange-500">
+                              {Number(item.product?.price ?? 0).toFixed(2)} TL
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      )
+                    })
                   )}
                 </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    value={couponCode}
+                    onChange={(event) =>
+                      dispatch(setCouponCode(event.target.value))
+                    }
+                    placeholder="Indirim kodu"
+                    className="flex-1 rounded border border-slate-200 px-3 py-2 text-xs text-slate-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      dispatch(
+                        setAppliedCoupon(couponCode.trim().toUpperCase())
+                      )
+                    }
+                    className="rounded border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600"
+                  >
+                    Uygula
+                  </button>
+                </div>
+                {appliedCoupon ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      dispatch(setAppliedCoupon(''))
+                      dispatch(setCouponCode(''))
+                    }}
+                    className="text-left text-[11px] font-semibold text-rose-500"
+                  >
+                    Kuponu kaldir
+                  </button>
+                ) : null}
                 <div className="flex items-center justify-between border-t border-slate-100 pt-2 text-xs">
                   <span className="text-slate-500">Total</span>
                   <span className="font-semibold text-slate-900">
-                    {cartTotal.toFixed(2)} TL
+                    {discountedTotal.toFixed(2)} TL
                   </span>
                 </div>
+                {discountRate > 0 ? (
+                  <span className="text-[11px] text-emerald-600">
+                    SAVE10 uygulandi (-%10)
+                  </span>
+                ) : null}
                 <div className="flex items-center gap-2">
                   <Link
                     to="/cart"
-                    className="flex-1 rounded border border-slate-200 px-3 py-2 text-center text-xs text-slate-600"
+                    className="flex-1 rounded border border-slate-200 px-3 py-2 text-center text-xs font-semibold text-slate-600"
                   >
                     Sepete Git
                   </Link>
                   <Link
                     to="/order"
-                    className="flex-1 rounded bg-amber-500 px-3 py-2 text-center text-xs font-semibold text-white"
+                    className="flex-1 rounded bg-orange-500 px-3 py-2 text-center text-xs font-semibold text-white"
                   >
                     Siparisi Tamamla
                   </Link>

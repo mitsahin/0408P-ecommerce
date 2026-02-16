@@ -21,6 +21,7 @@ const ProductDetailPage = () => {
   const { productId, id } = useParams()
   const { product, fetchState } = useSelector((state) => state.products ?? {})
   const cartItems = useSelector((state) => state.shoppingCart?.cart ?? [])
+  const isLoading = fetchState === 'FETCHING'
 
   useEffect(() => {
     const resolvedId = productId || id
@@ -31,8 +32,24 @@ const ProductDetailPage = () => {
 
   const fallbackProduct = products.find((item) => item.id === id) || products[0]
   const activeProduct = product || fallbackProduct
+  const productName = activeProduct?.title ?? activeProduct?.name ?? 'Product'
+  const productDescription =
+    activeProduct?.description ||
+    'Product details will be available soon.'
+  const currentPrice = Number(activeProduct?.price ?? 0)
+  const oldPriceValue = activeProduct?.oldPrice
+    ? Number(activeProduct.oldPrice)
+    : null
+  const showOldPrice = oldPriceValue && oldPriceValue > currentPrice
   const galleryImages = useMemo(
-    () => [activeProduct?.images?.[0]?.url || activeProduct.image, thumbOne, thumbTwo, thumbThree, thumbFour].filter(Boolean),
+    () =>
+      [
+        activeProduct?.images?.[0]?.url || activeProduct.image,
+        thumbOne,
+        thumbTwo,
+        thumbThree,
+        thumbFour,
+      ].filter(Boolean),
     [activeProduct]
   )
   const [activeImage, setActiveImage] = useState(galleryImages[0])
@@ -85,7 +102,7 @@ const ProductDetailPage = () => {
             Shop
           </Link>
           <span>/</span>
-          <span className="text-slate-400">{activeProduct?.title ?? 'Product'}</span>
+          <span className="text-slate-400">{productName}</span>
         </div>
 
         <button
@@ -97,12 +114,48 @@ const ProductDetailPage = () => {
         </button>
 
         <div className="flex w-full flex-col gap-6 rounded border border-slate-200 bg-white p-6 sm:flex-row sm:items-start sm:gap-10 sm:p-8">
-          {fetchState === 'FETCHING' ? (
-            <div className="flex w-full items-center justify-center py-10 text-xs uppercase tracking-[0.3em] text-slate-400">
-              Loading
+          {isLoading ? (
+            <div className="flex w-full flex-col gap-6 sm:flex-row sm:items-start sm:gap-10">
+              <div className="flex w-full items-center justify-center gap-3 text-xs uppercase tracking-[0.3em] text-slate-500">
+                <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-slate-500" />
+                Loading
+              </div>
+              <div className="flex w-full flex-col gap-4 sm:w-[50%] sm:flex-row sm:items-start">
+                <div className="order-2 flex w-full gap-3 overflow-x-auto sm:order-1 sm:w-[90px] sm:flex-col sm:overflow-visible">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div
+                      key={`thumb-skeleton-${index}`}
+                      className="h-[72px] w-[72px] flex-shrink-0 animate-pulse rounded border border-emerald-100 bg-emerald-100"
+                    />
+                  ))}
+                </div>
+                <div className="order-1 flex w-full items-center justify-center rounded bg-slate-50 p-4 sm:order-2">
+                  <div className="h-[320px] w-full animate-pulse rounded bg-emerald-100 sm:h-[420px]" />
+                </div>
+              </div>
+              <div className="flex w-full flex-col gap-4 sm:w-[45%]">
+                <div className="h-8 w-3/4 animate-pulse rounded bg-emerald-100" />
+                <div className="h-4 w-1/2 animate-pulse rounded bg-emerald-100" />
+                <div className="h-6 w-2/5 animate-pulse rounded bg-emerald-100" />
+                <div className="flex flex-col gap-2">
+                  <div className="h-3 w-full animate-pulse rounded bg-emerald-100" />
+                  <div className="h-3 w-5/6 animate-pulse rounded bg-emerald-100" />
+                  <div className="h-3 w-2/3 animate-pulse rounded bg-emerald-100" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 animate-pulse rounded-full bg-emerald-100" />
+                  <span className="h-3 w-3 animate-pulse rounded-full bg-emerald-100" />
+                  <span className="h-3 w-3 animate-pulse rounded-full bg-emerald-100" />
+                </div>
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <div className="h-10 w-32 animate-pulse rounded bg-emerald-100" />
+                  <div className="h-10 w-32 animate-pulse rounded bg-emerald-100" />
+                </div>
+              </div>
             </div>
           ) : null}
-          <div className="flex w-full flex-col gap-4 sm:w-[50%] sm:flex-row sm:items-start">
+          {!isLoading ? (
+            <div className="flex w-full flex-col gap-4 sm:w-[50%] sm:flex-row sm:items-start">
             <div className="order-2 flex w-full gap-3 overflow-x-auto sm:order-1 sm:w-[90px] sm:flex-col sm:overflow-visible">
               {galleryImages.map((image, index) => (
                 <button
@@ -117,7 +170,7 @@ const ProductDetailPage = () => {
                 >
                   <img
                     src={image}
-                    alt={`${activeProduct?.title ?? 'Product'} ${index + 1}`}
+                      alt={`${productName} ${index + 1}`}
                     className="h-full w-full object-contain object-center"
                   />
                 </button>
@@ -126,29 +179,32 @@ const ProductDetailPage = () => {
             <div className="order-1 flex w-full items-center justify-center rounded bg-slate-50 p-4 sm:order-2">
               <img
                 src={activeImage}
-                alt={activeProduct?.title ?? 'Product'}
+                alt={productName}
                 className="h-[320px] w-full object-contain object-center sm:h-[420px]"
               />
             </div>
           </div>
-          <div className="flex w-full flex-col gap-4 sm:w-[45%]">
+          ) : null}
+          {!isLoading ? (
+            <div className="flex w-full flex-col gap-4 sm:w-[45%]">
             <div className="flex flex-col gap-2">
               <h1 className="text-3xl font-semibold text-slate-900">
-                {activeProduct?.title ?? 'Product'}
+                {productName}
               </h1>
               <p className="text-sm text-slate-500">
-                {activeProduct?.department ?? activeProduct?.category?.name}
+                {activeProduct?.department ?? activeProduct?.category?.name ?? 'Category unavailable'}
               </p>
             </div>
             <div className="flex items-center gap-3 text-xl font-semibold">
-              <span className="text-slate-400 line-through">
-                ${activeProduct?.oldPrice ?? activeProduct?.price}
-              </span>
-              <span className="text-emerald-600">${activeProduct?.price}</span>
+              {showOldPrice ? (
+                <span className="text-slate-400 line-through">
+                  ${oldPriceValue?.toFixed(2)}
+                </span>
+              ) : null}
+              <span className="text-emerald-600">${currentPrice.toFixed(2)}</span>
             </div>
             <p className="text-sm text-slate-500">
-              We focus on ergonomics and meeting you where you work. It&apos;s only a
-              keystroke away.
+              {productDescription}
             </p>
             <div className="flex items-center gap-2">
               {(activeProduct?.colors ?? ['bg-sky-500', 'bg-emerald-500']).map(
@@ -173,6 +229,7 @@ const ProductDetailPage = () => {
               </button>
             </div>
           </div>
+          ) : null}
         </div>
 
       <div className="flex w-full flex-col gap-6 rounded border border-slate-200 bg-white p-4">

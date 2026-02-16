@@ -10,7 +10,6 @@ import editorWomen from '../assets/media bg-cover (1).png'
 import editorAccessories from '../assets/accc.jpg'
 import editorKids from '../assets/kıds.png'
 import productAlt4 from '../assets/shop-hero-2-png-picture-1 (2).png'
-import productAlt5 from '../assets/card-cover-8.jpg'
 import coupleBanner from '../assets/asian-woman-man-with-winter-clothes 1 (3).png'
 import blogCover1 from '../assets/y1.png'
 import blogCover2 from '../assets/y2.png'
@@ -55,15 +54,6 @@ const HomePage = () => {
         'We know how large objects will act, We know how are objects will act, We know',
       price: '$16.48',
       image: productAlt4,
-    },
-    {
-      id: 'vita-2',
-      season: 'Summer 2020',
-      title: 'Vita Classic Product',
-      description:
-        'We know how large objects will act, We know how are objects will act, We know',
-      price: '$16.48',
-      image: productAlt5,
     },
   ]
   const [vitaIndex, setVitaIndex] = useState(0)
@@ -227,26 +217,51 @@ const HomePage = () => {
             Problems trying to resolve the conflict between
           </p>
         </div>
-        {fetchState === 'FETCHING' ? (
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
-            Loading
-          </span>
-        ) : null}
         {fetchState === 'FAILED' ? (
           <div className="flex items-center rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-600">
             Something went wrong while loading products.
           </div>
         ) : null}
-        <div className="flex w-full flex-wrap gap-[30px]">
-          {featuredProducts.map((product) => (
-            <div
-              key={product.id}
-              className="flex w-full sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)]"
-            >
-              <ProductCard product={product} to={buildProductLink(product)} />
-            </div>
-          ))}
-        </div>
+        {fetchState === 'FETCHING' ? (
+          <div className="flex w-full flex-wrap gap-[30px]">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div
+                key={`featured-skeleton-${index}`}
+                className={`flex w-full sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)] ${
+                  index < 4 ? '' : index < 6 ? 'hidden sm:flex' : 'hidden lg:flex'
+                }`}
+              >
+                <div className="mx-auto flex w-full max-w-[332px] flex-col gap-3 rounded-lg border border-emerald-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:max-w-none lg:h-[442px]">
+                  <div className="h-[260px] w-full animate-pulse rounded bg-emerald-100 sm:h-[300px]" />
+                  <div className="flex w-full flex-col gap-2 px-4 pb-6 text-center">
+                    <div className="mx-auto h-4 w-3/4 animate-pulse rounded bg-emerald-100" />
+                    <div className="mx-auto h-3 w-1/2 animate-pulse rounded bg-emerald-100" />
+                    <div className="mx-auto flex items-center justify-center gap-2">
+                      <span className="h-3 w-10 animate-pulse rounded bg-emerald-100" />
+                      <span className="h-3 w-10 animate-pulse rounded bg-emerald-100" />
+                    </div>
+                    <div className="flex items-center justify-center gap-2 pt-2">
+                      <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-100" />
+                      <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-100" />
+                      <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-100" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex w-full flex-wrap gap-[30px]">
+            {featuredProducts.map((product) => (
+              <div
+                key={product.id}
+                className="flex w-full sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)]"
+              >
+                <ProductCard product={product} to={buildProductLink(product)} />
+              </div>
+            ))}
+          </div>
+        )}
         </div>
       </div>
 

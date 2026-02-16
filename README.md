@@ -26,6 +26,26 @@ npm run dev
 
 `VITE_API_BASE_URL` sets the API base URL used by `src/api/axiosClient.js`.
 
+## Postman notes
+
+`GET /products` response shape:
+
+```
+{
+	"total": 185,
+	"products": [
+		{ "id": 1 },
+		{ "id": 2 }
+	]
+}
+```
+
+Sample product queries:
+
+- `/products?category=2`
+- `/products?category=2&filter=siyah`
+- `/products?category=2&filter=siyah&sort=price:desc`
+
 ## Folder layout
 
 - `src/api` Axios client and API helpers

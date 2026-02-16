@@ -270,6 +270,56 @@
       }
     },
     {
+      "name": "Get Products (Limit + Offset)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/products?limit=25&offset=25",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "25"
+            },
+            {
+              "key": "offset",
+              "value": "25"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Products (Page 3)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/products?limit=25&offset=50",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "25"
+            },
+            {
+              "key": "offset",
+              "value": "50"
+            }
+          ]
+        }
+      }
+    },
+    {
       "name": "Get Products (Category)",
       "request": {
         "method": "GET",
@@ -325,6 +375,56 @@
             {
               "key": "filter",
               "value": "siyah"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Products (Filter Only)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/products?filter=siyah",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products"
+          ],
+          "query": [
+            {
+              "key": "filter",
+              "value": "siyah"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Products (Category + Filter + Sort)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/products?category=2&filter=siyah&sort=price:desc",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "products"
+          ],
+          "query": [
+            {
+              "key": "category",
+              "value": "2"
+            },
+            {
+              "key": "filter",
+              "value": "siyah"
+            },
+            {
+              "key": "sort",
+              "value": "price:desc"
             }
           ]
         }

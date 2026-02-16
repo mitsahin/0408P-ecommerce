@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useParams } from 'react-router-dom'
 import { LayoutGrid, List } from 'lucide-react'
+import ReactPaginate from 'react-paginate'
 import ProductCard from '../components/ProductCard.js'
 import { products as localProducts } from '../data/products'
 import { fetchProducts, setFilter, setLimit, setOffset } from '../store/actions/productActions'
@@ -47,6 +48,7 @@ const ShopPage = () => {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState('price:asc')
   const [filterText, setFilterText] = useState('')
+  const [gridVisible, setGridVisible] = useState(false)
 
   useEffect(() => {
     dispatch(setLimit(defaultLimit))
@@ -70,6 +72,15 @@ const ShopPage = () => {
       })
     )
   }, [dispatch, page, defaultLimit, categoryId, sortBy, filterText])
+
+  useEffect(() => {
+    if (fetchState === 'FETCHING') {
+      setGridVisible(false)
+      return
+    }
+    const timer = setTimeout(() => setGridVisible(true), 30)
+    return () => clearTimeout(timer)
+  }, [fetchState])
 
   const catalog = useMemo(() => {
     const list = Array.isArray(productList) && productList.length > 0 ? productList : localProducts
@@ -158,6 +169,27 @@ const ShopPage = () => {
             ))}
           </div>
 
+          <div className="flex w-full flex-col gap-3 rounded border border-slate-200 bg-white px-4 py-4 sm:mx-auto sm:w-[1088px]">
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+              Categories
+            </span>
+            <div className="flex flex-wrap gap-3 text-xs font-semibold text-slate-600">
+              {categories.map((category) => {
+                const genderSlug = toSlug(category.gender ?? 'kadin') || 'kadin'
+                const categorySlug = toSlug(category.title ?? category.name)
+                return (
+                  <Link
+                    key={category.id}
+                    to={`/shop/${genderSlug}/${categorySlug}/${category.id}`}
+                    className="rounded border border-slate-200 px-3 py-2 transition hover:border-slate-300 hover:text-slate-900"
+                  >
+                    {category.title ?? category.name}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+
           <div className="flex w-full flex-col gap-4 rounded border border-slate-200 bg-white px-4 py-4 sm:mx-auto sm:w-[1088px] sm:flex-row sm:items-center sm:justify-between">
             <span className="text-xs text-slate-500">
               Showing {(page - 1) * defaultLimit + 1}–
@@ -202,11 +234,49 @@ const ShopPage = () => {
 
           <div className="flex w-full flex-col gap-6">
             {fetchState === 'FETCHING' ? (
-              <div className="text-center text-xs uppercase tracking-[0.3em] text-slate-400">
+              <div className="flex w-full items-center justify-center gap-3 text-xs uppercase tracking-[0.3em] text-slate-400">
+                <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-slate-500" />
                 Loading
               </div>
             ) : null}
-            <div className="flex w-full flex-wrap justify-center gap-[18px] sm:mx-auto sm:w-[1048px] sm:justify-between sm:gap-[30px]">
+            {fetchState === 'FETCHING' ? (
+              <div className="flex w-full flex-wrap justify-center gap-[18px] sm:mx-auto sm:w-[1048px] sm:justify-between sm:gap-[30px]">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <div
+                    key={`skeleton-${index}`}
+                    className={`flex w-full sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)] ${
+                      index < 4 ? '' : index < 6 ? 'hidden sm:flex' : 'hidden lg:flex'
+                    }`}
+                  >
+                    <div className="mx-auto flex w-full max-w-[332px] flex-col gap-3 rounded-lg border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:max-w-none lg:h-[442px]">
+                      <div className="h-[260px] w-full animate-pulse rounded bg-slate-200 sm:h-[300px]" />
+                      <div className="flex w-full flex-col gap-2 px-4 pb-6 text-center">
+                        <div className="mx-auto h-4 w-3/4 animate-pulse rounded bg-slate-200" />
+                        <div className="mx-auto h-3 w-1/2 animate-pulse rounded bg-slate-200" />
+                        <div className="mx-auto flex items-center justify-center gap-2">
+                          <span className="h-3 w-10 animate-pulse rounded bg-slate-200" />
+                          <span className="h-3 w-10 animate-pulse rounded bg-slate-200" />
+                        </div>
+                        <div className="flex items-center justify-center gap-2 pt-2">
+                          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-slate-200" />
+                          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-slate-200" />
+                          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-slate-200" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            <div
+              className={`flex w-full flex-wrap justify-center gap-[18px] sm:mx-auto sm:w-[1048px] sm:justify-between sm:gap-[30px] transition-opacity duration-300 ${
+                fetchState === 'FETCHING'
+                  ? 'pointer-events-none opacity-0'
+                  : gridVisible
+                  ? 'opacity-100'
+                  : 'opacity-0'
+              }`}
+            >
               {catalog.map((product) => (
                 <div
                   key={product.id}
@@ -216,66 +286,24 @@ const ShopPage = () => {
                 </div>
               ))}
             </div>
-            <div className="flex w-full flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
-              <button
-                type="button"
-                onClick={() => setPage(1)}
-                disabled={page === 1}
-                className="rounded border border-slate-200 px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                First
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(1)}
-                className={`rounded border border-slate-200 px-3 py-2 ${
-                  page === 1 ? 'bg-sky-500 text-white' : ''
-                }`}
-              >
-                1
-              </button>
-              {[...Array(Math.min(totalPages, 4))].map((_, index) => {
-                const pageNumber = index + 1
-                if (pageNumber === 1) return null
-                return (
-                  <button
-                    key={`page-${pageNumber}`}
-                    type="button"
-                    onClick={() => setPage(pageNumber)}
-                    className={`rounded border border-slate-200 px-3 py-2 ${
-                      page === pageNumber ? 'bg-sky-500 text-white' : ''
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                )
-              })}
-              {totalPages > 4 ? (
-                <button
-                  type="button"
-                  onClick={() => setPage(totalPages)}
-                  className="rounded border border-slate-200 px-3 py-2"
-                >
-                  ...
-                </button>
-              ) : null}
-              <button
-                type="button"
-                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={page === totalPages}
-                className="rounded border border-slate-200 px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Next
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(totalPages)}
-                disabled={page === totalPages}
-                className="rounded border border-slate-200 px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Last
-              </button>
-            </div>
+            <ReactPaginate
+              pageCount={totalPages}
+              forcePage={Math.max(0, page - 1)}
+              onPageChange={(selectedItem) => setPage(selectedItem.selected + 1)}
+              previousLabel="Prev"
+              nextLabel="Next"
+              breakLabel="..."
+              marginPagesDisplayed={1}
+              pageRangeDisplayed={3}
+              containerClassName="flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500"
+              pageClassName="rounded border border-slate-200 px-3 py-2"
+              pageLinkClassName="block"
+              activeClassName="bg-sky-500 text-white border-sky-500"
+              previousClassName="rounded border border-slate-200 px-3 py-2"
+              nextClassName="rounded border border-slate-200 px-3 py-2"
+              breakClassName="rounded border border-slate-200 px-3 py-2"
+              disabledClassName="opacity-50"
+            />
           </div>
 
           <div className="w-screen max-w-none -mx-4 sm:mx-0 sm:w-full">

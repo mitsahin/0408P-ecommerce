@@ -1,3 +1,4 @@
+import { toast } from 'react-toastify'
 import axiosClient from '../../api/axiosClient'
 
 export const setCategories = (categories) => ({
@@ -64,6 +65,9 @@ export const fetchProducts = (params = {}) => async (dispatch) => {
 
   try {
     const queryString = buildQueryParams(params)
+    if (import.meta.env?.DEV) {
+      console.info(`Fetching products${queryString}`)
+    }
     const response = await axiosClient.get(`/products${queryString}`)
     const list = response?.data?.products ?? response?.data ?? []
     const total = response?.data?.total ?? list?.length ?? 0
@@ -71,6 +75,19 @@ export const fetchProducts = (params = {}) => async (dispatch) => {
     dispatch(setTotal(total))
     dispatch(setFetchState('FETCHED'))
   } catch (error) {
+    if (import.meta.env?.DEV) {
+      const status = error?.response?.status
+      const detail = error?.response?.data?.message || error?.message
+      const parts = [
+        'Products fetch failed',
+        status ? `(${status})` : null,
+        detail ? `- ${detail}` : null,
+      ].filter(Boolean)
+      toast.error(parts.join(' '), {
+        autoClose: 2000,
+        toastId: 'products-fetch-error',
+      })
+    }
     dispatch(setFetchState('FAILED'))
   }
 }
