@@ -108,10 +108,38 @@ const HomePage = () => {
     },
   ]
 
+  const buildEditorLink = (pick) => {
+    const findCategory = () => {
+      const pickId = String(pick?.id ?? '').toLowerCase()
+      const pickTitle = String(pick?.title ?? '').toLowerCase()
+      return categories?.find((category) => {
+        const name = String(category?.title ?? category?.name ?? '').toLowerCase()
+        const gender = String(category?.gender ?? '').toLowerCase()
+        if (pickId === 'men') {
+          return gender.includes('erkek') || gender.includes('man') || name.includes('men')
+        }
+        if (pickId === 'women') {
+          return gender.includes('kadin') || gender.includes('woman') || name.includes('women')
+        }
+        if (pickId === 'accessories') {
+          return name.includes('access') || name.includes('aksesuar') || pickTitle.includes('access')
+        }
+        if (pickId === 'kids') {
+          return gender.includes('cocuk') || gender.includes('kid') || name.includes('kid') || name.includes('cocuk')
+        }
+        return false
+      })
+    }
+    const category = findCategory()
+    if (!category) return '/shop'
+    const genderSlug = toSlug(category.gender ?? 'kadin') || 'kadin'
+    const categorySlug = toSlug(category.title ?? category.name)
+    return `/shop/${genderSlug}/${categorySlug}/${category.id}`
+  }
+
   const featuredProducts = useMemo(() => {
-    const list = Array.isArray(productList) && productList.length > 0 ? productList : allProducts
-    return list.map(normalizeProduct).slice(0, 8)
-  }, [productList])
+    return allProducts.map(normalizeProduct).slice(0, 8)
+  }, [allProducts])
 
   const buildProductLink = (product) => {
     const category = categories?.find(
@@ -168,17 +196,25 @@ const HomePage = () => {
           </div>
           <div className="flex w-full justify-center">
             <div className="flex w-full flex-col items-center gap-[30px] lg:h-[500px] lg:flex-row lg:items-stretch">
-              <div className="relative flex h-[500px] w-full max-w-[320px] overflow-hidden rounded-lg bg-slate-100 shadow-sm sm:max-w-[420px] lg:h-[500px] lg:w-[510px] lg:max-w-none">
+              <Link
+                to={buildEditorLink(editorPicks[0])}
+                className="relative flex h-[500px] w-full max-w-[320px] overflow-hidden rounded-lg bg-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:max-w-[420px] lg:h-[500px] lg:w-[510px] lg:max-w-none"
+                aria-label={`Shop ${editorPicks[0].title}`}
+              >
                 <img
                   src={editorPicks[0].image}
                   alt={editorPicks[0].title}
-                  className="h-full w-full object-contain object-center"
+                  className="h-full w-full object-cover object-center"
                 />
                 <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded bg-white/90 px-6 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-900 shadow-sm">
                   {editorPicks[0].title}
                 </span>
-              </div>
-              <div className="relative flex h-[500px] w-full max-w-[320px] overflow-hidden rounded-lg bg-slate-100 shadow-sm sm:max-w-[420px] lg:h-[500px] lg:w-[240px] lg:max-w-none">
+              </Link>
+              <Link
+                to={buildEditorLink(editorPicks[1])}
+                className="relative flex h-[500px] w-full max-w-[320px] overflow-hidden rounded-lg bg-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:max-w-[420px] lg:h-[500px] lg:w-[240px] lg:max-w-none"
+                aria-label={`Shop ${editorPicks[1].title}`}
+              >
                 <img
                   src={editorPicks[1].image}
                   alt={editorPicks[1].title}
@@ -187,9 +223,13 @@ const HomePage = () => {
                 <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded bg-white/90 px-6 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-900 shadow-sm">
                   {editorPicks[1].title}
                 </span>
-              </div>
+              </Link>
               <div className="flex w-full max-w-[320px] flex-col gap-[16px] sm:max-w-[420px] lg:w-[240px] lg:max-w-none">
-                <div className="relative flex h-[242px] w-full overflow-hidden rounded-lg bg-slate-100 shadow-sm lg:h-[242px]">
+                <Link
+                  to={buildEditorLink(editorPicks[2])}
+                  className="relative flex h-[242px] w-full overflow-hidden rounded-lg bg-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md lg:h-[242px]"
+                  aria-label={`Shop ${editorPicks[2].title}`}
+                >
                   <img
                     src={editorPicks[2].image}
                     alt={editorPicks[2].title}
@@ -198,8 +238,12 @@ const HomePage = () => {
                   <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded bg-white/90 px-6 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-900 shadow-sm">
                     {editorPicks[2].title}
                   </span>
-                </div>
-                <div className="relative flex h-[242px] w-full overflow-hidden rounded-lg bg-slate-100 shadow-sm lg:h-[242px]">
+                </Link>
+                <Link
+                  to={buildEditorLink(editorPicks[3])}
+                  className="relative flex h-[242px] w-full overflow-hidden rounded-lg bg-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md lg:h-[242px]"
+                  aria-label={`Shop ${editorPicks[3].title}`}
+                >
                   <img
                     src={editorPicks[3].image}
                     alt={editorPicks[3].title}
@@ -208,7 +252,7 @@ const HomePage = () => {
                   <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded bg-white/90 px-6 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-900 shadow-sm">
                     {editorPicks[3].title}
                   </span>
-                </div>
+                </Link>
               </div>
             </div>
           </div>
@@ -275,7 +319,7 @@ const HomePage = () => {
       </div>
 
       <div className="flex w-full flex-col">
-        <div className="relative flex w-full flex-col items-center rounded-[5px] border border-slate-200 bg-emerald-700 px-4 pb-[112px] pt-[112px] text-white lg:h-[709px] lg:w-full lg:px-0">
+        <div className="relative mx-auto flex h-[1230px] w-[414px] flex-col items-center rounded-[5px] border border-slate-200 bg-emerald-700 px-4 pb-[112px] pt-[112px] text-white sm:h-auto sm:w-full lg:h-[709px] lg:w-full lg:px-0">
           <button
             type="button"
             onClick={() =>
@@ -300,35 +344,62 @@ const HomePage = () => {
           </button>
           <div
             key={vitaSlides[vitaIndex].id}
-            className={`mx-auto flex w-full max-w-[1036px] flex-col items-center gap-[80px] transition-opacity duration-500 sm:flex-row sm:justify-between lg:h-[711px] lg:items-center ${
+            className={`mx-auto mt-[48px] flex h-[1252px] w-[412px] flex-col items-center justify-between pb-0 pt-[80px] transition-opacity duration-500 sm:mt-0 sm:h-auto sm:w-full sm:max-w-[1036px] sm:flex-row sm:justify-between sm:pb-0 sm:pt-0 lg:h-[711px] lg:items-center ${
               vitaFading ? 'opacity-0' : 'opacity-100'
             }`}
           >
-            <div className="flex w-full flex-col items-center gap-5 text-center sm:w-[55%] sm:items-start sm:text-left lg:pl-[30px] lg:h-[432px] lg:w-[509px]">
+            <div className="flex w-full flex-col items-center gap-5 pb-[48px] text-center sm:w-[55%] sm:items-start sm:pb-0 sm:text-left lg:pl-[30px] lg:h-[432px] lg:w-[509px]">
               <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/80 sm:text-sm">
                 {vitaSlides[vitaIndex].season}
               </p>
-              <h2 className="text-[40px] font-bold leading-[52px] tracking-[0.2px] text-white sm:text-[48px] sm:leading-[64px] lg:h-[160px] lg:w-[509px] lg:text-[58px] lg:leading-[80px]">
+              <h2 className="text-[32px] font-bold leading-[44px] tracking-[0.2px] text-white sm:text-[48px] sm:leading-[64px] lg:h-[160px] lg:w-[509px] lg:text-[58px] lg:leading-[80px]">
                 {vitaSlides[vitaIndex].title}
               </h2>
-              <p className="text-sm text-white/75 sm:text-[14px] sm:leading-[20px] lg:w-[376px]">
+              <p
+                className="h-[90px] w-[291px] text-center text-[20px] font-normal leading-[30px] tracking-[0.2px] text-white/75 sm:h-auto sm:w-auto sm:text-left sm:text-[14px] sm:leading-[20px] lg:w-[376px]"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
                 {vitaSlides[vitaIndex].description}
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-6 sm:justify-start">
+              <div className="flex w-full flex-col items-center gap-6 sm:flex-row sm:justify-start">
                 <span className="text-2xl font-semibold">{vitaSlides[vitaIndex].price}</span>
-                <Link
-                  to="/cart"
-                  className="flex items-center justify-center rounded bg-emerald-500 px-6 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-white"
-                >
-                  Add to cart
-                </Link>
+                <div className="flex items-center justify-center gap-8">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      triggerVitaChange(
+                        (prev) => (prev - 1 + vitaSlides.length) % vitaSlides.length
+                      )
+                    }
+                    className="flex h-[44.4706px] w-[24px] items-center justify-center text-white sm:hidden"
+                    aria-label="Previous slide"
+                  >
+                    <ChevronLeft className="h-7 w-7" />
+                  </button>
+                  <Link
+                    to="/cart"
+                    className="flex items-center justify-center rounded bg-emerald-500 px-6 py-3 text-xs font-semibold uppercase tracking-[0.25em] text-white"
+                  >
+                    Add to cart
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      triggerVitaChange((prev) => (prev + 1) % vitaSlides.length)
+                    }
+                    className="flex h-[44.4706px] w-[24px] items-center justify-center text-white sm:hidden"
+                    aria-label="Next slide"
+                  >
+                    <ChevronRight className="h-7 w-7" />
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="flex w-full items-center justify-center sm:w-[40%] lg:h-[599px] lg:w-[443px]">
+            <div className="flex w-full flex-1 items-end justify-center sm:mt-0 sm:w-[40%] sm:flex-none sm:items-center lg:h-[599px] lg:w-[443px]">
               <img
                 src={vitaSlides[vitaIndex].image}
                 alt={vitaSlides[vitaIndex].title}
-                className="mx-auto h-[260px] w-full object-contain object-center sm:h-[320px] lg:h-[685px] lg:w-[443px]"
+                className="mx-auto h-[480px] w-full self-end object-contain object-bottom sm:h-[320px] lg:h-[685px] lg:w-[443px]"
               />
             </div>
           </div>
@@ -348,7 +419,7 @@ const HomePage = () => {
       </div>
 
       <div className="mx-auto flex w-full max-w-[1440px] flex-col">
-        <div className="flex w-full flex-col gap-6 bg-white px-4 py-2 sm:flex-row sm:items-center sm:justify-between lg:h-[682px]">
+        <div className="mx-auto flex h-[1230px] w-[414px] flex-col gap-6 rounded-[5px] border border-slate-200 bg-white px-4 py-2 sm:h-auto sm:w-full sm:flex-row sm:items-center sm:justify-between lg:h-[682px]">
           <div className="flex w-full items-center justify-center sm:w-[50%]">
             <img
               src={coupleBanner}

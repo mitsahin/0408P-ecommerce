@@ -1,21 +1,21 @@
-import productCover from '../assets/product-cover-5.png'
-import productCover1 from '../assets/product-cover-5 (1).png'
-import productCover2 from '../assets/product-cover-5 (2).png'
-import productCover3 from '../assets/product-cover-5 (3).png'
-import productCover4 from '../assets/product-cover-5 (4).png'
-import productCover5 from '../assets/product-cover-5 (5).png'
-import productCover6 from '../assets/product-cover-5 (6).png'
-import productCover7 from '../assets/product-cover-5 (7).png'
+import bestsellerOne from '../assets/23057910d190d178c2a7b276e896b9d38b982bf6.jpg'
+import bestsellerTwo from '../assets/4a6a10161217dc07ba1cda4632e93a5851162bcb.jpg'
+import bestsellerThree from '../assets/74e648e43f346f3e64ec6890751ec33b3c7f5197.jpg'
+import bestsellerFour from '../assets/edfda1c222054dedce3ff32fe480d8fc8eb07474.jpg'
+import bestsellerFive from '../assets/110bc11c4432558f247264194359558513a225fe.jpg'
+import bestsellerSix from '../assets/41ba1a582a6be5d0abdf4716fbac8cd3a73cb266.jpg'
+import bestsellerSeven from '../assets/a4b9d5defc9e3b83803619da05903140ffc77947.jpg'
+import bestsellerEight from '../assets/c91168410dcfe4d267b32aaf7b21288f7b9656f2.jpg'
 
 const baseProducts = [
-  productCover,
-  productCover1,
-  productCover2,
-  productCover3,
-  productCover4,
-  productCover5,
-  productCover6,
-  productCover7,
+  bestsellerOne,
+  bestsellerTwo,
+  bestsellerThree,
+  bestsellerFour,
+  bestsellerFive,
+  bestsellerSix,
+  bestsellerSeven,
+  bestsellerEight,
 ]
 
 export const products = baseProducts.map((image, index) => ({
