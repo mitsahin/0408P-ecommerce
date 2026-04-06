@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, useHistory, useParams } from 'react-router-dom'
+import { Link, useHistory, useLocation, useParams } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { Heart, ShoppingBag } from 'lucide-react'
 import { products } from '../data/products'
 import ProductCard from '../components/ProductCard.js'
 import { fetchProductById } from '../store/actions/productActions'
 import { setCart } from '../store/actions/shoppingCartActions'
+import { addWishlistItem } from '../utils/wishlist'
 import thumbOne from '../assets/product-cover-5.png'
 import thumbTwo from '../assets/product-cover-5 (1).png'
 import thumbThree from '../assets/product-cover-5 (2).png'
@@ -18,6 +21,7 @@ import brandFive from '../assets/fa-brands-5.png'
 const ProductDetailPage = () => {
   const dispatch = useDispatch()
   const history = useHistory()
+  const location = useLocation()
   const { productId, id } = useParams()
   const { product, fetchState } = useSelector((state) => state.products ?? {})
   const cartItems = useSelector((state) => state.shoppingCart?.cart ?? [])
@@ -30,8 +34,9 @@ const ProductDetailPage = () => {
     }
   }, [dispatch, productId, id])
 
-  const fallbackProduct = products.find((item) => item.id === id) || products[0]
-  const activeProduct = product || fallbackProduct
+  const routeSnapshot = location?.state?.productSnapshot
+  const fallbackProduct = products.find((item) => String(item.id) === String(id)) || products[0]
+  const activeProduct = product || routeSnapshot || fallbackProduct
   const productName = activeProduct?.title ?? activeProduct?.name ?? 'Product'
   const productDescription =
     activeProduct?.description ||
@@ -87,12 +92,28 @@ const ProductDetailPage = () => {
           },
         ]
     dispatch(setCart(updatedCart))
+    toast.success('Product added to cart')
+  }
+
+  const handleAddToWishlist = () => {
+    if (!activeProduct?.id) return
+    try {
+      addWishlistItem({
+        ...activeProduct,
+        image: activeImage,
+        thumbnail: activeImage,
+      })
+      toast.success('Product added to wishlist')
+      history.push('/wishlist')
+    } catch {
+      toast.error('Could not update wishlist')
+    }
   }
 
   return (
     <section className="flex w-full flex-col gap-8">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-8">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-500 shadow-sm">
           <Link to="/" className="text-slate-700">
             Home
           </Link>
@@ -107,12 +128,12 @@ const ProductDetailPage = () => {
         <button
           type="button"
           onClick={() => history.goBack()}
-          className="flex w-fit items-center rounded border border-slate-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700"
+          className="flex w-fit items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:border-slate-300 hover:text-slate-900"
         >
           Back
         </button>
 
-        <div className="flex w-full flex-col gap-6 rounded border border-slate-200 bg-white p-6 sm:flex-row sm:items-start sm:gap-10 sm:p-8">
+        <div className="flex w-full flex-col gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-start sm:gap-10 sm:p-8">
           {isLoading ? (
             <div className="flex w-full flex-col gap-6 sm:flex-row sm:items-start sm:gap-10">
               <div className="flex w-full items-center justify-center gap-3 text-xs uppercase tracking-[0.3em] text-slate-500">
@@ -128,7 +149,7 @@ const ProductDetailPage = () => {
                     />
                   ))}
                 </div>
-                <div className="order-1 flex w-full items-center justify-center rounded bg-slate-50 p-4 sm:order-2">
+                <div className="order-1 flex w-full items-center justify-center rounded-xl border border-slate-100 bg-slate-50 p-4 sm:order-2">
                   <div className="h-[320px] w-full animate-pulse rounded bg-emerald-100 sm:h-[420px]" />
                 </div>
               </div>
@@ -146,7 +167,7 @@ const ProductDetailPage = () => {
                   <span className="h-3 w-3 animate-pulse rounded-full bg-emerald-100" />
                   <span className="h-3 w-3 animate-pulse rounded-full bg-emerald-100" />
                 </div>
-                <div className="flex flex-wrap items-center gap-3 pt-2">
+                <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
                   <div className="h-10 w-32 animate-pulse rounded bg-emerald-100" />
                   <div className="h-10 w-32 animate-pulse rounded bg-emerald-100" />
                 </div>
@@ -161,10 +182,10 @@ const ProductDetailPage = () => {
                   type="button"
                   key={`${image}-${index}`}
                   onClick={() => setActiveImageIndex(index)}
-                  className={`flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center rounded border bg-white ${
+                  className={`flex h-[72px] w-[72px] flex-shrink-0 items-center justify-center rounded-lg border bg-white transition ${
                     resolvedImageIndex === index
-                      ? 'border-slate-900'
-                      : 'border-slate-200'
+                      ? 'border-slate-900 shadow-sm'
+                      : 'border-slate-200 hover:border-slate-300'
                   }`}
                 >
                   <img
@@ -175,7 +196,7 @@ const ProductDetailPage = () => {
                 </button>
               ))}
             </div>
-            <div className="order-1 flex w-full items-center justify-center rounded bg-slate-50 p-4 sm:order-2">
+            <div className="order-1 flex w-full items-center justify-center rounded-xl border border-slate-100 bg-slate-50 p-4 sm:order-2">
               <img
                 src={activeImage}
                 alt={productName}
@@ -212,31 +233,34 @@ const ProductDetailPage = () => {
                 )
               )}
             </div>
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
               <button
                 type="button"
                 onClick={handleAddToCart}
-                className="rounded bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white"
+                className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-slate-800"
               >
+                <ShoppingBag className="h-3.5 w-3.5" />
                 Add to cart
               </button>
-              <Link
-                to="/wishlist"
-                className="rounded border border-slate-300 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600"
+              <button
+                type="button"
+                onClick={handleAddToWishlist}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600 transition hover:border-slate-400 hover:text-slate-800"
               >
+                <Heart className="h-3.5 w-3.5" />
                 Add to wishlist
-              </Link>
+              </button>
             </div>
           </div>
           ) : null}
         </div>
 
-      <div className="flex w-full flex-col gap-6 rounded border border-slate-200 bg-white p-4">
+      <div className="flex w-full flex-col gap-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-center gap-6 border-b border-slate-200 text-sm font-semibold text-slate-500">
           <button
             type="button"
             onClick={() => setActiveTab('description')}
-            className={`pb-2 ${
+            className={`pb-3 text-[13px] uppercase tracking-[0.14em] ${
               activeTab === 'description'
                 ? 'border-b-2 border-slate-900 text-slate-900'
                 : ''
@@ -247,7 +271,7 @@ const ProductDetailPage = () => {
             <button
               type="button"
               onClick={() => setActiveTab('additional')}
-            className={`pb-2 ${
+            className={`pb-3 text-[13px] uppercase tracking-[0.14em] ${
               activeTab === 'additional'
                 ? 'border-b-2 border-slate-900 text-slate-900'
                 : ''
@@ -258,7 +282,7 @@ const ProductDetailPage = () => {
             <button
               type="button"
               onClick={() => setActiveTab('reviews')}
-            className={`pb-2 ${
+            className={`pb-3 text-[13px] uppercase tracking-[0.14em] ${
               activeTab === 'reviews'
                 ? 'border-b-2 border-slate-900 text-slate-900'
                 : ''

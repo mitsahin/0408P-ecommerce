@@ -35,11 +35,11 @@ const LoginPage = () => {
   }
 
   return (
-    <section className="flex w-full flex-col items-center gap-6">
-      <div className="flex w-full max-w-[520px] flex-col gap-6 rounded border border-slate-200 bg-white p-6">
+    <section className="flex w-full flex-col items-center gap-6 py-2">
+      <div className="flex w-full max-w-[520px] flex-col gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex w-full items-center justify-between border-b border-slate-200 pb-4 text-sm font-semibold">
           <span className="text-slate-900">Login</span>
-          <Link to="/signup" className="text-sky-500">
+          <Link to="/signup" className="text-sky-500 hover:text-sky-600">
             Register
           </Link>
         </div>
@@ -55,7 +55,7 @@ const LoginPage = () => {
             <input
               type="email"
               placeholder="you@example.com"
-              className="rounded border border-slate-200 px-3 py-2 text-sm text-slate-700"
+              className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
               {...register('email', {
                 required: 'Email is required',
                 pattern: {
@@ -73,7 +73,7 @@ const LoginPage = () => {
             <input
               type="password"
               placeholder="********"
-              className="rounded border border-slate-200 px-3 py-2 text-sm text-slate-700"
+              className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
               {...register('password', {
                 required: 'Password is required',
               })}
@@ -93,14 +93,14 @@ const LoginPage = () => {
               />
               Remember me
             </label>
-            <Link to="/pages" className="text-sky-500">
+            <Link to="/pages" className="text-sky-500 hover:text-sky-600">
               Forgot password?
             </Link>
           </div>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="rounded bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white"
+            className="rounded-full bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSubmitting ? 'Logging in...' : 'Login'}
           </button>

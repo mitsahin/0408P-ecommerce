@@ -30,7 +30,7 @@ const slides = [
     title: 'HOT DEALS',
     description: 'Limited-time offers across our catalog.',
     image: heroImageAlt2,
-    position: '80% center',
+    position: '80% 18%',
   },
   {
     id: 4,
@@ -38,7 +38,7 @@ const slides = [
     title: 'NEW ARRIVALS',
     description: 'Fresh picks designed for the season.',
     image: heroImageAlt3,
-    position: '80% center',
+    position: '80% 16%',
   },
 ]
 
@@ -132,8 +132,8 @@ const HomeSlider = () => {
               style={{
                 backgroundImage: `url(${slide.image})`,
                 backgroundPosition: isMobile
-                  ? 'center'
-                  : slide.position || 'right center',
+                  ? 'center top'
+                  : slide.position || 'right top',
               }}
             >
               <div className="relative z-10 flex w-full max-w-[320px] flex-col items-center justify-center gap-4 px-6 py-12 text-center sm:w-[52%] sm:max-w-none sm:items-start sm:px-12 sm:text-left lg:w-[48%] lg:px-16">
@@ -156,7 +156,7 @@ const HomeSlider = () => {
                   to="/shop"
                   tabIndex={activeIndex === index ? 0 : -1}
                   aria-hidden={activeIndex === index ? 'false' : 'true'}
-                  className="flex h-[62px] w-[221px] items-center justify-center gap-[10px] rounded-[5px] bg-[#2DC071] px-[40px] py-[15px] text-center text-[24px] font-bold leading-[32px] tracking-[0.1px] text-white shadow-sm transition hover:bg-[#26aa60]"
+                  className="flex h-[62px] w-[221px] items-center justify-center gap-[10px] whitespace-nowrap rounded-[5px] bg-[#2DC071] px-[40px] py-[15px] text-center text-[24px] font-bold leading-[32px] tracking-[0.1px] text-white shadow-sm transition hover:bg-[#26aa60]"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   SHOP NOW

@@ -41,6 +41,8 @@ export const loginUser = ({ email, password, remember }) => async (dispatch) => 
     setAuthToken(token)
     if (remember) {
       localStorage.setItem('token', token)
+    } else {
+      localStorage.removeItem('token')
     }
   }
 
@@ -57,10 +59,9 @@ export const verifyTokenIfExists = () => async (dispatch) => {
     const response = await axiosClient.get('/verify')
     const user = response?.data?.user ?? response?.data
     const renewedToken = response?.data?.token
-    if (renewedToken) {
-      localStorage.setItem('token', renewedToken)
-      setAuthToken(renewedToken)
-    }
+    const nextToken = renewedToken || token
+    localStorage.setItem('token', nextToken)
+    setAuthToken(nextToken)
     dispatch(setUser(user ?? {}))
     return user
   } catch (_error) {

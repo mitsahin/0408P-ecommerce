@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useHistory, useLocation } from 'react-router-dom'
 import md5 from 'blueimp-md5'
 import {
   ChevronDown,
+  ChevronRight,
   Facebook,
   Heart,
   Instagram,
@@ -18,10 +19,24 @@ import {
 } from 'lucide-react'
 import { logoutUser } from '../store/actions/clientActions'
 import { setAppliedCoupon, setCouponCode } from '../store/actions/shoppingCartActions'
+import { readWishlistIds, WISHLIST_CHANGED_EVENT } from '../utils/wishlist'
+import suitImage from '../assets/media bg-cover.png'
+import topImage from '../assets/product-cover-5.png'
+import shoeImage from '../assets/card-cover-7-3.jpg'
+import jacketImage from '../assets/card-cover-7-11.jpg'
+import shirtImage from '../assets/card-cover-5-1.jpg'
+import knitwearImage from '../assets/vv1.jpg'
+import trouserImage from '../assets/card-cover-7-1.jpg'
 
 const Header = () => {
+  const allProductsPath = '/shop'
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [isDesktopShopOpen, setIsDesktopShopOpen] = useState(false)
+  const [wishlistCount, setWishlistCount] = useState(() => readWishlistIds().length)
+  const desktopShopMenuRef = useRef(null)
   const dispatch = useDispatch()
+  const history = useHistory()
+  const location = useLocation()
   const categories = useSelector((state) => state.products?.categories ?? [])
   const cartItems = useSelector((state) => state.shoppingCart?.cart ?? [])
   const couponCode = useSelector((state) => state.shoppingCart?.couponCode ?? '')
@@ -39,29 +54,113 @@ const Header = () => {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '')
 
-  const menuItems = [
-    { label: 'Çanta', matchKeys: ['canta', 'bags'] },
-    { label: 'Kemer', matchKeys: ['kemer', 'belts'] },
-    { label: 'Kozmetik', matchKeys: ['kozmetik', 'cosmetics'] },
-    { label: 'Şapka', matchKeys: ['sapka', 'hats'] },
+  const normalizeGenderSlug = (value, fallback = 'kadin') => {
+    const raw = toSlug(value ?? fallback)
+    if (raw === 'k') return 'kadin'
+    if (raw === 'e') return 'erkek'
+    return raw || fallback
+  }
+
+  const menuCategoryConfig = [
+    { key: 'tisort', label: 'Tişört', matchKeys: ['tisort', 'tshirt', 't-shirt'] },
+    { key: 'ayakkabi', label: 'Ayakkabı', matchKeys: ['ayakkabi', 'shoe', 'sneaker'] },
+    { key: 'ceket', label: 'Ceket', matchKeys: ['ceket', 'jacket', 'mont'] },
+    {
+      key: 'takim-elbise',
+      label: 'Takım Elbise',
+      matchKeys: ['takim-elbise', 'takim elbise', 'takim', 'suit', 'blazer'],
+    },
+    { key: 'gomlek', label: 'Gömlek', matchKeys: ['gomlek', 'shirt'] },
+    { key: 'kazak', label: 'Kazak', matchKeys: ['kazak', 'sweater', 'knit'] },
+    { key: 'pantalon', label: 'Pantalon', matchKeys: ['pantalon', 'pantolon', 'trouser', 'pants'] },
   ]
-  const buildMenuLink = (gender, item) => {
-    const matchSlugs = Array.from(
-      new Set([toSlug(item.label), ...(item.matchKeys ?? []).map((key) => toSlug(key))])
-    )
-    const match = categories.find((category) => {
-      const titleSlug = toSlug(category.title ?? category.name ?? '')
-      const categoryGender = toSlug(category.gender ?? '')
-      const genderMatch = categoryGender === gender
-      return genderMatch && matchSlugs.includes(titleSlug)
+  const kidsMenuCategoryConfig = [
+    { key: 'tisort', label: 'Tişört', matchKeys: ['kids', 'cocuk', 'bebek', 'genclik', 'tisort', 'tshirt', 't-shirt'] },
+    { key: 'ayakkabi', label: 'Ayakkabı', matchKeys: ['kids', 'cocuk', 'ayakkabi', 'shoe', 'sneaker'] },
+    { key: 'ceket', label: 'Ceket', matchKeys: ['kids', 'cocuk', 'ceket', 'jacket', 'mont'] },
+    { key: 'gomlek', label: 'Gömlek', matchKeys: ['kids', 'cocuk', 'gomlek', 'shirt'] },
+    { key: 'kazak', label: 'Kazak', matchKeys: ['kids', 'cocuk', 'kazak', 'sweater', 'knit'] },
+    { key: 'pantalon', label: 'Pantalon', matchKeys: ['kids', 'cocuk', 'pantalon', 'pantolon', 'trouser', 'pants'] },
+  ]
+  const getCategoryFallbackImage = (menuKey, gender) => {
+    const imageMap = {
+      tisort: topImage,
+      ayakkabi: shoeImage,
+      ceket: jacketImage,
+      'takim-elbise': suitImage,
+      gomlek: shirtImage,
+      kazak: knitwearImage,
+      pantalon: trouserImage,
+      canta: topImage,
+      saat: jacketImage,
+      sapka: knitwearImage,
+      kemer: trouserImage,
+      taki: shirtImage,
+      cuzdan: shoeImage,
+    }
+    return imageMap[menuKey] || jacketImage
+  }
+
+  const groupedCategories = useMemo(() => {
+    const groups = { kadin: [], erkek: [] }
+    categories.forEach((category) => {
+      const normalized = normalizeGenderSlug(category?.gender)
+      if (normalized === 'erkek') groups.erkek.push(category)
+      else groups.kadin.push(category)
     })
-    const fallback = categories.find((category) => {
-      const titleSlug = toSlug(category.title ?? category.name ?? '')
-      return matchSlugs.includes(titleSlug)
+    return groups
+  }, [categories])
+
+  const buildMenuCategories = (source, config, menuGender) => {
+    const fallbackCategoryId = source[0]?.id ?? categories[0]?.id ?? 1
+
+    return config.map((item, index) => {
+      const matched = source.find((category) => {
+        const titleSlug = toSlug(category?.title ?? category?.name)
+        return item.matchKeys.some((key) => titleSlug.includes(toSlug(key)))
+      })
+
+      return {
+        id: matched?.id ?? source[index]?.id ?? fallbackCategoryId,
+        title: matched?.title ?? matched?.name ?? item.label,
+        menuTitle: item.label,
+        menuGender,
+        image:
+          matched?.img ||
+          matched?.image ||
+          matched?.thumbnail ||
+          getCategoryFallbackImage(item.key, menuGender),
+      }
     })
-    const categoryId = (match ?? fallback)?.id ?? '0'
-    const categorySlug = matchSlugs[0] ?? toSlug(item.label)
-    return `/shop/${gender}/${categorySlug}/${categoryId}`
+  }
+
+  const womenMenuCategories = useMemo(
+    () => buildMenuCategories(groupedCategories.kadin, menuCategoryConfig, 'kadin'),
+    [groupedCategories, categories]
+  )
+  const menMenuCategories = useMemo(
+    () => buildMenuCategories(groupedCategories.erkek, menuCategoryConfig, 'erkek'),
+    [groupedCategories, categories]
+  )
+  const kidsMenuCategories = useMemo(
+    () => buildMenuCategories(categories, kidsMenuCategoryConfig, 'kids'),
+    [groupedCategories, categories]
+  )
+  const getCategoryLink = (category, fallbackGender = 'kadin') => {
+    const gender = normalizeGenderSlug(category?.gender ?? category?.menuGender, fallbackGender)
+    const categorySlug = toSlug(category?.title ?? category?.name ?? category?.menuTitle)
+    return `/shop/${gender}/${categorySlug}/${category.id}`
+  }
+
+  const closeMobileMenu = () => setMobileOpen(false)
+  const closeAllMenus = () => {
+    setMobileOpen(false)
+    setIsDesktopShopOpen(false)
+  }
+  const goAllProducts = () => {
+    closeAllMenus()
+    if (location.pathname === allProductsPath && !location.search) return
+    history.push(allProductsPath)
   }
 
 
@@ -72,6 +171,30 @@ const Header = () => {
   )
   const discountRate = appliedCoupon === 'SAVE10' ? 0.1 : 0
   const discountedTotal = cartTotal * (1 - discountRate)
+  useEffect(() => {
+    const syncWishlistCount = () => setWishlistCount(readWishlistIds().length)
+    window.addEventListener(WISHLIST_CHANGED_EVENT, syncWishlistCount)
+    window.addEventListener('storage', syncWishlistCount)
+    return () => {
+      window.removeEventListener(WISHLIST_CHANGED_EVENT, syncWishlistCount)
+      window.removeEventListener('storage', syncWishlistCount)
+    }
+  }, [])
+
+  useEffect(() => {
+    closeAllMenus()
+  }, [location.pathname, location.search])
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!desktopShopMenuRef.current) return
+      if (!desktopShopMenuRef.current.contains(event.target)) {
+        setIsDesktopShopOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [])
   const userName = user?.name || user?.email || ''
   const gravatarHash = user?.email
     ? md5(String(user.email).trim().toLowerCase())
@@ -114,10 +237,10 @@ const Header = () => {
           </div>
         </div>
       </div>
-      <div className="w-full border-b border-slate-200 bg-white text-slate-900">
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4 px-4 py-4 sm:px-6 lg:h-[58px] lg:flex-row lg:items-center lg:justify-between lg:px-10">
+      <div className="w-full border-b border-slate-200 bg-white text-slate-900 shadow-sm">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4 px-4 py-4 sm:px-6 lg:h-[68px] lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div className="flex w-full items-center justify-between lg:w-auto">
-            <Link to="/" className="text-xl font-bold text-slate-900">
+            <Link to="/" className="text-[24px] font-bold leading-none text-slate-900">
               Bandage
             </Link>
             <div className="flex items-center gap-4 text-slate-700 lg:hidden">
@@ -140,30 +263,97 @@ const Header = () => {
           </div>
           <div
             className={`relative w-full overflow-hidden transition-all duration-300 lg:hidden ${
-              mobileOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+              mobileOpen
+                ? 'max-h-[80vh] overflow-y-auto opacity-100'
+                : 'max-h-0 opacity-0'
             }`}
           >
             <nav className="flex flex-col items-center gap-6 pt-4 text-lg font-semibold text-slate-600">
-                <NavLink
-                  to="/shop"
+                <button
+                  type="button"
+                  onClick={goAllProducts}
                   className="transition hover:text-slate-900"
-                  activeClassName="text-slate-900"
                 >
                   Shop
-                </NavLink>
+                </button>
+                <div className="grid w-full grid-cols-2 gap-2 text-xs">
+                  <Link
+                    to="/shop/kids"
+                    onClick={closeMobileMenu}
+                    className="rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
+                  >
+                    Kids
+                  </Link>
+                  <Link
+                    to="/shop/kadin"
+                    onClick={closeMobileMenu}
+                    className="rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
+                  >
+                    Kadın
+                  </Link>
+                  <Link
+                    to="/shop/erkek"
+                    onClick={closeMobileMenu}
+                    className="rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
+                  >
+                    Erkek
+                  </Link>
+                  <Link
+                    to="/shop/accessories"
+                    onClick={closeMobileMenu}
+                    className="rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
+                  >
+                    Accessories
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={goAllProducts}
+                    className="col-span-2 rounded border border-slate-900 bg-slate-900 px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-white"
+                  >
+                    Tüm Ürünler
+                  </button>
+                </div>
                 <div className="flex w-full flex-col items-center gap-4 text-sm text-slate-500">
                   <div className="flex w-full flex-col items-center gap-2">
                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                      Kadin
+                      Kids
                     </span>
-                    <div className="flex w-full flex-col gap-2">
-                      {menuItems.map((item) => (
+                    <div className="grid w-full grid-cols-1 gap-2">
+                      {kidsMenuCategories.map((item) => (
                         <Link
-                          key={`mobile-kadin-${item.label}`}
-                          to={buildMenuLink('kadin', item)}
-                          className="text-center text-sm text-slate-600"
+                          key={`mobile-kids-${item.menuTitle}`}
+                          to={getCategoryLink(item, 'kids')}
+                          onClick={closeMobileMenu}
+                          className="flex items-center gap-3 rounded border border-slate-100 bg-white px-3 py-2 text-sm text-slate-600"
                         >
-                          {item.label}
+                          <img
+                            src={item.image}
+                            alt={item.menuTitle}
+                            className="h-9 w-9 rounded border border-slate-100 object-cover"
+                          />
+                          {item.menuTitle}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex w-full flex-col items-center gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                      Kadın
+                    </span>
+                    <div className="grid w-full grid-cols-1 gap-2">
+                      {womenMenuCategories.map((item) => (
+                        <Link
+                          key={`mobile-kadin-${item.menuTitle}`}
+                          to={getCategoryLink(item, 'kadin')}
+                          onClick={closeMobileMenu}
+                          className="flex items-center gap-3 rounded border border-slate-100 bg-white px-3 py-2 text-sm text-slate-600"
+                        >
+                          <img
+                            src={item.image}
+                            alt={item.menuTitle}
+                            className="h-9 w-9 rounded border border-slate-100 object-cover"
+                          />
+                          {item.menuTitle}
                         </Link>
                       ))}
                     </div>
@@ -172,43 +362,28 @@ const Header = () => {
                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
                       Erkek
                     </span>
-                    <div className="flex w-full flex-col gap-2">
-                      {menuItems.map((item) => (
+                    <div className="grid w-full grid-cols-1 gap-2">
+                      {menMenuCategories.map((item) => (
                         <Link
-                          key={`mobile-erkek-${item.label}`}
-                          to={buildMenuLink('erkek', item)}
-                          className="text-center text-sm text-slate-600"
+                          key={`mobile-erkek-${item.menuTitle}`}
+                          to={getCategoryLink(item, 'erkek')}
+                          onClick={closeMobileMenu}
+                          className="flex items-center gap-3 rounded border border-slate-100 bg-white px-3 py-2 text-sm text-slate-600"
                         >
-                          {item.label}
+                          <img
+                            src={item.image}
+                            alt={item.menuTitle}
+                            className="h-9 w-9 rounded border border-slate-100 object-cover"
+                          />
+                          {item.menuTitle}
                         </Link>
                       ))}
                     </div>
                   </div>
                 </div>
-                {categories.length > 0 ? (
-                  <div className="flex w-full flex-col items-center gap-3 text-sm text-slate-500">
-                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                      Categories
-                    </span>
-                    <div className="flex w-full flex-col gap-2">
-                      {categories.map((category) => {
-                        const gender = toSlug(category?.gender ?? 'kadin') || 'kadin'
-                        const categorySlug = toSlug(category?.title ?? category?.name)
-                        return (
-                          <Link
-                            key={category.id}
-                            to={`/shop/${gender}/${categorySlug}/${category.id}`}
-                            className="text-center text-sm text-slate-600"
-                          >
-                            {category.title ?? category.name}
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ) : null}
                 <NavLink
                   to="/about"
+                  onClick={closeMobileMenu}
                   className="transition hover:text-slate-900"
                   activeClassName="text-slate-900"
                 >
@@ -216,6 +391,7 @@ const Header = () => {
                 </NavLink>
                 <NavLink
                   to="/blog"
+                  onClick={closeMobileMenu}
                   className="transition hover:text-slate-900"
                   activeClassName="text-slate-900"
                 >
@@ -223,6 +399,7 @@ const Header = () => {
                 </NavLink>
                 <NavLink
                   to="/contact"
+                  onClick={closeMobileMenu}
                   className="transition hover:text-slate-900"
                   activeClassName="text-slate-900"
                 >
@@ -230,6 +407,7 @@ const Header = () => {
                 </NavLink>
                 <NavLink
                   to="/pages"
+                  onClick={closeMobileMenu}
                   className="transition hover:text-slate-900"
                   activeClassName="text-slate-900"
                 >
@@ -237,6 +415,7 @@ const Header = () => {
                 </NavLink>
                 <NavLink
                   to="/team"
+                  onClick={closeMobileMenu}
                   className="transition hover:text-slate-900"
                   activeClassName="text-slate-900"
                 >
@@ -254,69 +433,156 @@ const Header = () => {
                   Logout
                 </button>
               ) : (
-                <Link to="/login" className="flex items-center gap-2 text-sky-400">
+                <Link to="/login" onClick={closeMobileMenu} className="flex items-center gap-2 text-sky-400">
                   <User className="h-5 w-5" />
                   Login
                 </Link>
               )}
               {!userName ? (
-                <Link to="/signup" className="flex items-center gap-2 text-sky-400">
+                <Link to="/signup" onClick={closeMobileMenu} className="flex items-center gap-2 text-sky-400">
                   Register
                 </Link>
               ) : null}
-              <Link to="/search" className="flex items-center">
+              <Link to="/search" onClick={closeMobileMenu} className="flex items-center">
                 <Search className="h-6 w-6" />
               </Link>
-              <Link to="/cart" className="flex items-center gap-1">
+              <Link to="/cart" onClick={closeMobileMenu} className="flex items-center gap-1">
                 <ShoppingCart className="h-6 w-6" />
                 <span className="text-xs">{cartCount}</span>
               </Link>
-              <Link to="/wishlist" className="flex items-center gap-1">
+              <Link to="/wishlist" onClick={closeMobileMenu} className="flex items-center gap-1">
                 <Heart className="h-6 w-6" />
-                <span className="text-xs">1</span>
+                <span className="text-xs">{wishlistCount}</span>
               </Link>
             </div>
           </div>
-          <nav className="hidden flex-wrap items-center gap-6 text-[13px] font-semibold text-slate-500 lg:flex">
-            <div className="relative flex items-center gap-1 text-slate-600 transition hover:text-slate-900 group">
-              <NavLink
-                to="/shop"
-                className="flex items-center gap-1"
-                activeClassName="text-slate-900"
+          <nav className="hidden flex-wrap items-center gap-7 text-[14px] font-semibold text-slate-500 lg:flex">
+            <div
+              ref={desktopShopMenuRef}
+              className="relative flex items-center gap-1 text-slate-600 transition hover:text-slate-900"
+            >
+              <button
+                type="button"
+                onClick={goAllProducts}
+                className="text-slate-600 transition hover:text-slate-900"
               >
                 Shop
-                <ChevronDown className="h-4 w-4" />
-              </NavLink>
-              <div className="absolute left-1/2 top-full z-20 mt-3 hidden w-[500px] -translate-x-1/2 flex-col gap-5 border border-slate-100 bg-white px-8 py-7 text-slate-700 shadow-md before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-[''] group-hover:flex group-focus-within:flex">
-                <div className="flex w-full justify-center gap-12">
-                  <div className="flex w-1/2 flex-col gap-3">
+              </button>
+              <button
+                type="button"
+                className="flex items-center text-slate-600 transition hover:text-slate-900"
+                onClick={() => setIsDesktopShopOpen((prev) => !prev)}
+                aria-expanded={isDesktopShopOpen}
+                aria-label="Shop menu"
+              >
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${
+                    isDesktopShopOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+              <div
+                className={`absolute left-1/2 top-full z-20 mt-3 w-[900px] -translate-x-1/2 flex-col gap-6 rounded-2xl border border-slate-100 bg-white/95 px-8 py-7 text-slate-700 shadow-2xl backdrop-blur ${
+                  isDesktopShopOpen ? 'flex' : 'hidden'
+                }`}
+              >
+                <div className="grid grid-cols-5 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
+                  <Link
+                    to="/shop/kids"
+                    onClick={closeAllMenus}
+                    className="flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
+                  >
+                    Kids
+                  </Link>
+                  <Link
+                    to="/shop/kadin"
+                    onClick={closeAllMenus}
+                    className="flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
+                  >
+                    Kadın
+                  </Link>
+                  <Link
+                    to="/shop/erkek"
+                    onClick={closeAllMenus}
+                    className="flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
+                  >
+                    Erkek
+                  </Link>
+                  <Link
+                    to="/shop/accessories"
+                    onClick={closeAllMenus}
+                    className="flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
+                  >
+                    Accessories
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={goAllProducts}
+                    className="flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
+                  >
+                    Tüm Ürünler
+                  </button>
+                </div>
+                <div className="flex w-full gap-4">
+                  <div className="flex w-1/3 flex-col gap-3">
                     <span className="text-[15px] font-semibold text-slate-800">
-                      Kadin
+                      Kids
                     </span>
-                    {menuItems.map((item) => (
+                    {kidsMenuCategories.map((item) => (
                       <Link
-                        key={`kadin-${item.label}`}
-                        to={buildMenuLink('kadin', item)}
-                        className="text-[13px] font-semibold text-slate-500 transition hover:text-slate-900"
+                        key={`kids-${item.menuTitle}`}
+                        to={getCategoryLink(item, 'kids')}
+                        onClick={closeAllMenus}
+                        className="group/item flex items-center gap-3 rounded-xl border border-slate-100 bg-white px-3 py-2 text-[13px] font-semibold text-slate-500 transition hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900"
                       >
-                        {item.label}
+                        <span className="flex-1">{item.menuTitle}</span>
+                        <ChevronRight className="h-3.5 w-3.5 opacity-0 transition group-hover/item:opacity-100" />
                       </Link>
                     ))}
                   </div>
-                  <div className="flex w-1/2 flex-col gap-3">
+                  <div className="flex w-1/3 flex-col gap-3">
+                    <span className="text-[15px] font-semibold text-slate-800">
+                      Kadın
+                    </span>
+                    {womenMenuCategories.map((item) => (
+                      <Link
+                        key={`kadin-${item.menuTitle}`}
+                        to={getCategoryLink(item, 'kadin')}
+                        onClick={closeAllMenus}
+                        className="group/item flex items-center gap-3 rounded-xl border border-slate-100 bg-white px-3 py-2 text-[13px] font-semibold text-slate-500 transition hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                      >
+                        <span className="flex-1">{item.menuTitle}</span>
+                        <ChevronRight className="h-3.5 w-3.5 opacity-0 transition group-hover/item:opacity-100" />
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="flex w-1/3 flex-col gap-3">
                     <span className="text-[15px] font-semibold text-slate-800">
                       Erkek
                     </span>
-                    {menuItems.map((item) => (
+                    {menMenuCategories.map((item) => (
                       <Link
-                        key={`erkek-${item.label}`}
-                        to={buildMenuLink('erkek', item)}
-                        className="text-[13px] font-semibold text-slate-500 transition hover:text-slate-900"
+                        key={`erkek-${item.menuTitle}`}
+                        to={getCategoryLink(item, 'erkek')}
+                        onClick={closeAllMenus}
+                        className="group/item flex items-center gap-3 rounded-xl border border-slate-100 bg-white px-3 py-2 text-[13px] font-semibold text-slate-500 transition hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900"
                       >
-                        {item.label}
+                        <span className="flex-1">{item.menuTitle}</span>
+                        <ChevronRight className="h-3.5 w-3.5 opacity-0 transition group-hover/item:opacity-100" />
                       </Link>
                     ))}
                   </div>
+                </div>
+                <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+                  <span className="text-xs text-slate-400">Modern Collections</span>
+                  <button
+                    type="button"
+                    onClick={goAllProducts}
+                    className="flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:text-slate-900"
+                  >
+                    Tümüne Gör
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -356,7 +622,7 @@ const Header = () => {
               Team
             </NavLink>
           </nav>
-          <div className="hidden flex-wrap items-center gap-6 text-[13px] font-semibold text-sky-500 lg:flex">
+          <div className="hidden flex-wrap items-center gap-6 text-[14px] font-semibold text-sky-500 lg:flex">
             {userName ? (
               <div className="relative flex items-center gap-2 text-slate-600 group">
                 {gravatarUrl ? (
@@ -510,7 +776,7 @@ const Header = () => {
             </div>
             <Link to="/wishlist" className="flex items-center gap-1">
               <Heart className="h-4 w-4" />
-              <span className="text-xs">1</span>
+              <span className="text-xs">{wishlistCount}</span>
             </Link>
           </div>
         </div>

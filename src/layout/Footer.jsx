@@ -18,7 +18,7 @@ const Footer = () => {
 
   return (
     <footer className="border-t border-slate-200 bg-white text-slate-500">
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center gap-6 px-4 py-10 sm:px-6 lg:h-[488px] lg:justify-center lg:px-10">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center gap-8 px-4 py-10 sm:px-6 lg:py-14 lg:px-10">
         <div className="flex w-full flex-col items-center gap-4 text-center sm:flex-row sm:justify-center lg:justify-between">
           <Link to="/" className="text-lg font-semibold text-slate-900">
             Bandage
@@ -36,8 +36,8 @@ const Footer = () => {
           </div>
         </div>
         <div className="h-px w-full bg-slate-200" />
-        <div className="flex w-full flex-wrap justify-center gap-6 text-xs lg:justify-between">
-          <div className="flex w-full flex-col items-center gap-3 text-center sm:w-[18%] sm:items-start sm:text-left">
+        <div className="grid w-full grid-cols-1 gap-8 text-xs sm:grid-cols-2 lg:grid-cols-5">
+          <div className="flex w-full flex-col items-center gap-3 text-center sm:items-start sm:text-left">
             <h4 className="text-sm font-semibold text-slate-900">Company Info</h4>
             <Link to="/about" className="transition hover:text-slate-700">
               About Us
@@ -52,7 +52,7 @@ const Footer = () => {
               Blog
             </Link>
           </div>
-          <div className="flex w-full flex-col items-center gap-3 text-center sm:w-[18%] sm:items-start sm:text-left">
+          <div className="flex w-full flex-col items-center gap-3 text-center sm:items-start sm:text-left">
             <h4 className="text-sm font-semibold text-slate-900">Legal</h4>
             <Link to="/about" className="transition hover:text-slate-700">
               About Us
@@ -67,7 +67,7 @@ const Footer = () => {
               Blog
             </Link>
           </div>
-          <div className="flex w-full flex-col items-center gap-3 text-center sm:w-[18%] sm:items-start sm:text-left">
+          <div className="flex w-full flex-col items-center gap-3 text-center sm:items-start sm:text-left">
             <h4 className="text-sm font-semibold text-slate-900">Features</h4>
             <Link to="/pages" className="transition hover:text-slate-700">
               Business Marketing
@@ -82,7 +82,7 @@ const Footer = () => {
               Unlimited Support
             </Link>
           </div>
-          <div className="flex w-full flex-col items-center gap-3 text-center sm:w-[18%] sm:items-start sm:text-left">
+          <div className="flex w-full flex-col items-center gap-3 text-center sm:items-start sm:text-left">
             <h4 className="text-sm font-semibold text-slate-900">Resources</h4>
             <Link to="/pages" className="transition hover:text-slate-700">
               IOS & Android
@@ -97,20 +97,20 @@ const Footer = () => {
               API
             </Link>
           </div>
-          <div className="flex w-full flex-col items-center gap-3 text-center sm:w-[24%] sm:items-start sm:text-left">
+          <div className="flex w-full flex-col items-center gap-3 text-center sm:items-start sm:text-left">
             <h4 className="text-sm font-semibold text-slate-900">Get In Touch</h4>
-            <div className="flex w-full">
+            <div className="flex w-full overflow-hidden rounded-lg border border-slate-200">
               <input
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="Your Email"
-                className="w-full border border-slate-200 px-3 py-2 text-xs text-slate-500"
+                className="w-full border-0 px-3 py-2 text-xs text-slate-500 outline-none"
               />
               <button
                 type="button"
                 onClick={handleSubscribe}
-                className="flex items-center justify-center bg-sky-500 px-4 py-2 text-xs font-semibold text-white"
+                className="flex items-center justify-center bg-sky-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-sky-600"
               >
                 Subscribe
               </button>

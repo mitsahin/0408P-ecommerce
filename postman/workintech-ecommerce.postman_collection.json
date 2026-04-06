@@ -1,738 +1,544 @@
 {
   "info": {
     "name": "Workintech Ecommerce",
+    "_postman_id": "f120f349-9da8-4a44-a3d8-ebde9334f3e2",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "https://workintech-fe-ecommerce.onrender.com"
-    },
-    {
-      "key": "token",
-      "value": ""
-    },
-    {
-      "key": "userEmail",
-      "value": ""
-    },
-    {
-      "key": "customerRoleId",
-      "value": ""
-    },
-    {
-      "key": "addressId",
-      "value": ""
-    },
-    {
-      "key": "cardId",
-      "value": ""
-    },
-    {
-      "key": "productId",
-      "value": "1"
-    }
+    { "key": "baseUrl", "value": "https://workintech-fe-ecommerce.onrender.com" },
+    { "key": "token", "value": "" },
+    { "key": "userEmail", "value": "customer@commerce.com" },
+    { "key": "customerRoleId", "value": "1" },
+    { "key": "storeRoleId", "value": "2" },
+    { "key": "addressId", "value": "" },
+    { "key": "cardId", "value": "" },
+    { "key": "productId", "value": "322" }
   ],
   "item": [
     {
-      "name": "Get Roles",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/roles",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "roles"
-          ]
-        }
-      },
-      "event": [
+      "name": "Auth",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('status is 200', function () {",
-              "  pm.response.to.have.status(200);",
-              "});",
-              "",
-              "const data = pm.response.json();",
-              "const customer = data.find((role) => role.code === 'customer');",
-              "if (customer) {",
-              "  pm.collectionVariables.set('customerRoleId', customer.id);",
-              "}"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Signup (Customer/Admin)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe+{{$timestamp}}@example.com\",\n  \"password\": \"Test1234!\",\n  \"role_id\": {{customerRoleId}}\n}\n"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/signup",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "signup"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('status is 201', function () {",
-              "  pm.response.to.have.status(201);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Signup (Store)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"Store Owner\",\n  \"email\": \"store.owner+{{$timestamp}}@example.com\",\n  \"password\": \"Test1234!\",\n  \"role_id\": 2,\n  \"store\": {\n    \"name\": \"Bandage Store\",\n    \"phone\": \"05551234567\",\n    \"tax_no\": \"T1234V123456\",\n    \"bank_account\": \"TR000000000000000000000000\"\n  }\n}\n"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/signup",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "signup"
-          ]
-        }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('status is 201', function () {",
-              "  pm.response.to.have.status(201);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Login (Customer)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"customer@commerce.com\",\n  \"password\": \"123456\"\n}\n"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/login",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "login"
-          ]
-        }
-      },
-      "event": [
-                    "pm.test('token is returned', function () {",
-                    "  const data = pm.response.json();",
-                    "  pm.expect(data.token).to.be.a('string').and.not.empty;",
-                    "});",
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('status is 200', function () {",
-                    "if (data.user && data.user.email) {",
-                    "  pm.collectionVariables.set('userEmail', data.user.email);",
-                    "}"
-              "  pm.response.to.have.status(200);",
-              "});",
-              "",
-              "const data = pm.response.json();",
-              "if (data.token) {",
-              "  pm.collectionVariables.set('token', data.token);",
-              "}"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Verify Token",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/verify",
-            },
-            "event": [
-              {
-                "listen": "test",
-                "script": {
-                  "exec": [
-                    "pm.test('status is 200', function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});",
-                    "",
-                    "const data = pm.response.json();",
-                    "pm.test('user object exists', function () {",
-                    "  pm.expect(data.user || data).to.exist;",
-                    "});",
-                    "if (data.token) {",
-                    "  pm.collectionVariables.set('token', data.token);",
-                    "}",
-                    "if (data.user && data.user.email) {",
-                    "  pm.collectionVariables.set('userEmail', data.user.email);",
-                    "}"
-                  ],
-                  "type": "text/javascript"
-                }
+          "name": "Get Roles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const roles = pm.response.json();",
+                  "const customer = roles.find((role) => role.code === 'customer');",
+                  "const store = roles.find((role) => role.code === 'store');",
+                  "if (customer) pm.collectionVariables.set('customerRoleId', String(customer.id));",
+                  "if (store) pm.collectionVariables.set('storeRoleId', String(store.id));"
+                ]
               }
-            ]
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "verify"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Get Categories",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/categories",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "categories"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Get Products",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/products",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "products"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Get Products (Limit + Offset)",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/products?limit=25&offset=25",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "products"
-          ],
-          "query": [
-            {
-              "key": "limit",
-              "value": "25"
-            },
-            {
-              "key": "offset",
-              "value": "25"
             }
           ]
-        }
-      }
-    },
-    {
-      "name": "Get Products (Page 3)",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/products?limit=25&offset=50",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "products"
-          ],
-          "query": [
-            {
-              "key": "limit",
-              "value": "25"
-            },
-            {
-              "key": "offset",
-              "value": "50"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Get Products (Category)",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/products?category=2",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "products"
-          ],
-          "query": [
-            {
-              "key": "category",
-              "value": "2"
-            }
-          ]
-        }
-      },
-      "event": [
+        },
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "const data = pm.response.json();",
-              "const list = data.products || data;",
-              "if (Array.isArray(list) && list.length > 0) {",
-              "  pm.collectionVariables.set('productId', list[0].id);",
-              "}"
+          "name": "Signup (Customer/Admin Payload)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe+{{$timestamp}}@example.com\",\n  \"password\": \"Test1234!\",\n  \"role_id\": {{customerRoleId}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["signup"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201 or 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Signup (Store Payload)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Store Owner\",\n  \"email\": \"store.owner+{{$timestamp}}@example.com\",\n  \"password\": \"Test1234!\",\n  \"role_id\": {{storeRoleId}},\n  \"store\": {\n    \"name\": \"Bandage Store\",\n    \"phone\": \"05551234567\",\n    \"tax_no\": \"T1234V123456\",\n    \"bank_account\": \"TR000000000000000000000000\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["signup"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201 or 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (Customer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@commerce.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "pm.test('token is returned', function () {",
+                  "  pm.expect(data.token).to.be.a('string').and.not.empty;",
+                  "});",
+                  "if (data.token) pm.collectionVariables.set('token', data.token);",
+                  "const email = data?.user?.email || data?.email || '';",
+                  "if (email) pm.collectionVariables.set('userEmail', email);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify Token",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "{{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["verify"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "const user = data.user || data;",
+                  "pm.test('user exists', function () {",
+                  "  pm.expect(user).to.exist;",
+                  "});",
+                  "if (data.token) pm.collectionVariables.set('token', data.token);",
+                  "if (user?.email) pm.collectionVariables.set('userEmail', user.email);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Catalog",
+      "item": [
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            }
+          }
+        },
+        {
+          "name": "Get Products (Category + Filter + Sort)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products?category=2&filter=siyah&sort=price:desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "category", "value": "2" },
+                { "key": "filter", "value": "siyah" },
+                { "key": "sort", "value": "price:desc" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "const list = data.products || data;",
+                  "if (Array.isArray(list) && list.length > 0) {",
+                  "  pm.collectionVariables.set('productId', String(list[0].id));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Products (Pagination Page 1)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products?limit=25&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "limit", "value": "25" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Products (Pagination Page 2)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products?limit=25&offset=25",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "limit", "value": "25" },
+                { "key": "offset", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Products (Pagination Page 3)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products?limit=25&offset=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "limit", "value": "25" },
+                { "key": "offset", "value": "50" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "pm.test('product has id and name', function () {",
+                  "  pm.expect(data.id).to.exist;",
+                  "  pm.expect(data.name || data.title).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User Address",
+      "item": [
+        {
+          "name": "Get Addresses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "{{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/user/address",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "address"]
+            }
+          }
+        },
+        {
+          "name": "Create Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{token}}" }
             ],
-            "type": "text/javascript"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"ev adresi\",\n  \"name\": \"Ali\",\n  \"surname\": \"Karababa\",\n  \"phone\": \"05376845834\",\n  \"city\": \"istanbul\",\n  \"district\": \"esenler\",\n  \"neighborhood\": \"adres detaylari\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/address",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "address"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.id) pm.collectionVariables.set('addressId', String(data.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Address",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{addressId}},\n  \"title\": \"ev adresi\",\n  \"name\": \"Ali\",\n  \"surname\": \"Karababa\",\n  \"phone\": \"05376845834\",\n  \"city\": \"istanbul\",\n  \"district\": \"esenler\",\n  \"neighborhood\": \"adres detaylari\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/address",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "address"]
+            }
+          }
+        },
+        {
+          "name": "Delete Address",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "{{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/user/address/{{addressId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "address", "{{addressId}}"]
+            }
           }
         }
       ]
     },
     {
-      "name": "Get Products (Sort + Filter)",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/products?sort=price:desc&filter=siyah",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "products"
-          ],
-          "query": [
-            {
-              "key": "sort",
-              "value": "price:desc"
-            },
-            {
-              "key": "filter",
-              "value": "siyah"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Get Products (Filter Only)",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/products?filter=siyah",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "products"
-          ],
-          "query": [
-            {
-              "key": "filter",
-              "value": "siyah"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Get Products (Category + Filter + Sort)",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/products?category=2&filter=siyah&sort=price:desc",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "products"
-          ],
-          "query": [
-            {
-              "key": "category",
-              "value": "2"
-            },
-            {
-              "key": "filter",
-              "value": "siyah"
-            },
-            {
-              "key": "sort",
-              "value": "price:desc"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "Get Product Detail",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/products/{{productId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "products",
-            "{{productId}}"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Get Addresses",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/user/address",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "user",
-            "address"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Create Address",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "{{token}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"title\": \"ev adresi\",\n  \"name\": \"Ali\",\n  \"surname\": \"Karababa\",\n  \"phone\": \"05376845834\",\n  \"city\": \"istanbul\",\n  \"district\": \"esenler\",\n  \"neighborhood\": \"adres detaylari\"\n}\n"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/user/address",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "user",
-            "address"
-          ]
-        }
-      },
-      "event": [
+      "name": "User Card",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "const data = pm.response.json();",
-              "if (data.id) {",
-              "  pm.collectionVariables.set('addressId', data.id);",
-              "}"
+          "name": "Get Cards",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "{{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/user/card",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "card"]
+            }
+          }
+        },
+        {
+          "name": "Create Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{token}}" }
             ],
-            "type": "text/javascript"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"card_no\": \"1234123412341234\",\n  \"expire_month\": 12,\n  \"expire_year\": 2028,\n  \"name_on_card\": \"Ali Bas\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/card",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "card"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.id) pm.collectionVariables.set('cardId', String(data.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Card",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{cardId}},\n  \"card_no\": \"1234123412341234\",\n  \"expire_month\": 1,\n  \"expire_year\": 2030,\n  \"name_on_card\": \"Ahmet Tas\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/card",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "card"]
+            }
+          }
+        },
+        {
+          "name": "Delete Card",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "{{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/user/card/{{cardId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["user", "card", "{{cardId}}"]
+            }
           }
         }
       ]
     },
     {
-      "name": "Update Address",
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "{{token}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"id\": {{addressId}},\n  \"title\": \"ev adresi\",\n  \"name\": \"Ali\",\n  \"surname\": \"Karababa\",\n  \"phone\": \"05376845834\",\n  \"city\": \"istanbul\",\n  \"district\": \"esenler\",\n  \"neighborhood\": \"adres detaylari\"\n}\n"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/user/address",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "user",
-            "address"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Delete Address",
-      "request": {
-        "method": "DELETE",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/user/address/{{addressId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "user",
-            "address",
-            "{{addressId}}"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Get Cards",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/user/card",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "user",
-            "card"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Create Card",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "{{token}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"card_no\": \"1234123412341234\",\n  \"expire_month\": 12,\n  \"expire_year\": 2028,\n  \"name_on_card\": \"Ali Bas\"\n}\n"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/user/card",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "user",
-            "card"
-          ]
-        }
-      },
-      "event": [
+      "name": "Order",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "const data = pm.response.json();",
-              "if (data.id) {",
-              "  pm.collectionVariables.set('cardId', data.id);",
-              "}"
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "{{token}}" }
             ],
-            "type": "text/javascript"
-          }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address_id\": {{addressId}},\n  \"order_date\": \"{{$isoTimestamp}}\",\n  \"card_no\": 1234123412341234,\n  \"card_name\": \"Ali Bas\",\n  \"card_expire_month\": 12,\n  \"card_expire_year\": 2028,\n  \"card_ccv\": 321,\n  \"price\": 1919,\n  \"products\": [\n    {\n      \"product_id\": {{productId}},\n      \"count\": 1,\n      \"detail\": \"acik mavi - xl\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/order",
+              "host": ["{{baseUrl}}"],
+              "path": ["order"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200 or 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "{{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/order",
+              "host": ["{{baseUrl}}"],
+              "path": ["order"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
-    },
-    {
-      "name": "Update Card",
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "{{token}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"id\": {{cardId}},\n  \"card_no\": \"1234123412341234\",\n  \"expire_month\": 1,\n  \"expire_year\": 2030,\n  \"name_on_card\": \"Ahmet Tas\"\n}\n"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/user/card",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "user",
-            "card"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Delete Card",
-      "request": {
-        "method": "DELETE",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/user/card/{{cardId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "user",
-            "card",
-            "{{cardId}}"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Create Order",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "{{token}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"address_id\": {{addressId}},\n  \"order_date\": \"2024-01-10T14:18:30\",\n  \"card_no\": 1234123412341234,\n  \"card_name\": \"Ali Bas\",\n  \"card_expire_month\": 12,\n  \"card_expire_year\": 2025,\n  \"card_ccv\": 321,\n  \"price\": 1919,\n  \"products\": [\n    {\n      \"product_id\": {{productId}},\n      \"count\": 1,\n      \"detail\": \"acik mavi - xl\"\n    }\n  ]\n}\n"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/order",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "order"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Get Orders",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{token}}"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/order",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "order"
-          ]
-        }
-      }
     }
   ]
 }

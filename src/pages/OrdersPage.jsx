@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import axiosClient from '../api/axiosClient'
 
 const OrdersPage = () => {
+  const location = useLocation()
+  const createdOrderId = location.state?.createdOrderId
   const [orders, setOrders] = useState([])
   const [openId, setOpenId] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -23,9 +26,25 @@ const OrdersPage = () => {
     loadOrders()
   }, [])
 
+  useEffect(() => {
+    if (!createdOrderId) return
+    setOpenId(createdOrderId)
+  }, [createdOrderId])
+
+  const formatOrderDate = (value) => {
+    const parsed = new Date(value)
+    if (Number.isNaN(parsed.getTime())) return value || '-'
+    return parsed.toLocaleString('tr-TR')
+  }
+
   return (
     <section className="flex w-full flex-col gap-6">
       <h1 className="text-2xl font-semibold text-slate-900">Previous Orders</h1>
+      {createdOrderId ? (
+        <div className="rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          Your order #{createdOrderId} has been created successfully.
+        </div>
+      ) : null}
       <div className="flex w-full flex-col gap-4">
         {isLoading ? (
           <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
@@ -45,7 +64,9 @@ const OrdersPage = () => {
                   <span className="font-semibold text-slate-900">
                     Order #{order.id}
                   </span>
-                  <span className="text-xs text-slate-500">{order.order_date}</span>
+                  <span className="text-xs text-slate-500">
+                    {formatOrderDate(order.order_date)}
+                  </span>
                 </div>
                 <div className="flex items-center gap-6">
                   <span className="text-xs text-slate-500">
@@ -67,13 +88,19 @@ const OrdersPage = () => {
               </div>
               {openId === order.id ? (
                 <div className="flex w-full flex-col gap-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
+                  <div className="grid grid-cols-3 rounded bg-slate-50 px-3 py-2 font-semibold text-slate-500">
+                    <span>Product ID</span>
+                    <span>Detail</span>
+                    <span className="text-right">Count</span>
+                  </div>
                   {(order.products ?? []).map((product, index) => (
                     <div
                       key={`${order.id}-${index}`}
-                      className="flex w-full items-center justify-between"
+                      className="grid grid-cols-3 items-center border-b border-slate-100 px-3 py-2 last:border-b-0"
                     >
-                      <span>{product.detail}</span>
-                      <span>Qty: {product.count}</span>
+                      <span>#{product.product_id}</span>
+                      <span className="truncate">{product.detail || '-'}</span>
+                      <span className="text-right">{product.count}</span>
                     </div>
                   ))}
                 </div>

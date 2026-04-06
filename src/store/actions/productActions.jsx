@@ -1,5 +1,6 @@
 import { toast } from 'react-toastify'
 import axiosClient from '../../api/axiosClient'
+import { products as localProducts } from '../../data/products'
 
 export const setCategories = (categories) => ({
   type: 'products/setCategories',
@@ -60,6 +61,23 @@ const buildQueryParams = (params = {}) => {
   return queryString ? `?${queryString}` : ''
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const fetchProductsWithRetry = async (queryString, maxRetries = 1) => {
+  let lastError
+  for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+    try {
+      return await axiosClient.get(`/products${queryString}`)
+    } catch (error) {
+      lastError = error
+      if (attempt < maxRetries) {
+        await sleep(600)
+      }
+    }
+  }
+  throw lastError
+}
+
 export const fetchProducts = (params = {}) => async (dispatch) => {
   dispatch(setFetchState('FETCHING'))
 
@@ -68,7 +86,7 @@ export const fetchProducts = (params = {}) => async (dispatch) => {
     if (import.meta.env?.DEV) {
       console.info(`Fetching products${queryString}`)
     }
-    const response = await axiosClient.get(`/products${queryString}`)
+    const response = await fetchProductsWithRetry(queryString, 1)
     const list = response?.data?.products ?? response?.data ?? []
     const total = response?.data?.total ?? list?.length ?? 0
     dispatch(setProductList(list))
@@ -88,7 +106,10 @@ export const fetchProducts = (params = {}) => async (dispatch) => {
         toastId: 'products-fetch-error',
       })
     }
-    dispatch(setFetchState('FAILED'))
+    // Graceful fallback: keep storefront usable with bundled demo products.
+    dispatch(setProductList(localProducts))
+    dispatch(setTotal(localProducts.length))
+    dispatch(setFetchState('FETCHED'))
   }
 }
 

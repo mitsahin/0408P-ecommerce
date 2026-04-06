@@ -40,7 +40,7 @@ const toSlug = (value) =>
 const HomePage = () => {
   const history = useHistory()
   const dispatch = useDispatch()
-  const { fetchState, productList, categories } = useSelector((state) => state.products)
+  const { categories } = useSelector((state) => state.products)
 
   useEffect(() => {
     dispatch(fetchProducts())
@@ -109,32 +109,12 @@ const HomePage = () => {
   ]
 
   const buildEditorLink = (pick) => {
-    const findCategory = () => {
-      const pickId = String(pick?.id ?? '').toLowerCase()
-      const pickTitle = String(pick?.title ?? '').toLowerCase()
-      return categories?.find((category) => {
-        const name = String(category?.title ?? category?.name ?? '').toLowerCase()
-        const gender = String(category?.gender ?? '').toLowerCase()
-        if (pickId === 'men') {
-          return gender.includes('erkek') || gender.includes('man') || name.includes('men')
-        }
-        if (pickId === 'women') {
-          return gender.includes('kadin') || gender.includes('woman') || name.includes('women')
-        }
-        if (pickId === 'accessories') {
-          return name.includes('access') || name.includes('aksesuar') || pickTitle.includes('access')
-        }
-        if (pickId === 'kids') {
-          return gender.includes('cocuk') || gender.includes('kid') || name.includes('kid') || name.includes('cocuk')
-        }
-        return false
-      })
-    }
-    const category = findCategory()
-    if (!category) return '/shop'
-    const genderSlug = toSlug(category.gender ?? 'kadin') || 'kadin'
-    const categorySlug = toSlug(category.title ?? category.name)
-    return `/shop/${genderSlug}/${categorySlug}/${category.id}`
+    const pickId = String(pick?.id ?? '').toLowerCase()
+    if (pickId === 'men') return '/shop/erkek'
+    if (pickId === 'women') return '/shop/kadin'
+    if (pickId === 'kids') return '/shop/kids'
+    if (pickId === 'accessories') return '/shop/accessories'
+    return '/shop'
   }
 
   const featuredProducts = useMemo(() => {
@@ -177,15 +157,15 @@ const HomePage = () => {
   ]
 
   return (
-    <section className="flex w-full flex-col gap-0">
-      <div className="flex w-full flex-col gap-2 lg:h-[852px]">
+    <section className="flex w-full flex-col gap-10 lg:gap-14">
+      <div className="flex w-full flex-col">
         <div className="w-full">
           <HomeSlider />
         </div>
       </div>
 
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-2 lg:h-[770px]">
-        <div className="mx-auto flex w-[333px] min-h-[1850px] flex-col gap-[48px] bg-white pb-[40px] pt-[80px] sm:w-full sm:min-h-0 sm:max-w-[1050px] sm:px-4 sm:pb-[80px] lg:h-full lg:min-h-0">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-10 rounded-2xl border border-slate-200 bg-white px-4 py-10 shadow-sm sm:px-6 lg:py-12">
           <div className="flex flex-col items-center gap-2 text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-700">
               Editor&apos;s pick
@@ -195,16 +175,17 @@ const HomePage = () => {
             </p>
           </div>
           <div className="flex w-full justify-center">
-            <div className="flex w-full flex-col items-center gap-[30px] lg:h-[500px] lg:flex-row lg:items-stretch">
+            <div className="flex w-full flex-col items-center gap-[30px] lg:flex-row lg:items-stretch lg:justify-center">
               <Link
                 to={buildEditorLink(editorPicks[0])}
-                className="relative flex h-[500px] w-full max-w-[320px] overflow-hidden rounded-lg bg-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:max-w-[420px] lg:h-[500px] lg:w-[510px] lg:max-w-none"
+                className="group relative flex h-[500px] w-full max-w-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:max-w-[420px] lg:h-[500px] lg:w-[510px] lg:max-w-none"
                 aria-label={`Shop ${editorPicks[0].title}`}
               >
                 <img
                   src={editorPicks[0].image}
                   alt={editorPicks[0].title}
-                  className="h-full w-full object-cover object-center"
+                  className="h-full w-full scale-[1.01] object-cover object-center transition duration-300 group-hover:scale-105"
+                  style={{ objectPosition: '54% center' }}
                 />
                 <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded bg-white/90 px-6 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-900 shadow-sm">
                   {editorPicks[0].title}
@@ -212,13 +193,13 @@ const HomePage = () => {
               </Link>
               <Link
                 to={buildEditorLink(editorPicks[1])}
-                className="relative flex h-[500px] w-full max-w-[320px] overflow-hidden rounded-lg bg-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:max-w-[420px] lg:h-[500px] lg:w-[240px] lg:max-w-none"
+                className="group relative flex h-[500px] w-full max-w-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:max-w-[420px] lg:h-[500px] lg:w-[240px] lg:max-w-none"
                 aria-label={`Shop ${editorPicks[1].title}`}
               >
                 <img
                   src={editorPicks[1].image}
                   alt={editorPicks[1].title}
-                  className="h-full w-full object-contain object-center"
+                  className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-105"
                 />
                 <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded bg-white/90 px-6 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-900 shadow-sm">
                   {editorPicks[1].title}
@@ -227,13 +208,13 @@ const HomePage = () => {
               <div className="flex w-full max-w-[320px] flex-col gap-[16px] sm:max-w-[420px] lg:w-[240px] lg:max-w-none">
                 <Link
                   to={buildEditorLink(editorPicks[2])}
-                  className="relative flex h-[242px] w-full overflow-hidden rounded-lg bg-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md lg:h-[242px]"
+                  className="group relative flex h-[242px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md lg:h-[242px]"
                   aria-label={`Shop ${editorPicks[2].title}`}
                 >
                   <img
                     src={editorPicks[2].image}
                     alt={editorPicks[2].title}
-                    className="h-full w-full object-contain object-center"
+                    className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-105"
                   />
                   <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded bg-white/90 px-6 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-900 shadow-sm">
                     {editorPicks[2].title}
@@ -241,13 +222,13 @@ const HomePage = () => {
                 </Link>
                 <Link
                   to={buildEditorLink(editorPicks[3])}
-                  className="relative flex h-[242px] w-full overflow-hidden rounded-lg bg-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md lg:h-[242px]"
+                  className="group relative flex h-[242px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md lg:h-[242px]"
                   aria-label={`Shop ${editorPicks[3].title}`}
                 >
                   <img
                     src={editorPicks[3].image}
                     alt={editorPicks[3].title}
-                    className="h-full w-full object-contain object-center"
+                    className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-105"
                   />
                   <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded bg-white/90 px-6 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-900 shadow-sm">
                     {editorPicks[3].title}
@@ -260,66 +241,31 @@ const HomePage = () => {
       </div>
 
       <div className="mx-auto flex w-full flex-col">
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[24px] pb-[12px] pt-[16px] lg:h-[1652px] sm:pt-[32px]">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 py-2 sm:py-6">
         <div className="flex flex-col items-center gap-2 text-center">
           <p className="text-sm text-slate-500">Featured Products</p>
-          <h2 className="text-2xl font-semibold text-slate-900">
+          <h2 className="text-[28px] font-semibold leading-[38px] text-slate-900">
             BESTSELLER PRODUCTS
           </h2>
           <p className="text-xs text-slate-400">
             Problems trying to resolve the conflict between
           </p>
         </div>
-        {fetchState === 'FAILED' ? (
-          <div className="flex items-center rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-600">
-            Something went wrong while loading products.
-          </div>
-        ) : null}
-        {fetchState === 'FETCHING' ? (
-          <div className="flex w-full flex-wrap gap-[30px]">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <div
-                key={`featured-skeleton-${index}`}
-                className={`flex w-full sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)] ${
-                  index < 4 ? '' : index < 6 ? 'hidden sm:flex' : 'hidden lg:flex'
-                }`}
-              >
-                <div className="mx-auto flex w-full max-w-[332px] flex-col gap-3 rounded-lg border border-emerald-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:max-w-none lg:h-[442px]">
-                  <div className="h-[260px] w-full animate-pulse rounded bg-emerald-100 sm:h-[300px]" />
-                  <div className="flex w-full flex-col gap-2 px-4 pb-6 text-center">
-                    <div className="mx-auto h-4 w-3/4 animate-pulse rounded bg-emerald-100" />
-                    <div className="mx-auto h-3 w-1/2 animate-pulse rounded bg-emerald-100" />
-                    <div className="mx-auto flex items-center justify-center gap-2">
-                      <span className="h-3 w-10 animate-pulse rounded bg-emerald-100" />
-                      <span className="h-3 w-10 animate-pulse rounded bg-emerald-100" />
-                    </div>
-                    <div className="flex items-center justify-center gap-2 pt-2">
-                      <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-100" />
-                      <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-100" />
-                      <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-100" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex w-full flex-wrap gap-[30px]">
-            {featuredProducts.map((product) => (
-              <div
-                key={product.id}
-                className="flex w-full sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)]"
-              >
-                <ProductCard product={product} to={buildProductLink(product)} />
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="flex w-full flex-wrap gap-[30px]">
+          {featuredProducts.map((product) => (
+            <div
+              key={product.id}
+              className="flex w-full sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)]"
+            >
+              <ProductCard product={product} to={buildProductLink(product)} />
+            </div>
+          ))}
+        </div>
         </div>
       </div>
 
       <div className="flex w-full flex-col">
-        <div className="relative mx-auto flex h-[1230px] w-[414px] flex-col items-center rounded-[5px] border border-slate-200 bg-emerald-700 px-4 pb-[112px] pt-[112px] text-white sm:h-auto sm:w-full lg:h-[709px] lg:w-full lg:px-0">
+        <div className="relative mx-auto flex w-full flex-col items-center overflow-hidden rounded-2xl border border-slate-200 bg-emerald-700 px-4 py-12 text-white shadow-sm sm:w-full lg:px-0 lg:py-16">
           <button
             type="button"
             onClick={() =>
@@ -344,15 +290,15 @@ const HomePage = () => {
           </button>
           <div
             key={vitaSlides[vitaIndex].id}
-            className={`mx-auto mt-[48px] flex h-[1252px] w-[412px] flex-col items-center justify-between pb-0 pt-[80px] transition-opacity duration-500 sm:mt-0 sm:h-auto sm:w-full sm:max-w-[1036px] sm:flex-row sm:justify-between sm:pb-0 sm:pt-0 lg:h-[711px] lg:items-center ${
+            className={`mx-auto mt-6 flex w-full max-w-[1036px] flex-col items-center justify-between pb-0 pt-2 transition-opacity duration-500 sm:mt-0 sm:flex-row sm:justify-between sm:pt-0 lg:items-center ${
               vitaFading ? 'opacity-0' : 'opacity-100'
             }`}
           >
-            <div className="flex w-full flex-col items-center gap-5 pb-[48px] text-center sm:w-[55%] sm:items-start sm:pb-0 sm:text-left lg:pl-[30px] lg:h-[432px] lg:w-[509px]">
-              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/80 sm:text-sm">
+            <div className="flex w-full flex-col items-center gap-5 pb-10 text-center sm:w-[55%] sm:items-start sm:pb-0 sm:text-left lg:pl-[30px] lg:w-[509px]">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/80 sm:text-sm">
                 {vitaSlides[vitaIndex].season}
               </p>
-              <h2 className="text-[32px] font-bold leading-[44px] tracking-[0.2px] text-white sm:text-[48px] sm:leading-[64px] lg:h-[160px] lg:w-[509px] lg:text-[58px] lg:leading-[80px]">
+              <h2 className="text-[34px] font-bold leading-[44px] tracking-[0.2px] text-white sm:text-[50px] sm:leading-[64px] lg:h-[160px] lg:w-[509px] lg:text-[58px] lg:leading-[76px]">
                 {vitaSlides[vitaIndex].title}
               </h2>
               <p
@@ -419,7 +365,7 @@ const HomePage = () => {
       </div>
 
       <div className="mx-auto flex w-full max-w-[1440px] flex-col">
-        <div className="mx-auto flex h-[1230px] w-[414px] flex-col gap-6 rounded-[5px] border border-slate-200 bg-white px-4 py-2 sm:h-auto sm:w-full sm:flex-row sm:items-center sm:justify-between lg:h-[682px]">
+        <div className="mx-auto flex w-full flex-col gap-6 rounded-2xl border border-slate-200 bg-white px-4 py-6 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:py-10">
           <div className="flex w-full items-center justify-center sm:w-[50%]">
             <img
               src={coupleBanner}
@@ -431,7 +377,7 @@ const HomePage = () => {
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
               Summer 2020
             </p>
-            <h3 className="text-3xl font-semibold text-slate-900">
+            <h3 className="text-[34px] font-semibold leading-[42px] text-slate-900">
               Part of the Neural Universe
             </h3>
             <p className="text-sm text-slate-500">
@@ -458,12 +404,12 @@ const HomePage = () => {
       </div>
 
       <div className="mx-auto flex w-full flex-col gap-2">
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[80px] pb-[112px] pt-[112px] lg:h-[1044px]">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-12 py-12 lg:py-16">
           <div className="flex flex-col items-center gap-2 text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-500/90">
               Practice Advice
             </p>
-            <h3 className="text-2xl font-semibold tracking-[0.01em] text-slate-900">
+            <h3 className="text-[32px] font-semibold leading-[42px] tracking-[0.01em] text-slate-900">
               Featured Posts
             </h3>
             <p className="text-xs text-slate-400/90">
@@ -474,7 +420,7 @@ const HomePage = () => {
             {featuredPosts.map((post) => (
               <article
                 key={post.id}
-                className="flex w-full flex-col overflow-hidden rounded-lg border border-slate-100 bg-white shadow-sm transition-shadow hover:shadow-md sm:w-[calc(50%-15px)] lg:h-[540px] lg:w-[calc(33.333%-20px)]"
+                className="flex w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md sm:w-[calc(50%-15px)] lg:h-[540px] lg:w-[calc(33.333%-20px)]"
               >
                 <div className="relative flex w-full">
                   <img

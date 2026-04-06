@@ -19,7 +19,7 @@ import NotFound from '../pages/NotFound.js'
 
 const PageContent = () => {
   return (
-    <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-4 py-6 sm:px-6 lg:px-10">
+    <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
       <Switch>
         <Route exact path="/" component={HomePage} />
         <Route
@@ -35,7 +35,11 @@ const PageContent = () => {
             />
           )}
         />
-        <Route path="/shop" render={(props) => <ShopPage key="all" {...props} />} />
+        <Route
+          path="/shop/:gender"
+          render={(props) => <ShopPage key={props.match.params.gender || 'gender'} {...props} />}
+        />
+        <Route exact path="/shop" render={(props) => <ShopPage key="shop-all" {...props} />} />
         <Route path="/about" component={AboutPage} />
         <Route path="/blog" component={BlogPage} />
         <Route path="/contact" component={ContactPage} />

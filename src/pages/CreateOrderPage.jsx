@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link, useHistory } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import axiosClient from '../api/axiosClient'
-import { setCart } from '../store/actions/shoppingCartActions'
+import {
+  setAddress,
+  setAppliedCoupon,
+  setCart,
+  setCouponCode,
+  setPayment,
+} from '../store/actions/shoppingCartActions'
 
 const emptyAddress = {
   title: '',
@@ -107,6 +114,7 @@ const turkishCities = [
 
 const CreateOrderPage = () => {
   const dispatch = useDispatch()
+  const history = useHistory()
   const cartItems = useSelector((state) => state.shoppingCart?.cart ?? [])
   const appliedCoupon = useSelector(
     (state) => state.shoppingCart?.appliedCoupon ?? ''
@@ -139,12 +147,29 @@ const CreateOrderPage = () => {
   const freeShippingDiscount = orderSubtotal > 150 ? shipping : 0
   const couponRate = appliedCoupon === 'SAVE10' ? 0.1 : 0
   const couponDiscount = orderSubtotal * couponRate
-  const orderTotal = orderSubtotal - couponDiscount
   const orderGrandTotal = orderSubtotal + shipping - freeShippingDiscount - couponDiscount
+  const isValidCcv = /^\d{3,4}$/.test(ccv)
+  const canSubmitOrder =
+    selectedItems.length > 0 &&
+    Boolean(selectedAddressId) &&
+    Boolean(selectedCardId) &&
+    termsAccepted &&
+    isValidCcv &&
+    !isSubmitting
   const months = Array.from({ length: 12 }, (_, index) => String(index + 1))
   const years = Array.from({ length: 12 }, (_, index) =>
     String(new Date().getFullYear() + index)
   )
+  const idEquals = (left, right) => String(left) === String(right)
+  const asNumericIfPossible = (value) => {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : value
+  }
+  const normalizeCollection = (value) => {
+    if (Array.isArray(value)) return value
+    if (Array.isArray(value?.data)) return value.data
+    return []
+  }
 
   const maskCardNo = (cardNo) => {
     const digits = String(cardNo ?? '').replace(/\s+/g, '')
@@ -162,8 +187,10 @@ const CreateOrderPage = () => {
           axiosClient.get('/user/address'),
           axiosClient.get('/user/card'),
         ])
-        setAddresses(addressRes?.data ?? [])
-        setCards(cardRes?.data ?? [])
+        const nextAddresses = normalizeCollection(addressRes?.data)
+        const nextCards = normalizeCollection(cardRes?.data)
+        setAddresses(nextAddresses)
+        setCards(nextCards)
       } catch (error) {
         const message = error?.message || 'Failed to load address or card data.'
         setLoadError(message)
@@ -175,6 +202,18 @@ const CreateOrderPage = () => {
 
     loadData()
   }, [])
+
+  useEffect(() => {
+    const selectedAddress =
+      addresses.find((address) => idEquals(address.id, selectedAddressId)) ?? {}
+    dispatch(setAddress(selectedAddress))
+  }, [addresses, selectedAddressId, dispatch])
+
+  useEffect(() => {
+    const selectedCard =
+      cards.find((card) => idEquals(card.id, selectedCardId)) ?? {}
+    dispatch(setPayment(selectedCard))
+  }, [cards, selectedCardId, dispatch])
 
   const getAddressTypeFromTitle = (title) => {
     if (title?.toLowerCase().startsWith('shipping -')) return 'shipping'
@@ -272,7 +311,8 @@ const CreateOrderPage = () => {
   const handleAddressDelete = async (addressId) => {
     try {
       await axiosClient.delete(`/user/address/${addressId}`)
-      setAddresses((prev) => prev.filter((item) => item.id !== addressId))
+      setAddresses((prev) => prev.filter((item) => !idEquals(item.id, addressId)))
+      setSelectedAddressId((prev) => (idEquals(prev, addressId) ? null : prev))
     } catch (error) {
       toast.error(error?.message || 'Failed to delete address.')
     }
@@ -318,7 +358,8 @@ const CreateOrderPage = () => {
   const handleCardDelete = async (cardId) => {
     try {
       await axiosClient.delete(`/user/card/${cardId}`)
-      setCards((prev) => prev.filter((item) => item.id !== cardId))
+      setCards((prev) => prev.filter((item) => !idEquals(item.id, cardId)))
+      setSelectedCardId((prev) => (idEquals(prev, cardId) ? null : prev))
     } catch (error) {
       toast.error(error?.message || 'Failed to delete card.')
     }
@@ -339,21 +380,21 @@ const CreateOrderPage = () => {
       toast.error('Please accept the terms and conditions.')
       return
     }
-    const selectedCard = cards.find((card) => card.id === selectedCardId)
+    const selectedCard = cards.find((card) => idEquals(card.id, selectedCardId))
     if (!selectedCard) {
       toast.error('Please select a card.')
       return
     }
 
     const payload = {
-      address_id: selectedAddressId,
+      address_id: asNumericIfPossible(selectedAddressId),
       order_date: new Date().toISOString(),
-      card_no: Number(selectedCard.card_no),
+      card_no: String(selectedCard.card_no),
       card_name: selectedCard.name_on_card,
       card_expire_month: Number(selectedCard.expire_month),
       card_expire_year: Number(selectedCard.expire_year),
       card_ccv: Number(ccv),
-      price: Math.round(orderTotal),
+      price: Math.round(Math.max(0, orderGrandTotal)),
       products: selectedItems.map((item) => ({
         product_id: Number(item.product?.id),
         count: item.count,
@@ -363,14 +404,24 @@ const CreateOrderPage = () => {
 
     try {
       setIsSubmitting(true)
-      await axiosClient.post('/order', payload)
-      toast.success('Congrats! Your order has been created.')
+      const response = await axiosClient.post('/order', payload)
+      const createdOrderId = response?.data?.id
+      toast.success(
+        createdOrderId
+          ? `Congrats! Your order #${createdOrderId} has been created.`
+          : 'Congrats! Your order has been created.'
+      )
       dispatch(setCart([]))
+      dispatch(setCouponCode(''))
+      dispatch(setAppliedCoupon(''))
+      dispatch(setAddress({}))
+      dispatch(setPayment({}))
       setSelectedAddressId(null)
       setSelectedCardId(null)
       setCcv('')
       setTermsAccepted(false)
       setStep(1)
+      history.push('/orders', { createdOrderId })
     } catch (error) {
       toast.error(error?.message || 'Failed to create order.')
     } finally {
@@ -449,7 +500,7 @@ const CreateOrderPage = () => {
                           }
                         }}
                         className={`flex w-full flex-col gap-2 rounded border p-3 text-left sm:w-[calc(50%-8px)] ${
-                          selectedAddressId === address.id
+                          idEquals(selectedAddressId, address.id)
                             ? 'border-amber-500'
                             : 'border-slate-200'
                         }`}
@@ -515,7 +566,7 @@ const CreateOrderPage = () => {
                           }
                         }}
                         className={`flex w-full flex-col gap-2 rounded border p-3 text-left sm:w-[calc(50%-8px)] ${
-                          selectedAddressId === address.id
+                          idEquals(selectedAddressId, address.id)
                             ? 'border-amber-500'
                             : 'border-slate-200'
                         }`}
@@ -881,7 +932,7 @@ const CreateOrderPage = () => {
                         }
                       }}
                       className={`flex w-full flex-col gap-2 rounded border p-3 text-left sm:w-[calc(50%-8px)] ${
-                        selectedCardId === card.id
+                        idEquals(selectedCardId, card.id)
                           ? 'border-amber-500'
                           : 'border-slate-200'
                       }`}
@@ -947,13 +998,13 @@ const CreateOrderPage = () => {
                   className="mt-0.5 h-4 w-4"
                 />
                 <span>
-                  <a href="/pages" className="font-semibold text-slate-700">
+                  <Link to="/pages" className="font-semibold text-slate-700">
                     On Bilgilendirme Kosullari
-                  </a>{' '}
+                  </Link>{' '}
                   ve{' '}
-                  <a href="/pages" className="font-semibold text-slate-700">
+                  <Link to="/pages" className="font-semibold text-slate-700">
                     Mesafeli Satis Sozlesmesi
-                  </a>{' '}
+                  </Link>{' '}
                   metnini okudum, onayliyorum.
                 </span>
               </label>
@@ -984,7 +1035,7 @@ const CreateOrderPage = () => {
               <button
                 type="button"
                 onClick={handleCreateOrder}
-                disabled={isSubmitting}
+                disabled={!canSubmitOrder}
                 className="rounded bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white disabled:opacity-70"
               >
                 {isSubmitting ? 'Siparis Olusturuluyor...' : 'Siparis Olustur'}

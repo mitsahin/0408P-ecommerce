@@ -51,25 +51,25 @@ const CartPage = () => {
   const couponRate = appliedCoupon === 'SAVE10' ? 0.1 : 0
   const couponDiscount = itemsTotal * couponRate
   const totalDiscount = freeShippingDiscount + couponDiscount
-  const grandTotal = itemsTotal + shipping - totalDiscount
+  const grandTotal = Math.max(0, itemsTotal + shipping - totalDiscount)
 
   const canCheckout = selectedItems.length > 0
 
   return (
     <section className="flex w-full flex-col gap-6">
-      <h1 className="text-2xl font-semibold text-slate-900">
+      <h1 className="text-2xl font-semibold text-slate-900 sm:text-[28px]">
         Sepetim ({cartItems.length} Urun)
       </h1>
       <div className="flex w-full flex-col gap-6 lg:flex-row">
         <div className="flex w-full flex-col gap-4 lg:w-[70%]">
-          <div className="flex w-full flex-col gap-2 rounded border border-slate-200 bg-white px-4 py-3 text-xs text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-600 shadow-sm sm:flex-row sm:items-center sm:justify-between">
             <span>Urun</span>
             <span className="hidden sm:block">Adet</span>
             <span className="hidden sm:block">Fiyat</span>
             <span className="hidden sm:block">Sil</span>
           </div>
           {cartItems.length === 0 ? (
-            <div className="rounded border border-slate-200 bg-white p-6 text-sm text-slate-500">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
               Your cart is empty.
             </div>
           ) : (
@@ -83,7 +83,7 @@ const CartPage = () => {
               return (
                 <div
                   key={item.product?.id}
-                  className="flex w-full flex-col gap-3 rounded border border-slate-200 bg-white p-4"
+                  className="flex w-full flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md sm:p-5"
                 >
                   <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
                     <button
@@ -107,7 +107,7 @@ const CartPage = () => {
                       Kurumsal
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 rounded bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                  <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
                     <span className="font-semibold">Kargo Bedava!</span>
                   </div>
                   <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center">
@@ -127,19 +127,19 @@ const CartPage = () => {
                         Beden: {item.product?.size ?? 'Tek Ebat'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 rounded-full border border-slate-100 px-2 py-1">
                       <button
                         type="button"
                         onClick={() => updateCount(item.product?.id, -1)}
-                        className="flex h-8 w-8 items-center justify-center rounded border border-slate-200"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-sm transition hover:border-slate-300"
                       >
                         -
                       </button>
-                      <span className="w-8 text-center text-sm">{item.count}</span>
+                      <span className="w-8 text-center text-sm font-semibold">{item.count}</span>
                       <button
                         type="button"
                         onClick={() => updateCount(item.product?.id, 1)}
-                        className="flex h-8 w-8 items-center justify-center rounded border border-slate-200"
+                        className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-sm transition hover:border-slate-300"
                       >
                         +
                       </button>
@@ -150,7 +150,7 @@ const CartPage = () => {
                     <button
                       type="button"
                       onClick={() => removeItem(item.product?.id)}
-                      className="text-rose-500"
+                      className="rounded-full border border-rose-100 px-3 py-1 text-xs font-semibold text-rose-500 transition hover:border-rose-200 hover:bg-rose-50"
                     >
                       Sil
                     </button>
@@ -160,7 +160,7 @@ const CartPage = () => {
             })
           )}
           {cartItems.length > 0 ? (
-            <div className="flex w-full items-center justify-between rounded border border-slate-200 bg-white px-4 py-3 text-sm">
+            <div className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">
               <span className="font-semibold text-slate-700">
                 Toplam ({selectedItems.length} Urun)
               </span>
@@ -170,16 +170,16 @@ const CartPage = () => {
             </div>
           ) : null}
         </div>
-        <aside className="flex w-full flex-col gap-4 lg:w-[30%]">
+        <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-6 lg:w-[30%] lg:self-start">
           <button
             type="button"
             disabled={!canCheckout}
             onClick={() => history.push('/order')}
-            className="rounded bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white disabled:opacity-70"
+            className="rounded-full bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
           >
             Sepeti Onayla
           </button>
-          <div className="flex w-full flex-col gap-3 rounded border border-slate-200 bg-white p-4">
+          <div className="flex w-full flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="text-lg font-semibold text-slate-900">Siparis Ozeti</h2>
             <div className="flex items-center justify-between text-sm text-slate-600">
               <span>Urunun Toplami</span>
@@ -201,21 +201,21 @@ const CartPage = () => {
               <span>{grandTotal.toFixed(2)} TL</span>
             </div>
           </div>
-          <div className="flex w-full flex-col gap-2 rounded border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-600">
+          <div className="flex w-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-600 shadow-sm">
             <span className="text-[11px] text-slate-500">Indirim Kodu Gir</span>
             <div className="flex items-center gap-2">
               <input
                 value={couponCode}
                 onChange={(event) => dispatch(setCouponCode(event.target.value))}
                 placeholder="Kod"
-                className="flex-1 rounded border border-slate-200 px-3 py-2 text-xs text-slate-600"
+                className="flex-1 rounded-full border border-slate-200 px-3 py-2 text-xs text-slate-600 outline-none transition focus:border-slate-400"
               />
               <button
                 type="button"
                 onClick={() =>
                   dispatch(setAppliedCoupon(couponCode.trim().toUpperCase()))
                 }
-                className="rounded border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600"
+                className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-800"
               >
                 Uygula
               </button>
@@ -237,7 +237,7 @@ const CartPage = () => {
             type="button"
             disabled={!canCheckout}
             onClick={() => history.push('/order')}
-            className="rounded bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white disabled:opacity-70"
+            className="rounded-full bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
           >
             Sepeti Onayla
           </button>

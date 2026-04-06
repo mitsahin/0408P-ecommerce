@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
@@ -17,12 +17,12 @@ const SignupPage = () => {
   const dispatch = useDispatch()
   const roles = useSelector((state) => state.client?.roles ?? [])
   const [submitError, setSubmitError] = useState('')
+  const [selectedRoleId, setSelectedRoleId] = useState('')
 
   const {
     register,
     handleSubmit,
     getValues,
-    watch,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm({
@@ -31,10 +31,8 @@ const SignupPage = () => {
     },
   })
 
-  const selectedRoleId = watch('role_id')
-  const selectedRole = useMemo(
-    () => roles.find((role) => String(role.id) === String(selectedRoleId)),
-    [roles, selectedRoleId]
+  const selectedRole = roles.find(
+    (role) => String(role.id) === String(selectedRoleId)
   )
   const isStoreRole =
     selectedRole?.code === 'store' ||
@@ -48,7 +46,9 @@ const SignupPage = () => {
     if (roles.length === 0) return
     const customer = roles.find((role) => role.code === 'customer')
     if (customer) {
-      setValue('role_id', String(customer.id), { shouldValidate: false })
+      const roleValue = String(customer.id)
+      setValue('role_id', roleValue, { shouldValidate: false })
+      setSelectedRoleId(roleValue)
     }
   }, [roles, setValue])
 
@@ -96,7 +96,7 @@ const SignupPage = () => {
       </div>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex w-full flex-col gap-6 rounded border border-slate-200 bg-white p-4 sm:p-6"
+        className="flex w-full flex-col gap-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6"
       >
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold text-slate-900">Create account</h1>
@@ -109,7 +109,7 @@ const SignupPage = () => {
           <div className="flex w-full flex-col gap-2">
             <label className="text-xs text-slate-500">Name</label>
             <input
-              className="rounded border border-slate-200 px-3 py-2 text-sm text-slate-700"
+              className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
               placeholder="Your name"
               {...register('name', {
                 required: 'Name is required',
@@ -126,7 +126,7 @@ const SignupPage = () => {
           <div className="flex w-full flex-col gap-2">
             <label className="text-xs text-slate-500">Email</label>
             <input
-              className="rounded border border-slate-200 px-3 py-2 text-sm text-slate-700"
+              className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
               placeholder="you@example.com"
               {...register('email', {
                 required: 'Email is required',
@@ -147,7 +147,7 @@ const SignupPage = () => {
             <label className="text-xs text-slate-500">Password</label>
             <input
               type="password"
-              className="rounded border border-slate-200 px-3 py-2 text-sm text-slate-700"
+              className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
               placeholder="********"
               {...register('password', {
                 required: 'Password is required',
@@ -168,7 +168,7 @@ const SignupPage = () => {
             <label className="text-xs text-slate-500">Confirm password</label>
             <input
               type="password"
-              className="rounded border border-slate-200 px-3 py-2 text-sm text-slate-700"
+              className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
               placeholder="********"
               {...register('password_confirm', {
                 required: 'Please confirm your password',
@@ -187,8 +187,11 @@ const SignupPage = () => {
         <div className="flex w-full flex-col gap-2">
           <label className="text-xs text-slate-500">Role</label>
           <select
-            className="rounded border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
-            {...register('role_id', { required: 'Role is required' })}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
+            {...register('role_id', {
+              required: 'Role is required',
+              onChange: (event) => setSelectedRoleId(event.target.value),
+            })}
           >
             <option value="" disabled>
               Select role
@@ -205,11 +208,11 @@ const SignupPage = () => {
         </div>
 
         {isStoreRole ? (
-          <div className="flex w-full flex-col gap-4 rounded border border-slate-200 bg-slate-50 p-4">
+          <div className="flex w-full flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex w-full flex-col gap-2">
               <label className="text-xs text-slate-500">Store name</label>
               <input
-                className="rounded border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
                 placeholder="Store name"
                 {...register('store_name', {
                   required: 'Store name is required',
@@ -229,7 +232,7 @@ const SignupPage = () => {
               <div className="flex w-full flex-col gap-2">
                 <label className="text-xs text-slate-500">Store phone</label>
                 <input
-                  className="rounded border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
                   placeholder="05xxxxxxxxx"
                   {...register('store_phone', {
                     required: 'Store phone is required',
@@ -248,7 +251,7 @@ const SignupPage = () => {
               <div className="flex w-full flex-col gap-2">
                 <label className="text-xs text-slate-500">Tax number</label>
                 <input
-                  className="rounded border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
                   placeholder="T1234V123456"
                   {...register('store_tax_no', {
                     required: 'Tax number is required',
@@ -268,7 +271,7 @@ const SignupPage = () => {
             <div className="flex w-full flex-col gap-2">
               <label className="text-xs text-slate-500">Bank account (IBAN)</label>
               <input
-                className="rounded border border-slate-200 px-3 py-2 text-sm text-slate-700"
+                className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
                 placeholder="TRXXXXXXXXXXXXXXXXXXXXXXXX"
                 {...register('store_bank_account', {
                   required: 'Bank account is required',
@@ -296,7 +299,7 @@ const SignupPage = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex w-full items-center justify-center gap-2 rounded bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white disabled:cursor-not-allowed disabled:opacity-70"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? (
             <span className="flex h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
