@@ -63,26 +63,26 @@ const AboutPage = () => {
         <span className="text-slate-400">About</span>
       </div>
       <div className="flex w-full flex-col gap-12">
-        <div className="flex w-full flex-col items-center gap-8 rounded border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-10">
-          <div className="flex w-full flex-col gap-4 text-center sm:w-[55%] sm:text-left">
+        <div className="flex w-full flex-col items-center gap-8 rounded border border-slate-200 bg-white p-4 text-center sm:gap-10">
+          <div className="flex w-full flex-col items-center gap-4">
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
               ABOUT COMPANY
             </span>
             <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl lg:text-5xl">
               ABOUT US
             </h1>
-            <p className="text-sm text-slate-500 sm:max-w-[420px]">
+            <p className="max-w-[560px] text-sm text-slate-500">
               We know how large objects will act, but things on a small scale just
               do not act that way.
             </p>
             <Link
               to="/contact"
-              className="mx-auto flex w-fit items-center rounded bg-sky-500 px-6 py-3 text-xs font-semibold text-white sm:mx-0"
+              className="mx-auto flex w-fit items-center rounded bg-sky-500 px-6 py-3 text-xs font-semibold text-white"
             >
               Get Quote Now
             </Link>
           </div>
-          <div className="relative flex w-full items-center justify-center sm:w-[40%]">
+          <div className="relative flex w-full items-center justify-center">
             <div className="absolute -right-6 top-6 hidden h-[72px] w-[72px] rounded-full bg-rose-100 sm:block" />
             <div className="absolute -left-4 bottom-6 hidden h-[24px] w-[24px] rounded-full bg-violet-300 sm:block" />
             <div className="absolute right-12 top-1/2 hidden h-[12px] w-[12px] rounded-full bg-violet-400 sm:block" />
@@ -94,8 +94,8 @@ const AboutPage = () => {
           </div>
         </div>
 
-        <div className="flex w-full flex-col gap-8 rounded border border-slate-200 bg-white p-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex w-full flex-col gap-3 sm:w-[45%]">
+        <div className="flex w-full flex-col items-center gap-6 rounded border border-slate-200 bg-white p-6 text-center">
+          <div className="flex w-full max-w-[760px] flex-col gap-3">
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-500">
               Problems trying
             </span>
@@ -103,7 +103,7 @@ const AboutPage = () => {
               Met minim Mollie non desert Alamo est sit cliquey dolor do met sent.
             </h2>
           </div>
-          <p className="text-sm text-slate-500 sm:w-[50%]">
+          <p className="max-w-[760px] text-sm text-slate-500">
             Problems trying to resolve the conflict between the two major realms
             of Classical physics: Newtonian mechanics.
           </p>
@@ -128,9 +128,9 @@ const AboutPage = () => {
           </div>
         </div>
 
-        <div className="flex w-full items-center justify-center rounded border border-slate-200 bg-white p-4 lg:h-[764px] lg:w-[1440px] lg:pt-[112px] lg:pl-[31px]">
+        <div className="mx-auto flex w-full items-center justify-center rounded border border-slate-200 bg-white p-4 lg:py-12">
           <div
-            className="relative flex w-full items-center justify-center overflow-hidden rounded bg-cover bg-center min-h-[220px] sm:min-h-[320px] lg:h-[540px] lg:w-[989px] lg:rounded-[20px]"
+            className="relative flex w-full max-w-[989px] items-center justify-center overflow-hidden rounded bg-cover bg-center min-h-[220px] sm:min-h-[320px] lg:h-[540px] lg:rounded-[20px]"
             style={{ backgroundImage: `url(${aboutVideo})` }}
             role="img"
             aria-label="Company video"
@@ -261,8 +261,8 @@ const AboutPage = () => {
           </div>
         </div>
 
-        <div className="flex w-full flex-col overflow-hidden bg-sky-500 text-white sm:flex-row sm:items-stretch lg:h-[636px] lg:w-[1440px]">
-          <div className="flex w-full flex-col gap-3 px-6 py-10 sm:w-[55%] sm:px-12 sm:py-16 lg:pl-[120px] lg:pr-[80px] lg:py-20">
+        <div className="mx-auto flex w-full flex-col overflow-hidden bg-sky-500 text-white sm:flex-row sm:items-stretch lg:h-[636px]">
+          <div className="flex w-full flex-col items-center gap-3 px-6 py-10 text-center sm:w-[55%] sm:px-12 sm:py-16 lg:px-20 lg:py-20">
             <span className="text-xs font-semibold uppercase tracking-[0.3em] text-white/80">
               WORK WITH US
             </span>
