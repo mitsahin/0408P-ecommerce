@@ -156,7 +156,7 @@ const HomeSlider = () => {
                   to="/shop"
                   tabIndex={activeIndex === index ? 0 : -1}
                   aria-hidden={activeIndex === index ? 'false' : 'true'}
-                  className="flex h-[62px] w-[221px] items-center justify-center gap-[10px] whitespace-nowrap rounded-[5px] bg-[#2DC071] px-[40px] py-[15px] text-center text-[24px] font-bold leading-[32px] tracking-[0.1px] text-white shadow-sm transition hover:bg-[#26aa60]"
+                  className="flex min-h-[56px] w-auto min-w-[221px] max-w-[90vw] items-center justify-center gap-[10px] whitespace-nowrap rounded-[5px] bg-[#2DC071] px-6 py-3 text-center text-[18px] font-bold leading-[26px] tracking-[0.1px] text-white shadow-sm transition hover:bg-[#26aa60] sm:min-h-[62px] sm:px-[40px] sm:py-[15px] sm:text-[24px] sm:leading-[32px]"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   SHOP NOW
