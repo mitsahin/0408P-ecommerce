@@ -5,8 +5,8 @@ import aboutVideo from '../assets/vmedia bg-cover.png'
 import aboutHeroBg from '../assets/background (1).png'
 import ctaImage from '../assets/abtajt.png'
 import teamOne from '../assets/team-1-user-1.jpg'
-import teamTwo from '../assets/team-1-user-2.jpg'
 import teamThree from '../assets/team-1-user-3-1.jpg'
+import umitSahinImage from '../assets/umit-sahin.png'
 import brandOne from '../assets/fa-brands-1.png'
 import brandTwo from '../assets/fa-brands-2.png'
 import brandThree from '../assets/fa-brands-3.png'
@@ -19,18 +19,33 @@ const teamMembers = [
     name: 'Courtney Henry',
     role: 'Designer',
     image: teamOne,
+    socials: {
+      twitter: 'https://x.com',
+      facebook: 'https://facebook.com',
+      instagram: 'https://instagram.com',
+    },
   },
   {
     id: 'team-2',
-    name: 'Cody Fisher',
-    role: 'Developer',
-    image: teamTwo,
+    name: 'Ümit Şahin',
+    role: 'Full Stack Developer',
+    image: umitSahinImage,
+    socials: {
+      twitter: 'https://x.com',
+      facebook: 'https://facebook.com',
+      instagram: 'https://instagram.com',
+    },
   },
   {
     id: 'team-3',
     name: 'Brooklyn Simmons',
     role: 'Product Owner',
     image: teamThree,
+    socials: {
+      twitter: 'https://x.com',
+      facebook: 'https://facebook.com',
+      instagram: 'https://instagram.com',
+    },
   },
 ]
 
@@ -180,11 +195,13 @@ const AboutPage = () => {
                 key={member.id}
                 className="flex w-full max-w-[332px] flex-col items-center gap-4 rounded border border-slate-200 bg-white px-4 py-6 sm:w-[calc(33.333%-20px)]"
               >
-                <img
-                  src={member.image}
-                  alt={member.name}
-                  className="h-[120px] w-[120px] rounded-full object-contain object-center"
-                />
+                <Link to="/team" aria-label={`${member.name} profile`}>
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="h-[120px] w-[120px] rounded-full object-cover object-center transition hover:opacity-90"
+                  />
+                </Link>
                 <div className="flex flex-col items-center gap-1 text-center">
                   <h3 className="text-sm font-semibold text-slate-900">
                     {member.name}
@@ -192,9 +209,30 @@ const AboutPage = () => {
                   <p className="text-xs text-slate-500">{member.role}</p>
                 </div>
                 <div className="flex items-center gap-3 text-slate-400">
-                  <Twitter className="h-4 w-4" />
-                  <Facebook className="h-4 w-4" />
-                  <Instagram className="h-4 w-4" />
+                  <a
+                    href={member.socials.twitter}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`${member.name} Twitter`}
+                  >
+                    <Twitter className="h-4 w-4 transition hover:text-slate-700" />
+                  </a>
+                  <a
+                    href={member.socials.facebook}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`${member.name} Facebook`}
+                  >
+                    <Facebook className="h-4 w-4 transition hover:text-slate-700" />
+                  </a>
+                  <a
+                    href={member.socials.instagram}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`${member.name} Instagram`}
+                  >
+                    <Instagram className="h-4 w-4 transition hover:text-slate-700" />
+                  </a>
                 </div>
               </article>
             ))}

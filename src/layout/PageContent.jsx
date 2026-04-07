@@ -3,6 +3,7 @@ import HomePage from '../pages/HomePage.js'
 import ShopPage from '../pages/ShopPage.js'
 import AboutPage from '../pages/AboutPage.js'
 import BlogPage from '../pages/BlogPage.js'
+import BlogDetailPage from '../pages/BlogDetailPage.js'
 import ContactPage from '../pages/ContactPage.js'
 import PagesPage from '../pages/PagesPage.js'
 import LoginPage from '../pages/LoginPage.js'
@@ -41,7 +42,8 @@ const PageContent = () => {
         />
         <Route exact path="/shop" render={(props) => <ShopPage key="shop-all" {...props} />} />
         <Route path="/about" component={AboutPage} />
-        <Route path="/blog" component={BlogPage} />
+        <Route path="/blog/:slug" component={BlogDetailPage} />
+        <Route exact path="/blog" component={BlogPage} />
         <Route path="/contact" component={ContactPage} />
         <Route path="/pages" component={PagesPage} />
         <Route path="/login" component={LoginPage} />

@@ -5,6 +5,16 @@ import contactHero from '../assets/shop-hero-1-product-slide-1.jpg'
 const ContactPage = () => {
   const handleSubmit = (event) => {
     event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    const fullName = String(formData.get('fullName') ?? '').trim()
+    const email = String(formData.get('email') ?? '').trim()
+    const message = String(formData.get('message') ?? '').trim()
+
+    if (!fullName || !email || !message) {
+      toast.error('Please fill all fields before sending.')
+      return
+    }
+
     toast.success('Message sent. We will get back to you soon!')
     event.currentTarget.reset()
   }
@@ -75,15 +85,22 @@ const ContactPage = () => {
         <h2 className="text-lg font-semibold text-slate-900">Quick Message</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <input
+            name="fullName"
+            required
             className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
             placeholder="Full name"
           />
           <input
+            name="email"
+            required
+            type="email"
             className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
             placeholder="Email address"
           />
         </div>
         <textarea
+          name="message"
+          required
           className="min-h-[110px] rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
           placeholder="Tell us more"
         />
