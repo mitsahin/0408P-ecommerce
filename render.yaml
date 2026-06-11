@@ -3,7 +3,7 @@ services:
     name: 0408p-ecommerce-api
     runtime: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm install && npm install --prefix backend
     startCommand: npm run server
     healthCheckPath: /health
     envVars:
