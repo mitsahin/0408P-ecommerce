@@ -1,0 +1,54 @@
+name: Render Blueprint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - render.yaml
+      - backend/**
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Render CLI
+        run: |
+          curl -L https://github.com/render-oss/cli/releases/download/v2.20.0/cli_2.20.0_linux_amd64.zip -o render.zip
+          unzip render.zip
+          sudo mv cli_v2.20.0 /usr/local/bin/render
+
+      - name: Validate render.yaml
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          if [ -z "$RENDER_API_KEY" ]; then
+            echo "RENDER_API_KEY secret yok — YAML sözdizimi kontrol ediliyor."
+            node -e "const fs=require('fs'); const y=fs.readFileSync('render.yaml','utf8'); if(!y.includes('0408p-ecommerce-api')) process.exit(1); console.log('render.yaml OK')"
+            exit 0
+          fi
+          render blueprints validate render.yaml -o text --confirm
+
+  deploy:
+    needs: validate
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Render CLI
+        run: |
+          curl -L https://github.com/render-oss/cli/releases/download/v2.20.0/cli_2.20.0_linux_amd64.zip -o render.zip
+          unzip render.zip
+          sudo mv cli_v2.20.0 /usr/local/bin/render
+
+      - name: Trigger Render deploy
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+        run: |
+          if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID" ]; then
+            echo "RENDER_API_KEY ve RENDER_SERVICE_ID secret'ları gerekli."
+            exit 1
+          fi
+          render deploys create "$RENDER_SERVICE_ID" --output json --confirm --wait

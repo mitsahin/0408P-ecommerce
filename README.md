@@ -1,53 +1,68 @@
 # 0408P Ecommerce
 
-React + Vite storefront scaffold with Redux, React Router v5, Tailwind v4, Axios, Toastify, and Lucide.
+React + Vite storefront with Express + PostgreSQL backend, Redux, React Router v5, Tailwind v4.
 
-## Getting started
+## Canlı adresler
 
-1. Install dependencies
+| Servis | URL | Durum |
+|--------|-----|-------|
+| Frontend (Vercel) | https://0408p-ecommerce.vercel.app | Canlı |
+| Backend (Render) | https://0408p-ecommerce-api.onrender.com | Blueprint ile kurulacak |
+| Fallback API | https://workintech-fe-ecommerce.onrender.com | Canlı (587 ürün) |
 
-```bash
-npm install
-```
+**Demo giriş:** `customer@commerce.com` / `123456`
 
-1. Add environment variables
-
-```bash
-cp .env.example .env
-```
-
-1. Run the dev server
+## Yerel kurulum
 
 ```bash
-npm run dev
+npm run setup          # frontend + backend bağımlılıkları
+cp .env.example .env   # DATABASE_URL ve JWT ayarları
+npm run db:init        # şema + seed (587 ürün)
+npm start              # backend :3000 + frontend :5173
 ```
 
-## Environment variables
+## Deploy
 
-`VITE_API_BASE_URL` sets the API base URL used by `src/api/axiosClient.js`.
+### Vercel (frontend) — otomatik
 
-## Postman notes
+GitHub `main` branch'e push → Vercel otomatik deploy eder.
 
-`GET /products` response shape:
+Production API adresi `.env.production` içinde tanımlıdır. Kendi Render API'niz hazır olunca:
 
-```json
-{
-  "total": 185,
-  "products": [
-    { "id": 1 },
-    { "id": 2 }
-  ]
-}
+```env
+VITE_API_BASE_URL=https://0408p-ecommerce-api.onrender.com
 ```
 
-Sample product queries:
+### Render (backend + PostgreSQL) — tek seferlik kurulum
 
-- `/products?category=2`
-- `/products?category=2&filter=siyah`
-- `/products?category=2&filter=siyah&sort=price:desc`
+1. [Render Blueprint deploy](https://render.com/deploy?repo=https://github.com/mitsahin/0408P-ecommerce) linkine gidin
+2. GitHub ile giriş yapın → **Apply** / **Deploy Blueprint**
+3. 5–10 dk bekleyin (DB oluşturma + 587 ürün seed)
+4. `/health` endpoint'ini kontrol edin
+5. `.env.production` URL'sini kendi API'nize çevirip push edin
 
-## Folder layout
+`render.yaml` otomatik olarak şunları kurar:
+- Node.js web servisi (`0408p-ecommerce-api`)
+- PostgreSQL veritabanı (`ecommerce-db`)
+- `JWT_SECRET`, `DATABASE_URL` ortam değişkenleri
 
-- `src/api` Axios client and API helpers
-- `src/pages` route-level views
-- `src/store` Redux store, reducers, and actions
+Deploy durumu kontrolü:
+
+```bash
+npm run deploy:check
+```
+
+## API uç noktaları
+
+- `GET /health` — sağlık kontrolü
+- `POST /login`, `POST /signup`, `GET /verify`
+- `GET /categories`, `GET /products`
+- `GET|POST /user/address`, `GET|POST /user/card`
+- `GET|POST /order`
+
+## Klasör yapısı
+
+- `src/` — React frontend
+- `backend/` — Express API, routes, SQL şeması
+- `render.yaml` — Render Blueprint tanımı
+- `vercel.json` — SPA routing
