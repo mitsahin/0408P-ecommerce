@@ -3,9 +3,11 @@ services:
     name: 0408p-ecommerce-api
     runtime: node
     plan: free
+    region: frankfurt
     buildCommand: npm install && npm install --prefix backend
     startCommand: npm run server
     healthCheckPath: /health
+    autoDeployTrigger: commit
     envVars:
       - key: NODE_VERSION
         value: "20"

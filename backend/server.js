@@ -58,25 +58,23 @@ app.post('/chat', async (req, res) => {
   }
 })
 
-async function startServer() {
+async function initializeDatabase() {
   try {
     await ensureDb()
     await setupDatabase({ seedCatalog: true })
+    const db = await testConnection()
+    const mode = getDbMode()
+    console.log(`Veritabanı OK (${mode}) — ${db.connected_at}`)
+    console.log('Demo giriş: customer@commerce.com / 123456')
   } catch (error) {
     console.error('Veritabanı kurulumu başarısız:', error.message)
-    process.exit(1)
   }
+}
 
-  app.listen(PORT, async () => {
+function startServer() {
+  app.listen(PORT, () => {
     console.log(`Server çalışıyor: http://localhost:${PORT}`)
-    try {
-      const db = await testConnection()
-      const mode = getDbMode()
-      console.log(`Veritabanı OK (${mode}) — ${db.connected_at}`)
-      console.log('Demo giriş: customer@commerce.com / 123456')
-    } catch (error) {
-      console.warn('Veritabanı bağlantı uyarısı:', error.message)
-    }
+    initializeDatabase()
   })
 }
 

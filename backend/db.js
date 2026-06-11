@@ -18,10 +18,14 @@ let initPromise = null
 async function createClient() {
   if (process.env.DATABASE_URL) {
     const pg = await import('pg')
-    pool = new pg.default.Pool({
+    const poolConfig = {
       connectionString: process.env.DATABASE_URL,
       options: '-c client_encoding=UTF8',
-    })
+    }
+    if (/render\.com|sslmode=require/i.test(process.env.DATABASE_URL)) {
+      poolConfig.ssl = { rejectUnauthorized: false }
+    }
+    pool = new pg.default.Pool(poolConfig)
     pool.on('error', (err) => {
       console.error('PostgreSQL pool hatası:', err.message)
     })
