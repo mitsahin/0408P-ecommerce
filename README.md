@@ -7,7 +7,7 @@ React + Vite storefront with Express + PostgreSQL backend, Redux, React Router v
 | Servis | URL | Durum |
 |--------|-----|-------|
 | Frontend (Vercel) | https://0408p-ecommerce.vercel.app | Canlı |
-| Backend (Render) | https://0408p-ecommerce-api.onrender.com | Blueprint ile kurulacak |
+| Backend (Render) | https://zero408p-ecommerce-api.onrender.com | Canlı |
 | Fallback API | https://workintech-fe-ecommerce.onrender.com | Canlı (587 ürün) |
 
 **Demo giriş:** `customer@commerce.com` / `123456`
@@ -30,7 +30,7 @@ GitHub `main` branch'e push → Vercel otomatik deploy eder.
 Production API adresi `.env.production` içinde tanımlıdır. Kendi Render API'niz hazır olunca:
 
 ```env
-VITE_API_BASE_URL=https://0408p-ecommerce-api.onrender.com
+VITE_API_BASE_URL=https://zero408p-ecommerce-api.onrender.com
 ```
 
 ### Render (backend + PostgreSQL) — tek seferlik kurulum

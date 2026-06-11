@@ -1,5 +1,5 @@
 const FRONTEND = 'https://0408p-ecommerce.vercel.app'
-const OWN_API = 'https://0408p-ecommerce-api.onrender.com'
+const OWN_API = 'https://zero408p-ecommerce-api.onrender.com'
 const FALLBACK_API = 'https://workintech-fe-ecommerce.onrender.com'
 
 async function check(name, url, options = {}) {
