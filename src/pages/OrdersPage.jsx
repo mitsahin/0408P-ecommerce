@@ -88,19 +88,21 @@ const OrdersPage = () => {
               </div>
               {openId === order.id ? (
                 <div className="flex w-full flex-col gap-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
-                  <div className="grid grid-cols-3 rounded bg-slate-50 px-3 py-2 font-semibold text-slate-500">
-                    <span>Product ID</span>
-                    <span>Detail</span>
-                    <span className="text-right">Count</span>
+                  <div className="flex w-full flex-wrap rounded bg-slate-50 px-3 py-2 font-semibold text-slate-500">
+                    <span className="w-full sm:w-1/3">Product ID</span>
+                    <span className="w-full sm:w-1/3">Detail</span>
+                    <span className="w-full text-right sm:w-1/3">Count</span>
                   </div>
                   {(order.products ?? []).map((product, index) => (
                     <div
                       key={`${order.id}-${index}`}
-                      className="grid grid-cols-3 items-center border-b border-slate-100 px-3 py-2 last:border-b-0"
+                      className="flex w-full flex-wrap items-center border-b border-slate-100 px-3 py-2 last:border-b-0"
                     >
-                      <span>#{product.product_id}</span>
-                      <span className="truncate">{product.detail || '-'}</span>
-                      <span className="text-right">{product.count}</span>
+                      <span className="w-full sm:w-1/3">#{product.product_id}</span>
+                      <span className="w-full truncate sm:w-1/3">
+                        {product.detail || '-'}
+                      </span>
+                      <span className="w-full text-right sm:w-1/3">{product.count}</span>
                     </div>
                   ))}
                 </div>

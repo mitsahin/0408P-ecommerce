@@ -411,7 +411,7 @@ const ShopPage = () => {
             </div>
           </div>
 
-          <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="flex w-full flex-wrap gap-3">
             {SHOP_HERO_CARDS.map((item, index) => {
                 const cardImage = item.image
                 const cardTitle = item.title ?? 'Cloths'
@@ -421,7 +421,7 @@ const ShopPage = () => {
                   <Link
                     key={`${cardTitle}-${index}`}
                     to={cardLink}
-                    className="group relative h-[185px] overflow-hidden rounded-sm"
+                    className="group relative h-[185px] w-[calc(50%-6px)] overflow-hidden rounded-sm sm:w-[calc(33.333%-8px)] lg:w-[calc(20%-10px)]"
                   >
                     <img
                       src={cardImage}
@@ -442,6 +442,32 @@ const ShopPage = () => {
               }
             )}
           </div>
+
+          {topCategories.length > 0 ? (
+            <div className="flex w-full flex-col gap-4">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Popüler Kategoriler
+              </h2>
+              <div className="flex w-full flex-wrap gap-3">
+                {topCategories.map((category) => (
+                  <Link
+                    key={category.id}
+                    to={buildCategoryLink(category)}
+                    className="flex w-[calc(50%-6px)] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 sm:w-[calc(33.333%-8px)] lg:w-[calc(20%-10px)]"
+                  >
+                    <img
+                      src={category.image || category.img}
+                      alt={category.title ?? category.name}
+                      className="h-[120px] w-full object-cover"
+                    />
+                    <span className="px-3 py-2 text-xs font-semibold text-slate-800">
+                      {category.title ?? category.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div className="flex w-full flex-col gap-4 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-xs font-semibold text-slate-500">

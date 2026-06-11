@@ -61,103 +61,95 @@ const CartPage = () => {
         Sepetim ({cartItems.length} Urun)
       </h1>
       <div className="flex w-full flex-col gap-6 lg:flex-row">
-        <div className="flex w-full flex-col gap-4 lg:w-[70%]">
-          <div className="flex w-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-600 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-            <span>Urun</span>
-            <span className="hidden sm:block">Adet</span>
-            <span className="hidden sm:block">Fiyat</span>
-            <span className="hidden sm:block">Sil</span>
-          </div>
+        <div className="flex w-full flex-col gap-4 overflow-x-auto lg:w-[70%]">
           {cartItems.length === 0 ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
               Your cart is empty.
             </div>
           ) : (
-            cartItems.map((item) => {
-              const sellerName =
-                item.product?.store?.name ||
-                item.product?.brand ||
-                item.product?.department ||
-                'Store'
-              const rating = item.product?.rating
-              return (
-                <div
-                  key={item.product?.id}
-                  className="flex w-full flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md sm:p-5"
-                >
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                    <button
-                      type="button"
-                      onClick={() => toggleChecked(item.product?.id)}
-                      className={`flex h-5 w-5 items-center justify-center rounded border ${
-                        item.checked !== false
-                          ? 'border-orange-500 bg-orange-500 text-white'
-                          : 'border-slate-300'
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <span className="font-semibold">Satici: {sellerName}</span>
-                    {rating ? (
-                      <span className="rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                        {Number(rating).toFixed(1)}
-                      </span>
-                    ) : null}
-                    <span className="rounded border border-slate-200 px-1.5 py-0.5 text-[10px]">
-                      Kurumsal
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-                    <span className="font-semibold">Kargo Bedava!</span>
-                  </div>
-                  <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center">
-                    <img
-                      src={item.product?.image}
-                      alt={item.product?.name ?? item.product?.title}
-                      className="h-20 w-20 rounded border border-slate-100 bg-white object-contain"
-                    />
-                    <div className="flex flex-1 flex-col gap-2">
-                      <span className="text-sm font-semibold text-slate-900">
-                        {item.product?.name ?? item.product?.title}
-                      </span>
-                      <span className="text-xs text-slate-500">
-                        {item.product?.description ?? 'Product detail'}
-                      </span>
-                      <span className="text-xs text-slate-400">
-                        Beden: {item.product?.size ?? 'Tek Ebat'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 rounded-full border border-slate-100 px-2 py-1">
+            <table className="w-full min-w-[640px] border-collapse overflow-hidden rounded-2xl border border-slate-200 bg-white text-sm shadow-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-[0.12em] text-slate-500">
+                  <th className="px-4 py-3">Seç</th>
+                  <th className="px-4 py-3">Ürün</th>
+                  <th className="px-4 py-3">Adet</th>
+                  <th className="px-4 py-3">Fiyat</th>
+                  <th className="px-4 py-3">Sil</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cartItems.map((item) => (
+                  <tr
+                    key={item.product?.id}
+                    className="border-b border-slate-100 last:border-b-0"
+                  >
+                    <td className="px-4 py-4 align-top">
                       <button
                         type="button"
-                        onClick={() => updateCount(item.product?.id, -1)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-sm transition hover:border-slate-300"
+                        onClick={() => toggleChecked(item.product?.id)}
+                        className={`flex h-5 w-5 items-center justify-center rounded border ${
+                          item.checked !== false
+                            ? 'border-orange-500 bg-orange-500 text-white'
+                            : 'border-slate-300'
+                        }`}
                       >
-                        -
+                        ✓
                       </button>
-                      <span className="w-8 text-center text-sm font-semibold">{item.count}</span>
-                      <button
-                        type="button"
-                        onClick={() => updateCount(item.product?.id, 1)}
-                        className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-sm transition hover:border-slate-300"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <span className="text-sm font-semibold text-orange-500">
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-start gap-3">
+                        <img
+                          src={item.product?.image}
+                          alt={item.product?.name ?? item.product?.title}
+                          className="h-16 w-16 rounded border border-slate-100 bg-white object-contain"
+                        />
+                        <div className="flex flex-col gap-1">
+                          <span className="font-semibold text-slate-900">
+                            {item.product?.name ?? item.product?.title}
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            {item.product?.description ?? 'Product detail'}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 align-top">
+                      <div className="flex items-center gap-2 rounded-full border border-slate-100 px-2 py-1">
+                        <button
+                          type="button"
+                          onClick={() => updateCount(item.product?.id, -1)}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-sm transition hover:border-slate-300"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center text-sm font-semibold">
+                          {item.count}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateCount(item.product?.id, 1)}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-sm transition hover:border-slate-300"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 align-top font-semibold text-orange-500">
                       {Number(item.product?.price ?? 0).toFixed(2)} TL
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.product?.id)}
-                      className="rounded-full border border-rose-100 px-3 py-1 text-xs font-semibold text-rose-500 transition hover:border-rose-200 hover:bg-rose-50"
-                    >
-                      Sil
-                    </button>
-                  </div>
-                </div>
-              )
-            })
+                    </td>
+                    <td className="px-4 py-4 align-top">
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.product?.id)}
+                        className="rounded-full border border-rose-100 px-3 py-1 text-xs font-semibold text-rose-500 transition hover:border-rose-200 hover:bg-rose-50"
+                      >
+                        Sil
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
           {cartItems.length > 0 ? (
             <div className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">

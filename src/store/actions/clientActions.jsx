@@ -33,21 +33,26 @@ export const fetchRolesIfNeeded = () => async (dispatch, getState) => {
 }
 
 export const loginUser = ({ email, password, remember }) => async (dispatch) => {
-  const response = await axiosClient.post('/login', { email, password })
-  const token = response?.data?.token
-  const user = response?.data?.user ?? response?.data
+  try {
+    const response = await axiosClient.post('/login', { email, password })
+    const token = response?.data?.token
+    const user = response?.data?.user ?? response?.data
 
-  if (token) {
-    setAuthToken(token)
-    if (remember) {
-      localStorage.setItem('token', token)
-    } else {
-      localStorage.removeItem('token')
+    if (token) {
+      setAuthToken(token)
+      if (remember) {
+        localStorage.setItem('token', token)
+      } else {
+        localStorage.removeItem('token')
+      }
     }
-  }
 
-  dispatch(setUser(user ?? {}))
-  return { user, token }
+    dispatch(setUser(user ?? {}))
+    return { user, token }
+  } catch (error) {
+    dispatch(setUser({}))
+    throw error
+  }
 }
 
 export const verifyTokenIfExists = () => async (dispatch) => {

@@ -40,7 +40,7 @@ const toSlug = (value) =>
 const HomePage = () => {
   const history = useHistory()
   const dispatch = useDispatch()
-  const { categories } = useSelector((state) => state.products)
+  const { categories, productList } = useSelector((state) => state.products)
 
   useEffect(() => {
     dispatch(fetchProducts())
@@ -118,8 +118,23 @@ const HomePage = () => {
   }
 
   const featuredProducts = useMemo(() => {
-    return allProducts.map(normalizeProduct).slice(0, 8)
-  }, [allProducts])
+    const source = productList?.length ? productList : allProducts
+    return source.map(normalizeProduct).slice(0, 8)
+  }, [productList])
+
+  const topCategories = useMemo(
+    () =>
+      [...(categories ?? [])]
+        .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+        .slice(0, 5),
+    [categories]
+  )
+
+  const buildCategoryLink = (category) => {
+    const genderSlug = toSlug(category.gender ?? 'kadin') || 'kadin'
+    const categorySlug = toSlug(category.title ?? category.name)
+    return `/shop/${genderSlug}/${categorySlug}/${category.id}`
+  }
 
   const buildProductLink = (product) => {
     const category = categories?.find(
@@ -163,6 +178,37 @@ const HomePage = () => {
           <HomeSlider />
         </div>
       </div>
+
+      {topCategories.length > 0 ? (
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-700">
+              Kategoriler
+            </p>
+            <p className="text-xs text-slate-500">
+              En yüksek puanlı kategorileri keşfedin
+            </p>
+          </div>
+          <div className="flex w-full flex-wrap justify-center gap-4">
+            {topCategories.map((category) => (
+              <Link
+                key={category.id}
+                to={buildCategoryLink(category)}
+                className="flex w-[calc(50%-8px)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:w-[calc(33.333%-11px)] lg:w-[calc(20%-16px)]"
+              >
+                <img
+                  src={category.img || category.image}
+                  alt={category.title}
+                  className="h-[140px] w-full object-cover"
+                />
+                <span className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-[0.15em] text-slate-800">
+                  {category.title}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="mx-auto flex w-full max-w-[1440px] flex-col">
         <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-10 rounded-2xl border border-slate-200 bg-white px-4 py-10 shadow-sm sm:px-6 lg:py-12">

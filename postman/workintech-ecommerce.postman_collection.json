@@ -5,10 +5,10 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "https://workintech-fe-ecommerce.onrender.com" },
+    { "key": "baseUrl", "value": "http://localhost:3000" },
     { "key": "token", "value": "" },
     { "key": "userEmail", "value": "customer@commerce.com" },
-    { "key": "customerRoleId", "value": "1" },
+    { "key": "customerRoleId", "value": "3" },
     { "key": "storeRoleId", "value": "2" },
     { "key": "addressId", "value": "" },
     { "key": "cardId", "value": "" },
