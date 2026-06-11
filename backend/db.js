@@ -3,10 +3,12 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
 
-dotenv.config()
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const dataDir = path.join(__dirname, 'data', 'pgdata')
+const rootDir = path.join(__dirname, '..')
+
+dotenv.config({ path: path.join(rootDir, '.env') })
+
+const dataDir = path.join(rootDir, 'data', 'pgdata')
 
 let pool = null
 let pglite = null

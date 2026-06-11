@@ -2,6 +2,8 @@ import express from 'express'
 import fetch from 'node-fetch'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { testConnection, getDbMode, ensureDb } from './db.js'
 import { setupDatabase } from './scripts/setup-database.js'
 import authRoutes from './routes/authRoutes.js'
@@ -9,7 +11,8 @@ import catalogRoutes from './routes/catalogRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import orderRoutes from './routes/orderRoutes.js'
 
-dotenv.config()
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+dotenv.config({ path: path.join(__dirname, '../.env') })
 
 const app = express()
 const PORT = process.env.PORT || 3000
