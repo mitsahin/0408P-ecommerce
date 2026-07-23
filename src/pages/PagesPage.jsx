@@ -65,12 +65,12 @@ const PagesPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="flex w-full flex-col gap-4 sm:flex-row sm:flex-wrap">
         {pageCards.map((item) => (
           <Link
             key={item.id}
             to={item.to}
-            className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+            className="group w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md sm:w-[calc(50%-0.5rem)]"
           >
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">{item.label}</p>
             <h2 className="mt-2 text-xl font-semibold text-slate-900">{item.name}</h2>

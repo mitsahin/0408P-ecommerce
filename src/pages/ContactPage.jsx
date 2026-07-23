@@ -54,7 +54,7 @@ const ContactPage = () => {
               Contact Us
             </button>
           </div>
-          <div className="grid w-full grid-cols-2 gap-x-8 gap-y-8 text-white lg:w-[60%]">
+          <div className="flex w-full flex-wrap gap-x-8 gap-y-8 text-white lg:w-[60%]">
             {[
               { city: 'Paris', line1: '1901 Thorn ridge Cir.', line2: '75000 Paris' },
               { city: 'New York', line1: '2715 Ash Dr. San Jose,', line2: '75000 Paris' },
@@ -63,7 +63,7 @@ const ContactPage = () => {
             ].map((office, index) => (
               <div
                 key={office.city}
-                className={`flex flex-col gap-2 lg:px-5 ${
+                className={`flex w-full flex-col gap-2 sm:w-[calc(50%-1rem)] lg:px-5 ${
                   index < 2 ? 'lg:border-b lg:border-white/20 lg:pb-5' : ''
                 } ${index % 2 === 0 ? 'lg:border-r lg:border-white/20 lg:pr-6' : ''}`}
               >
@@ -83,18 +83,18 @@ const ContactPage = () => {
         onSubmit={handleSubmit}
       >
         <h2 className="text-lg font-semibold text-slate-900">Quick Message</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap">
           <input
             name="fullName"
             required
-            className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300 sm:w-[calc(50%-0.375rem)]"
             placeholder="Full name"
           />
           <input
             name="email"
             required
             type="email"
-            className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-300 sm:w-[calc(50%-0.375rem)]"
             placeholder="Email address"
           />
         </div>

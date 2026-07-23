@@ -1,4 +1,10 @@
 import axiosClient, { clearAuthToken, setAuthToken } from '../../api/axiosClient'
+import {
+  clearStoredToken,
+  getStoredToken,
+  persistToken,
+  renewStoredToken,
+} from '../../utils/authStorage'
 
 export const setUser = (user) => ({
   type: 'client/setUser',
@@ -40,11 +46,7 @@ export const loginUser = ({ email, password, remember }) => async (dispatch) => 
 
     if (token) {
       setAuthToken(token)
-      if (remember) {
-        localStorage.setItem('token', token)
-      } else {
-        localStorage.removeItem('token')
-      }
+      persistToken(token, Boolean(remember))
     }
 
     dispatch(setUser(user ?? {}))
@@ -56,7 +58,7 @@ export const loginUser = ({ email, password, remember }) => async (dispatch) => 
 }
 
 export const verifyTokenIfExists = () => async (dispatch) => {
-  const token = localStorage.getItem('token')
+  const token = getStoredToken()
   if (!token) return null
 
   try {
@@ -65,12 +67,12 @@ export const verifyTokenIfExists = () => async (dispatch) => {
     const user = response?.data?.user ?? response?.data
     const renewedToken = response?.data?.token
     const nextToken = renewedToken || token
-    localStorage.setItem('token', nextToken)
+    renewStoredToken(nextToken)
     setAuthToken(nextToken)
     dispatch(setUser(user ?? {}))
     return user
   } catch (_error) {
-    localStorage.removeItem('token')
+    clearStoredToken()
     clearAuthToken()
     dispatch(setUser({}))
     return null
@@ -78,7 +80,7 @@ export const verifyTokenIfExists = () => async (dispatch) => {
 }
 
 export const logoutUser = () => (dispatch) => {
-  localStorage.removeItem('token')
+  clearStoredToken()
   clearAuthToken()
   dispatch(setUser({}))
 }

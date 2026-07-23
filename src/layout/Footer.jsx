@@ -36,8 +36,8 @@ const Footer = () => {
           </div>
         </div>
         <div className="h-px w-full bg-slate-200" />
-        <div className="grid w-full grid-cols-1 gap-8 text-xs sm:grid-cols-2 lg:grid-cols-5">
-          <div className="flex w-full flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+        <div className="flex w-full flex-col flex-wrap gap-8 text-xs sm:flex-row">
+          <div className="flex w-full flex-col items-center gap-3 text-center sm:w-[calc(50%-1rem)] sm:items-start sm:text-left lg:w-[calc(20%-1.6rem)]">
             <h4 className="text-sm font-semibold text-slate-900">Company Info</h4>
             <Link to="/about" className="transition hover:text-slate-700">
               About Us
@@ -52,7 +52,7 @@ const Footer = () => {
               Blog
             </Link>
           </div>
-          <div className="flex w-full flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+          <div className="flex w-full flex-col items-center gap-3 text-center sm:w-[calc(50%-1rem)] sm:items-start sm:text-left lg:w-[calc(20%-1.6rem)]">
             <h4 className="text-sm font-semibold text-slate-900">Legal</h4>
             <Link to="/about" className="transition hover:text-slate-700">
               About Us
@@ -67,7 +67,7 @@ const Footer = () => {
               Blog
             </Link>
           </div>
-          <div className="flex w-full flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+          <div className="flex w-full flex-col items-center gap-3 text-center sm:w-[calc(50%-1rem)] sm:items-start sm:text-left lg:w-[calc(20%-1.6rem)]">
             <h4 className="text-sm font-semibold text-slate-900">Features</h4>
             <Link to="/pages" className="transition hover:text-slate-700">
               Business Marketing
@@ -82,7 +82,7 @@ const Footer = () => {
               Unlimited Support
             </Link>
           </div>
-          <div className="flex w-full flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+          <div className="flex w-full flex-col items-center gap-3 text-center sm:w-[calc(50%-1rem)] sm:items-start sm:text-left lg:w-[calc(20%-1.6rem)]">
             <h4 className="text-sm font-semibold text-slate-900">Resources</h4>
             <Link to="/pages" className="transition hover:text-slate-700">
               IOS & Android
@@ -97,7 +97,7 @@ const Footer = () => {
               API
             </Link>
           </div>
-          <div className="flex w-full flex-col items-center gap-3 text-center sm:items-start sm:text-left">
+          <div className="flex w-full flex-col items-center gap-3 text-center sm:w-[calc(50%-1rem)] sm:items-start sm:text-left lg:w-[calc(20%-1.6rem)]">
             <h4 className="text-sm font-semibold text-slate-900">Get In Touch</h4>
             <div className="flex w-full overflow-hidden rounded-lg border border-slate-200">
               <input

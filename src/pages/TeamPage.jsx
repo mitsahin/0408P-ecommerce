@@ -72,11 +72,11 @@ const TeamPage = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="flex w-full flex-wrap gap-3">
         {highlights.map((item) => (
           <div
             key={item.id}
-            className="rounded border border-slate-200 bg-white px-3 py-4 text-center"
+            className="w-[calc(50%-0.375rem)] rounded border border-slate-200 bg-white px-3 py-4 text-center sm:w-[calc(25%-0.5625rem)]"
           >
             <p className="text-xl font-semibold text-slate-900">{item.value}</p>
             <p className="text-xs text-slate-500">{item.label}</p>

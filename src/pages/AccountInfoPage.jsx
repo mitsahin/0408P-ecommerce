@@ -427,7 +427,7 @@ const AccountInfoPage = () => {
                   Tüm alanları eksiksiz doldurmanız teslimatı hızlandırır.
                 </p>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-wrap gap-4">
                 {[
                   ['title', 'Adres başlığı', 'text', 'Ev, iş yeri...'],
                   ['name', 'Ad', 'text', ''],
@@ -436,7 +436,7 @@ const AccountInfoPage = () => {
                   ['district', 'İlçe', 'text', ''],
                   ['neighborhood', 'Mahalle', 'text', ''],
                 ].map(([key, label, type, placeholder]) => (
-                  <label key={key} className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
+                  <label key={key} className="flex w-full flex-col gap-1.5 text-xs font-medium text-slate-600 sm:w-[calc(50%-0.5rem)]">
                     {label}
                     <input
                       type={type}
@@ -455,7 +455,7 @@ const AccountInfoPage = () => {
                     ) : null}
                   </label>
                 ))}
-                <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
+                <label className="flex w-full flex-col gap-1.5 text-xs font-medium text-slate-600 sm:w-[calc(50%-0.5rem)]">
                   İl
                   <select
                     value={addressForm.city}
@@ -646,8 +646,8 @@ const AccountInfoPage = () => {
                   Kart bilgileriniz yalnızca sipariş ödemesi için kullanılır.
                 </p>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600 sm:col-span-2">
+              <div className="flex flex-wrap gap-4">
+                <label className="flex w-full flex-col gap-1.5 text-xs font-medium text-slate-600">
                   Kart üzerindeki isim
                   <input
                     value={cardForm.name_on_card}
@@ -664,7 +664,7 @@ const AccountInfoPage = () => {
                     <span className="font-normal text-rose-500">{cardErrors.name_on_card}</span>
                   ) : null}
                 </label>
-                <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600 sm:col-span-2">
+                <label className="flex w-full flex-col gap-1.5 text-xs font-medium text-slate-600">
                   Kart numarası
                   <input
                     value={cardForm.card_no}
@@ -683,7 +683,7 @@ const AccountInfoPage = () => {
                     <span className="font-normal text-rose-500">{cardErrors.card_no}</span>
                   ) : null}
                 </label>
-                <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
+                <label className="flex w-full flex-col gap-1.5 text-xs font-medium text-slate-600 sm:w-[calc(50%-0.5rem)]">
                   Son kullanma ayı
                   <input
                     value={cardForm.expire_month}
@@ -700,7 +700,7 @@ const AccountInfoPage = () => {
                     <span className="font-normal text-rose-500">{cardErrors.expire_month}</span>
                   ) : null}
                 </label>
-                <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
+                <label className="flex w-full flex-col gap-1.5 text-xs font-medium text-slate-600 sm:w-[calc(50%-0.5rem)]">
                   Son kullanma yılı
                   <input
                     value={cardForm.expire_year}

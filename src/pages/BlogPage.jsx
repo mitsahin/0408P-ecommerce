@@ -35,11 +35,11 @@ const BlogPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="flex w-full flex-col flex-wrap gap-4 md:flex-row">
         {articles.map((article) => (
           <article
             key={article.id}
-            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+            className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md md:w-[calc(33.333%-0.667rem)]"
           >
             <img
               src={article.image}

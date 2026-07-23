@@ -276,39 +276,39 @@ const Header = () => {
                 >
                   Shop
                 </button>
-                <div className="grid w-full grid-cols-2 gap-2 text-xs">
+                <div className="flex w-full flex-wrap gap-2 text-xs">
                   <Link
                     to="/shop/kids"
                     onClick={closeMobileMenu}
-                    className="rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
+                    className="w-[calc(50%-0.25rem)] rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
                   >
                     Kids
                   </Link>
                   <Link
                     to="/shop/kadin"
                     onClick={closeMobileMenu}
-                    className="rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
+                    className="w-[calc(50%-0.25rem)] rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
                   >
                     Kadın
                   </Link>
                   <Link
                     to="/shop/erkek"
                     onClick={closeMobileMenu}
-                    className="rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
+                    className="w-[calc(50%-0.25rem)] rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
                   >
                     Erkek
                   </Link>
                   <Link
                     to="/shop/accessories"
                     onClick={closeMobileMenu}
-                    className="rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
+                    className="w-[calc(50%-0.25rem)] rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
                   >
                     Accessories
                   </Link>
                   <button
                     type="button"
                     onClick={goAllProducts}
-                    className="col-span-2 rounded border border-slate-900 bg-slate-900 px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-white"
+                    className="w-full rounded border border-slate-900 bg-slate-900 px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-white"
                   >
                     Tüm Ürünler
                   </button>
@@ -318,7 +318,7 @@ const Header = () => {
                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
                       Kids
                     </span>
-                    <div className="grid w-full grid-cols-1 gap-2">
+                    <div className="flex w-full flex-col gap-2">
                       {kidsMenuCategories.map((item) => (
                         <Link
                           key={`mobile-kids-${item.menuTitle}`}
@@ -340,7 +340,7 @@ const Header = () => {
                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
                       Kadın
                     </span>
-                    <div className="grid w-full grid-cols-1 gap-2">
+                    <div className="flex w-full flex-col gap-2">
                       {womenMenuCategories.map((item) => (
                         <Link
                           key={`mobile-kadin-${item.menuTitle}`}
@@ -362,7 +362,7 @@ const Header = () => {
                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
                       Erkek
                     </span>
-                    <div className="grid w-full grid-cols-1 gap-2">
+                    <div className="flex w-full flex-col gap-2">
                       {menMenuCategories.map((item) => (
                         <Link
                           key={`mobile-erkek-${item.menuTitle}`}
@@ -509,39 +509,39 @@ const Header = () => {
                   isDesktopShopOpen ? 'flex' : 'hidden'
                 }`}
               >
-                <div className="grid grid-cols-5 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
+                <div className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2">
                   <Link
                     to="/shop/kids"
                     onClick={closeAllMenus}
-                    className="flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
+                    className="flex min-w-0 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
                   >
                     Kids
                   </Link>
                   <Link
                     to="/shop/kadin"
                     onClick={closeAllMenus}
-                    className="flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
+                    className="flex min-w-0 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
                   >
                     Kadın
                   </Link>
                   <Link
                     to="/shop/erkek"
                     onClick={closeAllMenus}
-                    className="flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
+                    className="flex min-w-0 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
                   >
                     Erkek
                   </Link>
                   <Link
                     to="/shop/accessories"
                     onClick={closeAllMenus}
-                    className="flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
+                    className="flex min-w-0 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
                   >
                     Accessories
                   </Link>
                   <button
                     type="button"
                     onClick={goAllProducts}
-                    className="flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
+                    className="flex min-w-0 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
                   >
                     Tüm Ürünler
                   </button>

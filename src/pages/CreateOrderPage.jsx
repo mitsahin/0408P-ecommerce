@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import axiosClient, { setAuthToken } from '../api/axiosClient'
+import { getStoredToken } from '../utils/authStorage'
 import {
   setAddress,
   setAppliedCoupon,
@@ -172,7 +173,7 @@ const CreateOrderPage = () => {
   }
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = getStoredToken()
     if (token) setAuthToken(token)
   }, [])
 
@@ -887,8 +888,8 @@ const CreateOrderPage = () => {
                   </div>
                 </div>
 
-                <div className="grid w-full gap-3 sm:grid-cols-2">
-                  <div className="flex flex-col gap-1">
+                <div className="flex w-full flex-wrap gap-3">
+                  <div className="flex w-full flex-col gap-1 sm:w-[calc(50%-0.375rem)]">
                     <label className="text-xs font-semibold text-slate-500">
                       Address Title
                     </label>
@@ -905,7 +906,7 @@ const CreateOrderPage = () => {
                       <span className="text-xs text-rose-500">{addressErrors.title}</span>
                     ) : null}
                   </div>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex w-full flex-col gap-1 sm:w-[calc(50%-0.375rem)]">
                     <label className="text-xs font-semibold text-slate-500">Phone</label>
                     <input
                       name="phone"
@@ -920,7 +921,7 @@ const CreateOrderPage = () => {
                       <span className="text-xs text-rose-500">{addressErrors.phone}</span>
                     ) : null}
                   </div>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex w-full flex-col gap-1 sm:w-[calc(50%-0.375rem)]">
                     <label className="text-xs font-semibold text-slate-500">Name</label>
                     <input
                       name="name"
@@ -935,7 +936,7 @@ const CreateOrderPage = () => {
                       <span className="text-xs text-rose-500">{addressErrors.name}</span>
                     ) : null}
                   </div>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex w-full flex-col gap-1 sm:w-[calc(50%-0.375rem)]">
                     <label className="text-xs font-semibold text-slate-500">
                       Surname
                     </label>
@@ -957,7 +958,7 @@ const CreateOrderPage = () => {
                       </span>
                     ) : null}
                   </div>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex w-full flex-col gap-1 sm:w-[calc(50%-0.375rem)]">
                     <label className="text-xs font-semibold text-slate-500">
                       City (İl)
                     </label>
@@ -980,7 +981,7 @@ const CreateOrderPage = () => {
                       <span className="text-xs text-rose-500">{addressErrors.city}</span>
                     ) : null}
                   </div>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex w-full flex-col gap-1 sm:w-[calc(50%-0.375rem)]">
                     <label className="text-xs font-semibold text-slate-500">
                       District (İlçe)
                     </label>
@@ -1002,7 +1003,7 @@ const CreateOrderPage = () => {
                       </span>
                     ) : null}
                   </div>
-                  <div className="flex flex-col gap-1 sm:col-span-2">
+                  <div className="flex w-full flex-col gap-1">
                     <label className="text-xs font-semibold text-slate-500">
                       Neighborhood (Mahalle)
                     </label>
@@ -1019,7 +1020,7 @@ const CreateOrderPage = () => {
                       className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-orange-400"
                     />
                   </div>
-                  <div className="flex flex-col gap-1 sm:col-span-2">
+                  <div className="flex w-full flex-col gap-1">
                     <label className="text-xs font-semibold text-slate-500">
                       Address (Sokak, bina, kapı no)
                     </label>

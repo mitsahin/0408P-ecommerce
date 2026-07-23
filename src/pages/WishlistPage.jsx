@@ -348,11 +348,11 @@ const WishlistPage = () => {
             </div>
           ) : null}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-wrap gap-4">
             {pagedWishlistProducts.map((product) => (
             <article
               key={product.resolvedId}
-              className="flex flex-col gap-3 rounded border border-slate-200 bg-white p-4"
+              className="flex w-full flex-col gap-3 rounded border border-slate-200 bg-white p-4 sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)]"
             >
               <Link
                 to={{

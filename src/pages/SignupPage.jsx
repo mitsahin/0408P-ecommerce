@@ -77,11 +77,12 @@ const SignupPage = () => {
       )
       setTimeout(() => history.goBack(), 600)
     } catch (error) {
-      setSubmitError(
+      const message =
         error?.response?.data?.message ||
-          error?.message ||
-          'Signup failed. Please try again.'
-      )
+        error?.message ||
+        'Signup failed. Please try again.'
+      setSubmitError(message)
+      toast.error(message)
     }
   }
 
