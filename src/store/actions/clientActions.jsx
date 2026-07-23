@@ -5,6 +5,7 @@ import {
   persistToken,
   renewStoredToken,
 } from '../../utils/authStorage'
+import { clearWishlistIds } from '../../utils/wishlist'
 
 export const setUser = (user) => ({
   type: 'client/setUser',
@@ -82,5 +83,6 @@ export const verifyTokenIfExists = () => async (dispatch) => {
 export const logoutUser = () => (dispatch) => {
   clearStoredToken()
   clearAuthToken()
+  clearWishlistIds()
   dispatch(setUser({}))
 }
