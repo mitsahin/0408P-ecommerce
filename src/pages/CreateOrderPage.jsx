@@ -500,7 +500,7 @@ const CreateOrderPage = () => {
       card_expire_year: Number(selectedCard.expire_year),
       card_ccv: Number(ccv),
       price: Math.round(Math.max(0, orderGrandTotal)),
-      products: selectedItems.map((item, index) => {
+      products: selectedItems.map((item) => {
         const rawId = item.product?.id
         const numericId = Number(rawId)
         const snapshot = {
@@ -514,7 +514,7 @@ const CreateOrderPage = () => {
             '',
           price: Number(item.product?.price ?? 0),
           detail: item.product?.detail ?? '',
-          ...(index === 0 ? { orderSummary } : {}),
+          orderSummary,
         }
         return {
           product_id: Number.isFinite(numericId) && numericId > 0 ? numericId : null,
