@@ -7,7 +7,8 @@ const router = Router()
 router.get('/', requireAuth, async (req, res) => {
   try {
     const ordersResult = await query(
-      `SELECT id, address_id, order_date, price
+      `SELECT id, address_id, order_date, price,
+              card_no, card_name, card_expire_month, card_expire_year
        FROM orders WHERE user_id = $1 ORDER BY id DESC`,
       [req.user.id]
     )
@@ -63,7 +64,8 @@ router.post('/', requireAuth, async (req, res) => {
          user_id, address_id, order_date, price,
          card_no, card_name, card_expire_month, card_expire_year, card_ccv
        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       RETURNING id, address_id, order_date, price`,
+       RETURNING id, address_id, order_date, price,
+                 card_no, card_name, card_expire_month, card_expire_year`,
       [
         req.user.id,
         address_id,

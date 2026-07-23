@@ -475,6 +475,21 @@ const CreateOrderPage = () => {
       return
     }
 
+    const orderSummary = {
+      subtotal: Number(orderSubtotal.toFixed(2)),
+      shipping: Number(shipping.toFixed(2)),
+      freeShippingDiscount: Number(freeShippingDiscount.toFixed(2)),
+      couponCode: appliedCoupon || '',
+      couponDiscount: Number(couponDiscount.toFixed(2)),
+      grandTotal: Number(Math.max(0, orderGrandTotal).toFixed(2)),
+      card: {
+        last4: String(selectedCard.card_no ?? '').replace(/\D/g, '').slice(-4),
+        name: selectedCard.name_on_card ?? '',
+        expire_month: Number(selectedCard.expire_month),
+        expire_year: Number(selectedCard.expire_year),
+      },
+    }
+
     const payload = {
       address_id: Number(selectedAddressId),
       order_date: new Date().toISOString(),
@@ -484,7 +499,7 @@ const CreateOrderPage = () => {
       card_expire_year: Number(selectedCard.expire_year),
       card_ccv: Number(ccv),
       price: Math.round(Math.max(0, orderGrandTotal)),
-      products: selectedItems.map((item) => {
+      products: selectedItems.map((item, index) => {
         const rawId = item.product?.id
         const numericId = Number(rawId)
         const snapshot = {
@@ -498,6 +513,7 @@ const CreateOrderPage = () => {
             '',
           price: Number(item.product?.price ?? 0),
           detail: item.product?.detail ?? '',
+          ...(index === 0 ? { orderSummary } : {}),
         }
         return {
           product_id: Number.isFinite(numericId) ? numericId : 0,
@@ -511,6 +527,16 @@ const CreateOrderPage = () => {
       setIsSubmitting(true)
       const response = await axiosClient.post('/order', payload)
       const createdOrderId = response?.data?.id
+      if (createdOrderId) {
+        try {
+          localStorage.setItem(
+            `order-summary-${createdOrderId}`,
+            JSON.stringify(orderSummary)
+          )
+        } catch (_storageError) {
+          // ignore quota / private mode
+        }
+      }
       toast.success(
         createdOrderId
           ? `Tebrikler! Siparişiniz oluşturuldu (#${createdOrderId})`
