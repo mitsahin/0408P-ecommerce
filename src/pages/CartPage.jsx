@@ -2,6 +2,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { setAppliedCoupon, setCart, setCouponCode } from '../store/actions/shoppingCartActions'
 
+const formatPrice = (value) =>
+  `${Number(value).toLocaleString('tr-TR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} TL`
+
 const CartPage = () => {
   const dispatch = useDispatch()
   const history = useHistory()
@@ -42,29 +48,31 @@ const CartPage = () => {
   }
 
   const selectedItems = cartItems.filter((item) => item.checked !== false)
-  const itemsTotal = selectedItems.reduce(
+  const productsTotal = selectedItems.reduce(
     (sum, item) => sum + item.count * Number(item.product?.price ?? 0),
     0
   )
   const shipping = selectedItems.length > 0 ? 29.99 : 0
-  const freeShippingDiscount = itemsTotal > 150 ? shipping : 0
+  const freeShippingDiscount = productsTotal >= 150 ? shipping : 0
   const couponRate = appliedCoupon === 'SAVE10' ? 0.1 : 0
-  const couponDiscount = itemsTotal * couponRate
-  const totalDiscount = freeShippingDiscount + couponDiscount
-  const grandTotal = Math.max(0, itemsTotal + shipping - totalDiscount)
-
-  const canCheckout = selectedItems.length > 0
+  const couponDiscount = productsTotal * couponRate
+  const grandTotal = Math.max(
+    0,
+    productsTotal + shipping - freeShippingDiscount - couponDiscount
+  )
 
   return (
     <section className="flex w-full flex-col gap-6">
       <h1 className="text-2xl font-semibold text-slate-900 sm:text-[28px]">
-        Sepetim ({cartItems.length} Urun)
+        Sepetim ({cartItems.length} Ürün)
       </h1>
+
       <div className="flex w-full flex-col gap-6 lg:flex-row">
+        {/* Product list — left */}
         <div className="flex w-full flex-col gap-4 overflow-x-auto lg:w-[70%]">
           {cartItems.length === 0 ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
-              Your cart is empty.
+              Sepetiniz boş.
             </div>
           ) : (
             <table className="w-full min-w-[640px] border-collapse overflow-hidden rounded-2xl border border-slate-200 bg-white text-sm shadow-sm">
@@ -135,7 +143,7 @@ const CartPage = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4 align-top font-semibold text-orange-500">
-                      {Number(item.product?.price ?? 0).toFixed(2)} TL
+                      {formatPrice(item.product?.price ?? 0)}
                     </td>
                     <td className="px-4 py-4 align-top">
                       <button
@@ -151,50 +159,61 @@ const CartPage = () => {
               </tbody>
             </table>
           )}
-          {cartItems.length > 0 ? (
-            <div className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">
-              <span className="font-semibold text-slate-700">
-                Toplam ({selectedItems.length} Urun)
-              </span>
-              <span className="text-lg font-semibold text-orange-500">
-                {itemsTotal.toFixed(2)} TL
-              </span>
-            </div>
-          ) : null}
         </div>
-        <aside className="flex w-full flex-col gap-4 lg:sticky lg:top-6 lg:w-[30%] lg:self-start">
+
+        {/* Order Summary box — right (T19) */}
+        <aside className="flex w-full flex-col gap-3 lg:sticky lg:top-6 lg:w-[30%] lg:self-start">
           <button
             type="button"
-            disabled={!canCheckout}
             onClick={() => history.push('/order')}
-            className="rounded-full bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-lg bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-600"
           >
-            Sepeti Onayla
+            Create Order
           </button>
+
           <div className="flex w-full flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">Siparis Ozeti</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Sipariş Özeti</h2>
+
             <div className="flex items-center justify-between text-sm text-slate-600">
-              <span>Urunun Toplami</span>
-              <span>{itemsTotal.toFixed(2)} TL</span>
+              <span>Ürünün Toplamı</span>
+              <span>{formatPrice(productsTotal)}</span>
             </div>
+
             <div className="flex items-center justify-between text-sm text-slate-600">
-              <span>Kargo Toplam</span>
-              <span>{shipping.toFixed(2)} TL</span>
+              <span>Kargo Toplamı</span>
+              <span>{formatPrice(shipping)}</span>
             </div>
-            {totalDiscount > 0 ? (
-              <div className="flex items-center justify-between text-sm text-emerald-600">
-                <span>Indirim</span>
-                <span>-{totalDiscount.toFixed(2)} TL</span>
+
+            {freeShippingDiscount > 0 ? (
+              <div className="flex items-start justify-between gap-3 text-sm text-orange-500">
+                <span className="leading-snug">
+                  150 TL ve Üzeri Kargo Bedava (Satıcı Karşılar)
+                </span>
+                <span className="shrink-0 font-semibold">
+                  -{formatPrice(freeShippingDiscount)}
+                </span>
               </div>
             ) : null}
+
+            {couponDiscount > 0 ? (
+              <div className="flex items-center justify-between text-sm text-orange-500">
+                <span>İndirim ({appliedCoupon})</span>
+                <span className="font-semibold">-{formatPrice(couponDiscount)}</span>
+              </div>
+            ) : null}
+
             <div className="h-px w-full bg-slate-100" />
-            <div className="flex items-center justify-between text-base font-semibold text-slate-900">
-              <span>Toplam</span>
-              <span>{grandTotal.toFixed(2)} TL</span>
+
+            <div className="flex items-center justify-between text-base font-semibold">
+              <span className="text-slate-900">Toplam</span>
+              <span className="text-orange-500">{formatPrice(grandTotal)}</span>
             </div>
           </div>
-          <div className="flex w-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-600 shadow-sm">
-            <span className="text-[11px] text-slate-500">Indirim Kodu Gir</span>
+
+          <div className="flex w-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <span className="text-xs font-semibold uppercase tracking-wide text-sky-600">
+              + İndirim Kodu Gir
+            </span>
             <div className="flex items-center gap-2">
               <input
                 value={couponCode}
@@ -221,17 +240,17 @@ const CartPage = () => {
                 }}
                 className="text-left text-[11px] font-semibold text-rose-500"
               >
-                Kuponu kaldir
+                Kuponu kaldır
               </button>
             ) : null}
           </div>
+
           <button
             type="button"
-            disabled={!canCheckout}
             onClick={() => history.push('/order')}
-            className="rounded-full bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-lg bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-600"
           >
-            Sepeti Onayla
+            Create Order
           </button>
         </aside>
       </div>

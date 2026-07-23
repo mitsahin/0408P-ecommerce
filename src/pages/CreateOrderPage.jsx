@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import axiosClient from '../api/axiosClient'
+import axiosClient, { setAuthToken } from '../api/axiosClient'
 import {
   setAddress,
   setAppliedCoupon,
@@ -19,6 +19,7 @@ const emptyAddress = {
   city: '',
   district: '',
   neighborhood: '',
+  address: '',
 }
 
 const emptyCard = {
@@ -29,88 +30,45 @@ const emptyCard = {
 }
 
 const turkishCities = [
-  'Adana',
-  'Adiyaman',
-  'Afyonkarahisar',
-  'Agri',
-  'Aksaray',
-  'Amasya',
-  'Ankara',
-  'Antalya',
-  'Ardahan',
-  'Artvin',
-  'Aydin',
-  'Balikesir',
-  'Bartin',
-  'Batman',
-  'Bayburt',
-  'Bilecik',
-  'Bingol',
-  'Bitlis',
-  'Bolu',
-  'Burdur',
-  'Bursa',
-  'Canakkale',
-  'Cankiri',
-  'Corum',
-  'Denizli',
-  'Diyarbakir',
-  'Duzce',
-  'Edirne',
-  'Elazig',
-  'Erzincan',
-  'Erzurum',
-  'Eskisehir',
-  'Gaziantep',
-  'Giresun',
-  'Gumushane',
-  'Hakkari',
-  'Hatay',
-  'Igdir',
-  'Isparta',
-  'Istanbul',
-  'Izmir',
-  'Kahramanmaras',
-  'Karabuk',
-  'Karaman',
-  'Kars',
-  'Kastamonu',
-  'Kayseri',
-  'Kilis',
-  'Kirikkale',
-  'Kirklareli',
-  'Kirsehir',
-  'Kocaeli',
-  'Konya',
-  'Kutahya',
-  'Malatya',
-  'Manisa',
-  'Mardin',
-  'Mersin',
-  'Mugla',
-  'Mus',
-  'Nevsehir',
-  'Nigde',
-  'Ordu',
-  'Osmaniye',
-  'Rize',
-  'Sakarya',
-  'Samsun',
-  'Sanliurfa',
-  'Siirt',
-  'Sinop',
-  'Sirnak',
-  'Sivas',
-  'Tekirdag',
-  'Tokat',
-  'Trabzon',
-  'Tunceli',
-  'Usak',
-  'Van',
-  'Yalova',
-  'Yozgat',
-  'Zonguldak',
+  'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Aksaray', 'Amasya', 'Ankara',
+  'Antalya', 'Ardahan', 'Artvin', 'Aydın', 'Balıkesir', 'Bartın', 'Batman',
+  'Bayburt', 'Bilecik', 'Bingöl', 'Bitlis', 'Bolu', 'Burdur', 'Bursa',
+  'Çanakkale', 'Çankırı', 'Çorum', 'Denizli', 'Diyarbakır', 'Düzce', 'Edirne',
+  'Elazığ', 'Erzincan', 'Erzurum', 'Eskişehir', 'Gaziantep', 'Giresun',
+  'Gümüşhane', 'Hakkari', 'Hatay', 'Iğdır', 'Isparta', 'İstanbul', 'İzmir',
+  'Kahramanmaraş', 'Karabük', 'Karaman', 'Kars', 'Kastamonu', 'Kayseri',
+  'Kilis', 'Kırıkkale', 'Kırklareli', 'Kırşehir', 'Kocaeli', 'Konya', 'Kütahya',
+  'Malatya', 'Manisa', 'Mardin', 'Mersin', 'Muğla', 'Muş', 'Nevşehir', 'Niğde',
+  'Ordu', 'Osmaniye', 'Rize', 'Sakarya', 'Samsun', 'Şanlıurfa', 'Siirt',
+  'Sinop', 'Şırnak', 'Sivas', 'Tekirdağ', 'Tokat', 'Trabzon', 'Tunceli',
+  'Uşak', 'Van', 'Yalova', 'Yozgat', 'Zonguldak',
 ]
+
+const formatPrice = (value) =>
+  `${Number(value).toLocaleString('tr-TR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} TL`
+
+const maskPhone = (phone) => {
+  const digits = String(phone ?? '').replace(/\D/g, '')
+  if (digits.length < 4) return phone || ''
+  const last2 = digits.slice(-2)
+  const prefix = digits.slice(0, 3)
+  return `(${prefix}) *** ** ${last2}`
+}
+
+const buildNeighborhood = (mahalle, addressDetail) =>
+  [mahalle, addressDetail].map((part) => String(part ?? '').trim()).filter(Boolean).join('\n')
+
+const parseNeighborhood = (value) => {
+  const text = String(value ?? '')
+  const [first, ...rest] = text.split('\n')
+  if (rest.length) {
+    return { mahalle: first.trim(), address: rest.join('\n').trim() }
+  }
+  return { mahalle: '', address: text.trim() }
+}
 
 const CreateOrderPage = () => {
   const dispatch = useDispatch()
@@ -119,24 +77,30 @@ const CreateOrderPage = () => {
   const appliedCoupon = useSelector(
     (state) => state.shoppingCart?.appliedCoupon ?? ''
   )
+
   const [step, setStep] = useState(1)
   const [addresses, setAddresses] = useState([])
   const [cards, setCards] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
-  const [selectedAddressId, setSelectedAddressId] = useState(null)
-  const [selectedCardId, setSelectedCardId] = useState(null)
+  const [selectedShippingId, setSelectedShippingId] = useState(null)
+  const [selectedBillingId, setSelectedBillingId] = useState(null)
+  const [sameAsShipping, setSameAsShipping] = useState(true)
+  const [showAddressForm, setShowAddressForm] = useState(false)
   const [addressForm, setAddressForm] = useState(emptyAddress)
   const [addressType, setAddressType] = useState('shipping')
   const [editingAddressId, setEditingAddressId] = useState(null)
+  const [addressErrors, setAddressErrors] = useState({})
+  const [selectedCardId, setSelectedCardId] = useState(null)
   const [cardForm, setCardForm] = useState(emptyCard)
   const [editingCardId, setEditingCardId] = useState(null)
+  const [paymentMode, setPaymentMode] = useState('saved')
+  const [cardErrors, setCardErrors] = useState({})
   const [ccv, setCcv] = useState('')
   const [ccvError, setCcvError] = useState('')
   const [termsAccepted, setTermsAccepted] = useState(false)
-  const [addressErrors, setAddressErrors] = useState({})
-  const [cardErrors, setCardErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const ccvInputRef = useRef(null)
 
   const selectedItems = cartItems.filter((item) => item.checked !== false)
   const orderSubtotal = selectedItems.reduce(
@@ -144,39 +108,73 @@ const CreateOrderPage = () => {
     0
   )
   const shipping = selectedItems.length > 0 ? 29.99 : 0
-  const freeShippingDiscount = orderSubtotal > 150 ? shipping : 0
+  const freeShippingDiscount = orderSubtotal >= 150 ? shipping : 0
   const couponRate = appliedCoupon === 'SAVE10' ? 0.1 : 0
   const couponDiscount = orderSubtotal * couponRate
-  const orderGrandTotal = orderSubtotal + shipping - freeShippingDiscount - couponDiscount
-  const isValidCcv = /^\d{3,4}$/.test(ccv)
-  const canSubmitOrder =
-    selectedItems.length > 0 &&
-    Boolean(selectedAddressId) &&
-    Boolean(selectedCardId) &&
-    termsAccepted &&
-    isValidCcv &&
-    !isSubmitting
-  const months = Array.from({ length: 12 }, (_, index) => String(index + 1))
-  const years = Array.from({ length: 12 }, (_, index) =>
-    String(new Date().getFullYear() + index)
+  const orderGrandTotal =
+    orderSubtotal + shipping - freeShippingDiscount - couponDiscount
+
+  const months = Array.from({ length: 12 }, (_, i) => String(i + 1))
+  const years = Array.from({ length: 12 }, (_, i) =>
+    String(new Date().getFullYear() + i)
   )
   const idEquals = (left, right) => String(left) === String(right)
-  const asNumericIfPossible = (value) => {
-    const parsed = Number(value)
-    return Number.isFinite(parsed) ? parsed : value
-  }
+
   const normalizeCollection = (value) => {
     if (Array.isArray(value)) return value
     if (Array.isArray(value?.data)) return value.data
+    if (value && typeof value === 'object') {
+      const values = Object.values(value)
+      if (values.length && values.every((item) => item && typeof item === 'object')) {
+        return values
+      }
+    }
     return []
   }
+
+  const getAddressKind = (title) => {
+    const value = String(title ?? '').toLowerCase()
+    if (value.startsWith('billing -') || value.startsWith('fatura -')) return 'billing'
+    if (value.startsWith('shipping -') || value.startsWith('teslimat -')) return 'shipping'
+    return 'shipping'
+  }
+
+  const stripAddressPrefix = (title) =>
+    String(title ?? '')
+      .replace(/^(shipping|billing|teslimat|fatura)\s*-\s*/i, '')
+      .trim()
+
+  const formatAddressTitle = (title, type) => {
+    const clean = stripAddressPrefix(title) || 'Adres'
+    return type === 'billing' ? `Billing - ${clean}` : `Shipping - ${clean}`
+  }
+
+  const shippingAddresses = useMemo(
+    () => addresses.filter((item) => getAddressKind(item.title) === 'shipping'),
+    [addresses]
+  )
+  const billingAddresses = useMemo(
+    () => addresses.filter((item) => getAddressKind(item.title) === 'billing'),
+    [addresses]
+  )
+
+  const selectedShipping =
+    shippingAddresses.find((item) => idEquals(item.id, selectedShippingId)) ?? null
+  const selectedBilling = sameAsShipping
+    ? selectedShipping
+    : billingAddresses.find((item) => idEquals(item.id, selectedBillingId)) ?? null
+  const selectedAddressId = selectedShipping?.id ?? null
 
   const maskCardNo = (cardNo) => {
     const digits = String(cardNo ?? '').replace(/\s+/g, '')
     if (!digits) return ''
-    const last4 = digits.slice(-4)
-    return `**** **** **** ${last4}`
+    return `**** **** **** ${digits.slice(-4)}`
   }
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token) setAuthToken(token)
+  }, [])
 
   useEffect(() => {
     const loadData = async () => {
@@ -191,8 +189,27 @@ const CreateOrderPage = () => {
         const nextCards = normalizeCollection(cardRes?.data)
         setAddresses(nextAddresses)
         setCards(nextCards)
+        if (nextCards.length > 0) {
+          setSelectedCardId(nextCards[0].id)
+          setPaymentMode('saved')
+        } else {
+          setPaymentMode('new')
+        }
+
+        const firstShipping =
+          nextAddresses.find((item) => getAddressKind(item.title) === 'shipping') ??
+          nextAddresses[0]
+        if (firstShipping) setSelectedShippingId(firstShipping.id)
+
+        const firstBilling = nextAddresses.find(
+          (item) => getAddressKind(item.title) === 'billing'
+        )
+        if (firstBilling) setSelectedBillingId(firstBilling.id)
       } catch (error) {
-        const message = error?.message || 'Failed to load address or card data.'
+        const message =
+          error?.response?.data?.message ||
+          error?.message ||
+          'Adres veya kart bilgileri yüklenemedi.'
         setLoadError(message)
         toast.error(message)
       } finally {
@@ -204,10 +221,8 @@ const CreateOrderPage = () => {
   }, [])
 
   useEffect(() => {
-    const selectedAddress =
-      addresses.find((address) => idEquals(address.id, selectedAddressId)) ?? {}
-    dispatch(setAddress(selectedAddress))
-  }, [addresses, selectedAddressId, dispatch])
+    dispatch(setAddress(selectedShipping ?? {}))
+  }, [selectedShipping, dispatch])
 
   useEffect(() => {
     const selectedCard =
@@ -215,88 +230,18 @@ const CreateOrderPage = () => {
     dispatch(setPayment(selectedCard))
   }, [cards, selectedCardId, dispatch])
 
-  const getAddressTypeFromTitle = (title) => {
-    if (title?.toLowerCase().startsWith('shipping -')) return 'shipping'
-    if (title?.toLowerCase().startsWith('billing -')) return 'billing'
-    return 'shipping'
-  }
-
-  const stripAddressPrefix = (title) =>
-    String(title ?? '')
-      .replace(/^shipping\s-\s/i, '')
-      .replace(/^billing\s-\s/i, '')
-
-  const formatAddressTitle = (title, type) => {
-    const cleanTitle = stripAddressPrefix(title).trim()
-    const prefix = type === 'billing' ? 'Billing - ' : 'Shipping - '
-    return `${prefix}${cleanTitle || 'Address'}`
-  }
-
-  const validateAddressForm = () => {
-    const nextErrors = {}
-    if (!addressForm.title.trim()) nextErrors.title = 'Title is required'
-    if (!addressForm.name.trim()) nextErrors.name = 'Name is required'
-    if (!addressForm.surname.trim()) nextErrors.surname = 'Surname is required'
-    if (!addressForm.phone.trim()) {
-      nextErrors.phone = 'Phone is required'
-    } else if (!/^(\+90|0)?5\d{9}$/.test(addressForm.phone)) {
-      nextErrors.phone = 'Enter a valid Türkiye phone number'
-    }
-    if (!addressForm.city.trim()) nextErrors.city = 'City is required'
-    if (!addressForm.district.trim()) nextErrors.district = 'District is required'
-    if (!addressForm.neighborhood.trim()) {
-      nextErrors.neighborhood = 'Neighborhood is required'
-    }
-    setAddressErrors(nextErrors)
-    return Object.keys(nextErrors).length === 0
-  }
-
-  const validateCardForm = () => {
-    const nextErrors = {}
-    if (!cardForm.name_on_card.trim()) nextErrors.name_on_card = 'Name is required'
-    if (!/^\d{16}$/.test(cardForm.card_no)) {
-      nextErrors.card_no = 'Card number must be 16 digits'
-    }
-    if (!/^(0?[1-9]|1[0-2])$/.test(String(cardForm.expire_month))) {
-      nextErrors.expire_month = 'Month must be 1-12'
-    }
-    if (!/^\d{4}$/.test(String(cardForm.expire_year))) {
-      nextErrors.expire_year = 'Year must be 4 digits'
-    }
-    setCardErrors(nextErrors)
-    return Object.keys(nextErrors).length === 0
-  }
-
-  const handleAddressSubmit = async (event) => {
-    event.preventDefault()
-    if (!validateAddressForm()) return
-    try {
-      const payloadBase = {
-        ...addressForm,
-        title: formatAddressTitle(addressForm.title, addressType),
-      }
-      if (editingAddressId) {
-        const payload = { id: editingAddressId, ...payloadBase }
-        await axiosClient.put('/user/address', payload)
-        setAddresses((prev) =>
-          prev.map((item) => (item.id === editingAddressId ? payload : item))
-        )
-      } else {
-        const response = await axiosClient.post('/user/address', payloadBase)
-        setAddresses((prev) => [...prev, response?.data ?? payloadBase])
-      }
-      setAddressForm(emptyAddress)
-      setAddressType('shipping')
-      setEditingAddressId(null)
-      setAddressErrors({})
-    } catch (error) {
-      toast.error(error?.message || 'Failed to save address.')
-    }
+  const openAddAddressForm = (type = 'shipping') => {
+    setEditingAddressId(null)
+    setAddressType(type)
+    setAddressForm(emptyAddress)
+    setAddressErrors({})
+    setShowAddressForm(true)
   }
 
   const handleAddressEdit = (address) => {
+    const parsed = parseNeighborhood(address.neighborhood)
     setEditingAddressId(address.id)
-    setAddressType(getAddressTypeFromTitle(address.title))
+    setAddressType(getAddressKind(address.title))
     setAddressForm({
       title: stripAddressPrefix(address.title ?? ''),
       name: address.name ?? '',
@@ -304,18 +249,107 @@ const CreateOrderPage = () => {
       phone: address.phone ?? '',
       city: address.city ?? '',
       district: address.district ?? '',
-      neighborhood: address.neighborhood ?? '',
+      neighborhood: parsed.mahalle,
+      address: parsed.address,
     })
+    setAddressErrors({})
+    setShowAddressForm(true)
+  }
+
+  const validateAddressForm = () => {
+    const nextErrors = {}
+    if (!addressForm.title.trim()) nextErrors.title = 'Adres başlığı zorunlu'
+    if (!addressForm.name.trim()) nextErrors.name = 'Ad zorunlu'
+    if (!addressForm.surname.trim()) nextErrors.surname = 'Soyad zorunlu'
+    if (!addressForm.phone.trim()) {
+      nextErrors.phone = 'Telefon zorunlu'
+    } else if (!/^(\+90|0)?5\d{9}$/.test(addressForm.phone.replace(/\s/g, ''))) {
+      nextErrors.phone = 'Geçerli bir telefon girin'
+    }
+    if (!addressForm.city.trim()) nextErrors.city = 'İl zorunlu'
+    if (!addressForm.district.trim()) nextErrors.district = 'İlçe zorunlu'
+    if (!addressForm.neighborhood.trim() && !addressForm.address.trim()) {
+      nextErrors.neighborhood = 'Mahalle / adres zorunlu'
+    }
+    setAddressErrors(nextErrors)
+    return Object.keys(nextErrors).length === 0
+  }
+
+  const handleAddressSubmit = async (event) => {
+    event.preventDefault()
+    if (!validateAddressForm()) return
+
+    const payloadBase = {
+      title: formatAddressTitle(addressForm.title, addressType),
+      name: addressForm.name.trim(),
+      surname: addressForm.surname.trim(),
+      phone: addressForm.phone.trim(),
+      city: addressForm.city.trim().toLowerCase(),
+      district: addressForm.district.trim().toLowerCase(),
+      neighborhood: buildNeighborhood(
+        addressForm.neighborhood,
+        addressForm.address
+      ),
+    }
+
+    try {
+      if (editingAddressId) {
+        const payload = { id: editingAddressId, ...payloadBase }
+        const response = await axiosClient.put('/user/address', payload)
+        const saved = response?.data ?? payload
+        setAddresses((prev) =>
+          prev.map((item) => (idEquals(item.id, editingAddressId) ? saved : item))
+        )
+        toast.success('Adres güncellendi')
+      } else {
+        const response = await axiosClient.post('/user/address', payloadBase)
+        const saved = response?.data ?? payloadBase
+        setAddresses((prev) => [...prev, saved])
+        if (addressType === 'shipping') setSelectedShippingId(saved.id)
+        if (addressType === 'billing') setSelectedBillingId(saved.id)
+        toast.success('Adres eklendi')
+      }
+
+      setAddressForm(emptyAddress)
+      setEditingAddressId(null)
+      setShowAddressForm(false)
+      setAddressErrors({})
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || error?.message || 'Adres kaydedilemedi.'
+      )
+    }
   }
 
   const handleAddressDelete = async (addressId) => {
     try {
       await axiosClient.delete(`/user/address/${addressId}`)
       setAddresses((prev) => prev.filter((item) => !idEquals(item.id, addressId)))
-      setSelectedAddressId((prev) => (idEquals(prev, addressId) ? null : prev))
+      setSelectedShippingId((prev) => (idEquals(prev, addressId) ? null : prev))
+      setSelectedBillingId((prev) => (idEquals(prev, addressId) ? null : prev))
+      toast.success('Adres silindi')
     } catch (error) {
-      toast.error(error?.message || 'Failed to delete address.')
+      toast.error(
+        error?.response?.data?.message || error?.message || 'Adres silinemedi.'
+      )
     }
+  }
+
+  const validateCardForm = () => {
+    const nextErrors = {}
+    const digits = String(cardForm.card_no ?? '').replace(/\D/g, '')
+    if (!cardForm.name_on_card.trim()) nextErrors.name_on_card = 'İsim zorunlu'
+    if (!/^\d{16}$/.test(digits)) {
+      nextErrors.card_no = 'Kart numarası 16 haneli olmalı'
+    }
+    if (!/^(0?[1-9]|1[0-2])$/.test(String(cardForm.expire_month))) {
+      nextErrors.expire_month = 'Ay 1-12 olmalı'
+    }
+    if (!/^\d{4}$/.test(String(cardForm.expire_year))) {
+      nextErrors.expire_year = 'Yıl 4 haneli olmalı'
+    }
+    setCardErrors(nextErrors)
+    return Object.keys(nextErrors).length === 0
   }
 
   const handleCardSubmit = async (event) => {
@@ -323,34 +357,47 @@ const CreateOrderPage = () => {
     if (!validateCardForm()) return
     try {
       const payloadBase = {
-        ...cardForm,
+        card_no: String(cardForm.card_no ?? '').replace(/\D/g, ''),
+        name_on_card: cardForm.name_on_card.trim(),
         expire_month: Number(cardForm.expire_month),
         expire_year: Number(cardForm.expire_year),
       }
       if (editingCardId) {
         const payload = { id: editingCardId, ...payloadBase }
-        await axiosClient.put('/user/card', payload)
+        const response = await axiosClient.put('/user/card', payload)
+        const saved = normalizeCollection(response?.data)[0] ?? response?.data ?? payload
         setCards((prev) =>
-          prev.map((item) => (item.id === editingCardId ? payload : item))
+          prev.map((item) => (idEquals(item.id, editingCardId) ? saved : item))
         )
+        toast.success('Kayıtlı kart güncellendi')
       } else {
         const response = await axiosClient.post('/user/card', payloadBase)
-        setCards((prev) => [...prev, response?.data ?? payloadBase])
+        const saved =
+          normalizeCollection(response?.data)[0] ??
+          (response?.data?.id ? response.data : null) ??
+          { ...payloadBase, id: Date.now() }
+        setCards((prev) => [...prev, saved])
+        setSelectedCardId(saved.id)
+        toast.success('Kart kayıtlı kart olarak eklendi')
       }
       setCardForm(emptyCard)
       setEditingCardId(null)
       setCardErrors({})
+      setPaymentMode('saved')
     } catch (error) {
-      toast.error(error?.message || 'Failed to save card.')
+      toast.error(
+        error?.response?.data?.message || error?.message || 'Kart kaydedilemedi.'
+      )
     }
   }
 
   const handleCardEdit = (card) => {
     setEditingCardId(card.id)
+    setPaymentMode('new')
     setCardForm({
       card_no: card.card_no ?? '',
-      expire_month: card.expire_month ?? '',
-      expire_year: card.expire_year ?? '',
+      expire_month: String(card.expire_month ?? ''),
+      expire_year: String(card.expire_year ?? ''),
       name_on_card: card.name_on_card ?? '',
     })
   }
@@ -361,33 +408,75 @@ const CreateOrderPage = () => {
       setCards((prev) => prev.filter((item) => !idEquals(item.id, cardId)))
       setSelectedCardId((prev) => (idEquals(prev, cardId) ? null : prev))
     } catch (error) {
-      toast.error(error?.message || 'Failed to delete card.')
+      toast.error(
+        error?.response?.data?.message || error?.message || 'Kart silinemedi.'
+      )
     }
   }
 
+  const handlePayWithSavedCard = () => {
+    if (cards.length === 0) {
+      toast.info('Kayıtlı kart bulunamadı. Yeni kart ekleyin.')
+      setPaymentMode('new')
+      return
+    }
+    setPaymentMode('saved')
+    setEditingCardId(null)
+    setCardForm(emptyCard)
+    setCardErrors({})
+    const nextId = selectedCardId || cards[0].id
+    setSelectedCardId(nextId)
+    setTimeout(() => ccvInputRef.current?.focus(), 50)
+    toast.success('Kayıtlı kart seçildi. CVV girin (örn. 321).')
+  }
+
+  const handleContinueToPayment = () => {
+    if (!selectedShippingId) {
+      toast.error('Lütfen bir teslimat adresi seçin.')
+      return
+    }
+    if (!sameAsShipping && !selectedBillingId) {
+      toast.error('Lütfen bir fatura adresi seçin.')
+      return
+    }
+    setStep(2)
+    if (cards.length > 0) {
+      setPaymentMode('saved')
+      setTimeout(() => ccvInputRef.current?.focus(), 100)
+    } else {
+      setPaymentMode('new')
+    }
+  }
+
+  const orderBlockers = []
+  if (selectedItems.length === 0) orderBlockers.push('Sepette seçili ürün yok')
+  if (!selectedAddressId) orderBlockers.push('Teslimat adresi seçilmedi')
+  if (!selectedCardId) orderBlockers.push('Kayıtlı kart seçilmedi')
+  if (!termsAccepted) orderBlockers.push('Sözleşmeyi onaylayın')
+  if (!/^\d{3,4}$/.test(ccv)) orderBlockers.push('CVV girin (3-4 hane)')
+
+  const canSubmitOrder = orderBlockers.length === 0 && !isSubmitting
+
   const handleCreateOrder = async () => {
-    if (!/^\d{3,4}$/.test(ccv)) {
-      setCcvError('CCV must be 3 or 4 digits')
-      toast.error('Please enter a valid CCV.')
+    if (orderBlockers.length) {
+      toast.error(orderBlockers[0])
+      if (!/^\d{3,4}$/.test(ccv)) {
+        setPaymentMode('saved')
+        setCcvError('CVV 3 veya 4 haneli olmalı')
+        setTimeout(() => ccvInputRef.current?.focus(), 50)
+      }
       return
     }
     setCcvError('')
-    if (!selectedAddressId || !selectedCardId || !ccv) {
-      toast.error('Please select address, card, and enter CCV.')
-      return
-    }
-    if (!termsAccepted) {
-      toast.error('Please accept the terms and conditions.')
-      return
-    }
+
     const selectedCard = cards.find((card) => idEquals(card.id, selectedCardId))
     if (!selectedCard) {
-      toast.error('Please select a card.')
+      toast.error('Lütfen bir kart seçin.')
       return
     }
 
     const payload = {
-      address_id: asNumericIfPossible(selectedAddressId),
+      address_id: Number(selectedAddressId),
       order_date: new Date().toISOString(),
       card_no: String(selectedCard.card_no),
       card_name: selectedCard.name_on_card,
@@ -408,423 +497,741 @@ const CreateOrderPage = () => {
       const createdOrderId = response?.data?.id
       toast.success(
         createdOrderId
-          ? `Congrats! Your order #${createdOrderId} has been created.`
-          : 'Congrats! Your order has been created.'
+          ? `Tebrikler! Siparişiniz oluşturuldu (#${createdOrderId})`
+          : 'Tebrikler! Siparişiniz oluşturuldu'
       )
       dispatch(setCart([]))
       dispatch(setCouponCode(''))
       dispatch(setAppliedCoupon(''))
       dispatch(setAddress({}))
       dispatch(setPayment({}))
-      setSelectedAddressId(null)
-      setSelectedCardId(null)
-      setCcv('')
-      setTermsAccepted(false)
-      setStep(1)
       history.push('/orders', { createdOrderId })
     } catch (error) {
-      toast.error(error?.message || 'Failed to create order.')
+      toast.error(
+        error?.response?.data?.message || error?.message || 'Sipariş oluşturulamadı.'
+      )
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const addressButtonLabel = editingAddressId ? 'Update Address' : 'Add Address'
-  const cardButtonLabel = editingCardId ? 'Update Card' : 'Add Card'
+  const renderAddressCard = (address, selectedId, onSelect) => {
+    const isSelected = idEquals(selectedId, address.id)
+    const displayTitle = stripAddressPrefix(address.title) || address.title
+    const parsed = parseNeighborhood(address.neighborhood)
+
+    return (
+      <div
+        key={address.id}
+        role="button"
+        tabIndex={0}
+        onClick={() => onSelect(address.id)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            onSelect(address.id)
+          }
+        }}
+        className={`flex min-h-[160px] w-full flex-col gap-2 rounded-xl border bg-white p-4 text-left shadow-sm transition sm:w-[calc(50%-8px)] ${
+          isSelected ? 'border-orange-500 ring-1 ring-orange-500' : 'border-slate-200'
+        }`}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span
+              className={`flex h-4 w-4 items-center justify-center rounded-full border ${
+                isSelected
+                  ? 'border-orange-500 bg-orange-500'
+                  : 'border-slate-300 bg-white'
+              }`}
+            >
+              {isSelected ? (
+                <span className="h-1.5 w-1.5 rounded-full bg-white" />
+              ) : null}
+            </span>
+            <span className="text-sm font-semibold text-slate-900">{displayTitle}</span>
+          </div>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              handleAddressEdit(address)
+            }}
+            className="text-xs font-semibold text-orange-500 hover:text-orange-600"
+          >
+            Düzenle
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-1 text-sm text-slate-600">
+          <span>
+            {address.name} {address.surname}
+          </span>
+          <span>{maskPhone(address.phone)}</span>
+          <span className="text-xs leading-relaxed text-slate-500">
+            {[parsed.mahalle || parsed.address, address.district, address.city]
+              .filter(Boolean)
+              .join(' / ')}
+          </span>
+          {parsed.mahalle && parsed.address ? (
+            <span className="text-xs text-slate-500">{parsed.address}</span>
+          ) : null}
+        </div>
+
+        <div className="mt-auto flex items-center justify-between pt-2">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              handleAddressDelete(address.id)
+            }}
+            className="text-xs font-semibold text-rose-500"
+          >
+            Sil
+          </button>
+          {getAddressKind(address.title) === 'billing' ? (
+            <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              Kurumsal
+            </span>
+          ) : null}
+        </div>
+      </div>
+    )
+  }
+
+  const OrderSummaryAside = ({ primaryAction, primaryLabel }) => (
+    <aside className="flex w-full flex-col gap-3 lg:sticky lg:top-6 lg:w-[30%] lg:self-start">
+      <button
+        type="button"
+        onClick={primaryAction}
+        className="w-full rounded-xl bg-orange-500 px-6 py-3.5 text-center text-sm font-bold text-white shadow-sm transition hover:bg-orange-600"
+      >
+        {primaryLabel}
+      </button>
+
+      <label className="flex items-start gap-2 rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-600">
+        <input
+          type="checkbox"
+          checked={termsAccepted}
+          onChange={(event) => setTermsAccepted(event.target.checked)}
+          className="mt-0.5 h-4 w-4 accent-orange-500"
+        />
+        <span>
+          <Link to="/pages" className="font-semibold text-sky-600 underline">
+            Ön Bilgilendirme Koşulları
+          </Link>{' '}
+          ve{' '}
+          <Link to="/pages" className="font-semibold text-sky-600 underline">
+            Mesafeli Satış Sözleşmesi
+          </Link>{' '}
+          &apos;ni okudum ve kabul ediyorum.
+        </span>
+      </label>
+
+      <div className="flex w-full flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-900">Sipariş Özeti</h2>
+        <div className="flex items-center justify-between text-sm text-slate-600">
+          <span>Ürünün Toplamı</span>
+          <span>{formatPrice(orderSubtotal)}</span>
+        </div>
+        <div className="flex items-center justify-between text-sm text-slate-600">
+          <span>Kargo Toplamı</span>
+          <span>{formatPrice(shipping)}</span>
+        </div>
+        {freeShippingDiscount > 0 ? (
+          <div className="flex items-start justify-between gap-3 text-sm text-orange-500">
+            <span className="leading-snug">
+              150 TL ve Üzeri Kargo Bedava (Satıcı Karşılar)
+            </span>
+            <span className="shrink-0 font-semibold">
+              -{formatPrice(freeShippingDiscount)}
+            </span>
+          </div>
+        ) : null}
+        {couponDiscount > 0 ? (
+          <div className="flex items-center justify-between text-sm text-orange-500">
+            <span>İndirim ({appliedCoupon})</span>
+            <span className="font-semibold">-{formatPrice(couponDiscount)}</span>
+          </div>
+        ) : null}
+        <div className="h-px w-full bg-slate-100" />
+        <div className="flex items-center justify-between text-base font-semibold">
+          <span className="text-slate-900">Toplam</span>
+          <span className="text-orange-500">{formatPrice(orderGrandTotal)}</span>
+        </div>
+      </div>
+
+      {step === 2 && orderBlockers.length > 0 ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          Eksik: {orderBlockers.join(' · ')}
+        </div>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={primaryAction}
+        className="w-full rounded-xl bg-orange-500 px-6 py-3.5 text-center text-sm font-bold text-white shadow-sm transition hover:bg-orange-600"
+      >
+        {isSubmitting ? 'Gönderiliyor...' : primaryLabel}
+      </button>
+    </aside>
+  )
 
   return (
     <section className="flex w-full flex-col gap-6">
-      <h1 className="text-2xl font-semibold text-slate-900">Siparis Olustur</h1>
-      <div className="flex w-full flex-col gap-4 rounded border border-slate-200 bg-white p-4">
-        {loadError ? (
-          <div className="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-600">
-            {loadError}
-          </div>
-        ) : null}
-        <div className="flex w-full flex-wrap items-center gap-4 border-b border-slate-200 pb-3 text-xs font-semibold text-slate-500">
-          <button
-            type="button"
-            onClick={() => setStep(1)}
-            className={`rounded-full px-4 py-2 ${
-              step === 1 ? 'bg-amber-500 text-white' : 'bg-slate-100'
+      <h1 className="text-2xl font-semibold text-slate-900">Sipariş Oluştur</h1>
+
+      {loadError ? (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
+          {loadError}
+        </div>
+      ) : null}
+
+      {/* Step tabs */}
+      <div className="flex w-full flex-col gap-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:flex-row">
+        <button
+          type="button"
+          onClick={() => setStep(1)}
+          className={`flex flex-1 flex-col gap-1 border-b-2 px-4 py-3 text-left sm:border-b-0 sm:border-r ${
+            step === 1
+              ? 'border-orange-500 bg-white'
+              : 'border-transparent bg-slate-50 text-slate-400'
+          }`}
+        >
+          <span
+            className={`text-sm font-semibold ${
+              step === 1 ? 'text-orange-500' : 'text-slate-400'
             }`}
           >
-            1 Adres Bilgileri
-          </button>
-          <button
-            type="button"
-            onClick={() => setStep(2)}
-            className={`rounded-full px-4 py-2 ${
-              step === 2 ? 'bg-amber-500 text-white' : 'bg-slate-100'
+            1. Adres Bilgileri
+          </span>
+          {selectedShipping ? (
+            <span className="text-xs text-slate-500">
+              {stripAddressPrefix(selectedShipping.title)} · {selectedShipping.city}/
+              {selectedShipping.district}
+            </span>
+          ) : (
+            <span className="text-xs text-slate-400">Teslimat adresi seçin</span>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            if (selectedShippingId) setStep(2)
+            else toast.error('Önce teslimat adresi seçin.')
+          }}
+          className={`flex flex-1 flex-col gap-1 border-b-2 px-4 py-3 text-left ${
+            step === 2
+              ? 'border-orange-500 bg-white'
+              : 'border-transparent bg-slate-50 text-slate-400'
+          }`}
+        >
+          <span
+            className={`text-sm font-semibold ${
+              step === 2 ? 'text-orange-500' : 'text-slate-400'
             }`}
           >
-            2 Odeme Secenekleri
-          </button>
-        </div>
-        <div className="flex w-full items-center gap-3 rounded bg-slate-50 px-3 py-3 text-xs text-slate-600">
-          Sepetindeki urunleri bireysel veya kurumsal fatura secerek alabilirsin.
-        </div>
+            2. Ödeme Seçenekleri
+          </span>
+        </button>
+      </div>
 
-        {step === 1 ? (
-          <div className="flex w-full flex-col gap-6 lg:flex-row">
-            <div className="flex w-full flex-col gap-6 lg:w-[70%]">
-              <div className="flex w-full flex-col gap-6">
-                <h2 className="text-lg font-semibold text-slate-900">Adresler</h2>
-              {isLoading ? (
-                <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                  Loading
-                </span>
-              ) : null}
-              {addresses.length === 0 ? (
-                <span className="text-sm text-slate-400">Adres bulunamadi.</span>
-              ) : null}
-              <div className="flex w-full flex-col gap-4">
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  Teslimat Adresleri
-                </span>
-                <div className="flex w-full flex-wrap gap-4">
-                  {addresses
-                    .filter((address) =>
-                      String(address.title ?? '').toLowerCase().startsWith('shipping -')
-                    )
-                    .map((address) => (
-                      <div
-                        key={address.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setSelectedAddressId(address.id)}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault()
-                            setSelectedAddressId(address.id)
-                          }
-                        }}
-                        className={`flex w-full flex-col gap-2 rounded border p-3 text-left sm:w-[calc(50%-8px)] ${
-                          idEquals(selectedAddressId, address.id)
-                            ? 'border-amber-500'
-                            : 'border-slate-200'
-                        }`}
-                      >
-                        <span className="text-sm font-semibold text-slate-800">
-                          {address.title}
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          {address.name} {address.surname}
-                        </span>
-                        <span className="text-xs text-slate-500">{address.phone}</span>
-                        <span className="text-xs text-slate-500">
-                          {address.city} / {address.district}
-                        </span>
-                        <span className="text-xs text-slate-400">
-                          {address.neighborhood}
-                        </span>
-                        <div className="flex items-center gap-2 text-xs">
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              handleAddressEdit(address)
-                            }}
-                            className="text-sky-500"
-                          >
-                            Duzenle
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              handleAddressDelete(address.id)
-                            }}
-                            className="text-rose-500"
-                          >
-                            Sil
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-              <div className="flex w-full flex-col gap-4">
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  Fatura Adresleri
-                </span>
-                <div className="flex w-full flex-wrap gap-4">
-                  {addresses
-                    .filter((address) =>
-                      String(address.title ?? '').toLowerCase().startsWith('billing -')
-                    )
-                    .map((address) => (
-                      <div
-                        key={address.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setSelectedAddressId(address.id)}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault()
-                            setSelectedAddressId(address.id)
-                          }
-                        }}
-                        className={`flex w-full flex-col gap-2 rounded border p-3 text-left sm:w-[calc(50%-8px)] ${
-                          idEquals(selectedAddressId, address.id)
-                            ? 'border-amber-500'
-                            : 'border-slate-200'
-                        }`}
-                      >
-                        <span className="text-sm font-semibold text-slate-800">
-                          {address.title}
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          {address.name} {address.surname}
-                        </span>
-                        <span className="text-xs text-slate-500">{address.phone}</span>
-                        <span className="text-xs text-slate-500">
-                          {address.city} / {address.district}
-                        </span>
-                        <span className="text-xs text-slate-400">
-                          {address.neighborhood}
-                        </span>
-                        <div className="flex items-center gap-2 text-xs">
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              handleAddressEdit(address)
-                            }}
-                            className="text-sky-500"
-                          >
-                            Duzenle
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              handleAddressDelete(address.id)
-                            }}
-                            className="text-rose-500"
-                          >
-                            Sil
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
+      <div className="flex items-start gap-3 rounded-xl border border-orange-100 bg-orange-50 px-4 py-3 text-xs text-slate-600">
+        <span className="mt-0.5 text-orange-500">ℹ</span>
+        <span>
+          Kurumsal faturalı alışveriş yapmak için &quot;Faturamı Aynı Adrese Gönder&quot;
+          seçeneğini kaldırın ve fatura adresi olarak kayıtlı kurumsal fatura
+          adresinizi seçin.
+        </span>
+      </div>
+
+      {step === 1 ? (
+        <div className="flex w-full flex-col gap-6 lg:flex-row">
+          <div className="flex w-full flex-col gap-5 lg:w-[70%]">
+            <div className="flex w-full flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-slate-900">Teslimat Adresi</h2>
+              <label className="flex items-center gap-2 text-sm text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={sameAsShipping}
+                  onChange={(event) => setSameAsShipping(event.target.checked)}
+                  className="h-4 w-4 accent-orange-500"
+                />
+                Faturamı Aynı Adrese Gönder
+              </label>
             </div>
 
-            <form className="flex w-full flex-col gap-4" onSubmit={handleAddressSubmit}>
-              <h2 className="text-lg font-semibold text-slate-900">Adres Ekle</h2>
-              <div className="flex w-full flex-wrap gap-2 text-xs font-semibold text-slate-500">
-                <button
-                  type="button"
-                  onClick={() => setAddressType('shipping')}
-                  className={`rounded-full px-4 py-2 ${
-                    addressType === 'shipping'
-                      ? 'bg-slate-900 text-white'
-                      : 'bg-slate-100'
-                  }`}
-                >
-                  Teslimat
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAddressType('billing')}
-                  className={`rounded-full px-4 py-2 ${
-                    addressType === 'billing'
-                      ? 'bg-slate-900 text-white'
-                      : 'bg-slate-100'
-                  }`}
-                >
-                  Fatura
-                </button>
-              </div>
-              <div className="flex w-full flex-col gap-3 sm:flex-row">
-                <input
-                  value={addressForm.title}
-                  onChange={(event) =>
-                    setAddressForm((prev) => ({ ...prev, title: event.target.value }))
-                  }
-                  placeholder="Adres Basligi"
-                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
-                />
-                {addressErrors.title ? (
-                  <span className="text-xs text-rose-500">{addressErrors.title}</span>
-                ) : null}
-                <input
-                  value={addressForm.phone}
-                  onChange={(event) =>
-                    setAddressForm((prev) => ({ ...prev, phone: event.target.value }))
-                  }
-                  placeholder="Telefon"
-                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
-                />
-                {addressErrors.phone ? (
-                  <span className="text-xs text-rose-500">{addressErrors.phone}</span>
-                ) : null}
-              </div>
-              <div className="flex w-full flex-col gap-3 sm:flex-row">
-                <input
-                  value={addressForm.name}
-                  onChange={(event) =>
-                    setAddressForm((prev) => ({ ...prev, name: event.target.value }))
-                  }
-                  placeholder="Ad"
-                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
-                />
-                {addressErrors.name ? (
-                  <span className="text-xs text-rose-500">{addressErrors.name}</span>
-                ) : null}
-                <input
-                  value={addressForm.surname}
-                  onChange={(event) =>
-                    setAddressForm((prev) => ({ ...prev, surname: event.target.value }))
-                  }
-                  placeholder="Soyad"
-                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
-                />
-                {addressErrors.surname ? (
-                  <span className="text-xs text-rose-500">{addressErrors.surname}</span>
-                ) : null}
-              </div>
-              <div className="flex w-full flex-col gap-3 sm:flex-row">
-                <select
-                  value={addressForm.city}
-                  onChange={(event) =>
-                    setAddressForm((prev) => ({ ...prev, city: event.target.value }))
-                  }
-                  className="w-full rounded border border-slate-200 bg-white px-3 py-2 text-sm"
-                >
-                  <option value="">Sehir (Il)</option>
-                  {turkishCities.map((city) => (
-                    <option key={city} value={city.toLowerCase()}>
-                      {city}
-                    </option>
-                  ))}
-                </select>
-                {addressErrors.city ? (
-                  <span className="text-xs text-rose-500">{addressErrors.city}</span>
-                ) : null}
-                <input
-                  value={addressForm.district}
-                  onChange={(event) =>
-                    setAddressForm((prev) => ({ ...prev, district: event.target.value }))
-                  }
-                  placeholder="Ilce"
-                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
-                />
-                {addressErrors.district ? (
-                  <span className="text-xs text-rose-500">{addressErrors.district}</span>
-                ) : null}
-              </div>
-              <textarea
-                value={addressForm.neighborhood}
-                onChange={(event) =>
-                  setAddressForm((prev) => ({ ...prev, neighborhood: event.target.value }))
-                }
-                placeholder="Adres detayi (sokak, bina, kapi no)"
-                className="min-h-[110px] w-full rounded border border-slate-200 px-3 py-2 text-sm"
-              />
-              {addressErrors.neighborhood ? (
-                <span className="text-xs text-rose-500">
-                  {addressErrors.neighborhood}
-                </span>
-              ) : null}
-              <button
-                type="submit"
-                className="w-full rounded bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white"
-              >
-                {addressButtonLabel}
-              </button>
-            </form>
-            </div>
-            <aside className="flex w-full flex-col gap-4 lg:w-[30%]">
+            {isLoading ? (
+              <span className="text-sm text-slate-400">Adresler yükleniyor...</span>
+            ) : null}
+
+            <div className="flex w-full flex-wrap gap-4">
               <button
                 type="button"
-                onClick={() => setStep(2)}
-                className="rounded bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white"
+                onClick={() => openAddAddressForm('shipping')}
+                className="flex min-h-[160px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-white p-4 text-slate-500 transition hover:border-orange-400 hover:text-orange-500 sm:w-[calc(50%-8px)]"
               >
-                Kaydet ve Devam Et
+                <span className="text-3xl font-light leading-none">+</span>
+                <span className="text-sm font-semibold">Yeni Adres Ekle</span>
               </button>
-              <div className="flex w-full flex-col gap-3 rounded border border-slate-200 bg-white p-4">
-                <h2 className="text-lg font-semibold text-slate-900">Siparis Ozeti</h2>
-                <div className="flex items-center justify-between text-sm text-slate-600">
-                  <span>Urunun Toplami</span>
-                  <span>{orderSubtotal.toFixed(2)} TL</span>
+
+              {shippingAddresses.map((address) =>
+                renderAddressCard(address, selectedShippingId, setSelectedShippingId)
+              )}
+            </div>
+
+            {!sameAsShipping ? (
+              <div className="flex w-full flex-col gap-4">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-lg font-semibold text-slate-900">Fatura Adresi</h2>
+                  <button
+                    type="button"
+                    onClick={() => openAddAddressForm('billing')}
+                    className="text-sm font-semibold text-orange-500"
+                  >
+                    + Fatura Adresi Ekle
+                  </button>
                 </div>
-                <div className="flex items-center justify-between text-sm text-slate-600">
-                  <span>Kargo Toplam</span>
-                  <span>{shipping.toFixed(2)} TL</span>
-                </div>
-                {(freeShippingDiscount > 0 || couponDiscount > 0) ? (
-                  <div className="flex items-center justify-between text-sm text-emerald-600">
-                    <span>Indirim</span>
-                    <span>
-                      -{(freeShippingDiscount + couponDiscount).toFixed(2)} TL
+                <div className="flex w-full flex-wrap gap-4">
+                  {billingAddresses.length === 0 ? (
+                    <span className="text-sm text-slate-400">
+                      Kayıtlı fatura adresi yok.
                     </span>
+                  ) : (
+                    billingAddresses.map((address) =>
+                      renderAddressCard(
+                        address,
+                        selectedBillingId,
+                        setSelectedBillingId
+                      )
+                    )
+                  )}
+                </div>
+              </div>
+            ) : null}
+
+            {showAddressForm ? (
+              <form
+                onSubmit={handleAddressSubmit}
+                className="flex w-full flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h3 className="text-base font-semibold text-slate-900">
+                    {editingAddressId ? 'Adresi Güncelle' : 'Yeni Adres Ekle'}
+                  </h3>
+                  <div className="flex gap-2 text-xs font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => setAddressType('shipping')}
+                      className={`rounded-full px-3 py-1.5 ${
+                        addressType === 'shipping'
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      Teslimat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAddressType('billing')}
+                      className={`rounded-full px-3 py-1.5 ${
+                        addressType === 'billing'
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      Fatura
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid w-full gap-3 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-slate-500">
+                      Address Title
+                    </label>
+                    <input
+                      name="title"
+                      value={addressForm.title}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({ ...prev, title: e.target.value }))
+                      }
+                      placeholder="ev adresi"
+                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-orange-400"
+                    />
+                    {addressErrors.title ? (
+                      <span className="text-xs text-rose-500">{addressErrors.title}</span>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-slate-500">Phone</label>
+                    <input
+                      name="phone"
+                      value={addressForm.phone}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({ ...prev, phone: e.target.value }))
+                      }
+                      placeholder="05376845834"
+                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-orange-400"
+                    />
+                    {addressErrors.phone ? (
+                      <span className="text-xs text-rose-500">{addressErrors.phone}</span>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-slate-500">Name</label>
+                    <input
+                      name="name"
+                      value={addressForm.name}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({ ...prev, name: e.target.value }))
+                      }
+                      placeholder="Alişan"
+                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-orange-400"
+                    />
+                    {addressErrors.name ? (
+                      <span className="text-xs text-rose-500">{addressErrors.name}</span>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-slate-500">
+                      Surname
+                    </label>
+                    <input
+                      name="surname"
+                      value={addressForm.surname}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({
+                          ...prev,
+                          surname: e.target.value,
+                        }))
+                      }
+                      placeholder="Karababa"
+                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-orange-400"
+                    />
+                    {addressErrors.surname ? (
+                      <span className="text-xs text-rose-500">
+                        {addressErrors.surname}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-slate-500">
+                      City (İl)
+                    </label>
+                    <select
+                      name="city"
+                      value={addressForm.city}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({ ...prev, city: e.target.value }))
+                      }
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400"
+                    >
+                      <option value="">Seçiniz</option>
+                      {turkishCities.map((city) => (
+                        <option key={city} value={city.toLowerCase()}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                    {addressErrors.city ? (
+                      <span className="text-xs text-rose-500">{addressErrors.city}</span>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-slate-500">
+                      District (İlçe)
+                    </label>
+                    <input
+                      name="district"
+                      value={addressForm.district}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({
+                          ...prev,
+                          district: e.target.value,
+                        }))
+                      }
+                      placeholder="esenler"
+                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-orange-400"
+                    />
+                    {addressErrors.district ? (
+                      <span className="text-xs text-rose-500">
+                        {addressErrors.district}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-col gap-1 sm:col-span-2">
+                    <label className="text-xs font-semibold text-slate-500">
+                      Neighborhood (Mahalle)
+                    </label>
+                    <input
+                      name="neighborhood"
+                      value={addressForm.neighborhood}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({
+                          ...prev,
+                          neighborhood: e.target.value,
+                        }))
+                      }
+                      placeholder="Mahalle"
+                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-orange-400"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1 sm:col-span-2">
+                    <label className="text-xs font-semibold text-slate-500">
+                      Address (Sokak, bina, kapı no)
+                    </label>
+                    <textarea
+                      name="address"
+                      value={addressForm.address}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({
+                          ...prev,
+                          address: e.target.value,
+                        }))
+                      }
+                      placeholder="adres detayları"
+                      className="min-h-[90px] rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-orange-400"
+                    />
+                    {addressErrors.neighborhood ? (
+                      <span className="text-xs text-rose-500">
+                        {addressErrors.neighborhood}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="submit"
+                    className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
+                  >
+                    {editingAddressId ? 'Update Address' : 'Add Address'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddressForm(false)
+                      setEditingAddressId(null)
+                      setAddressForm(emptyAddress)
+                      setAddressErrors({})
+                    }}
+                    className="rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600"
+                  >
+                    İptal
+                  </button>
+                </div>
+              </form>
+            ) : null}
+          </div>
+
+          <OrderSummaryAside
+            primaryAction={handleContinueToPayment}
+            primaryLabel="Kaydet ve Devam Et"
+          />
+        </div>
+      ) : null}
+
+      {step === 2 ? (
+        <div className="flex w-full flex-col gap-6 lg:flex-row">
+          <div className="flex w-full flex-col gap-5 lg:w-[70%]">
+            <div className="flex w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+              <button
+                type="button"
+                onClick={handlePayWithSavedCard}
+                className={`flex-1 px-4 py-3 text-sm font-semibold transition ${
+                  paymentMode === 'saved'
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                Kayıtlı kartımla ödeme yap
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setPaymentMode('new')
+                  setEditingCardId(null)
+                  setCardForm(emptyCard)
+                  setCardErrors({})
+                }}
+                className={`flex-1 px-4 py-3 text-sm font-semibold transition ${
+                  paymentMode === 'new'
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                Yeni kart ekle
+              </button>
+            </div>
+
+            {paymentMode === 'saved' ? (
+              <div className="flex w-full flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-lg font-semibold text-slate-900">Kayıtlı Kartlar</h2>
+                  <span className="text-xs text-slate-400">{cards.length} kart</span>
+                </div>
+
+                {cards.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-slate-300 px-4 py-8 text-center">
+                    <p className="text-sm text-slate-500">Kayıtlı kart bulunamadı.</p>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMode('new')}
+                      className="mt-3 text-sm font-semibold text-orange-500"
+                    >
+                      Yeni kart ekle
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex w-full flex-col gap-3">
+                    {cards.map((card) => {
+                      const selected = idEquals(selectedCardId, card.id)
+                      return (
+                        <button
+                          key={card.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCardId(card.id)
+                            setTimeout(() => ccvInputRef.current?.focus(), 50)
+                          }}
+                          className={`flex w-full items-start justify-between gap-4 rounded-xl border p-4 text-left transition ${
+                            selected
+                              ? 'border-orange-500 bg-orange-50 ring-1 ring-orange-500'
+                              : 'border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <span
+                              className={`mt-1 flex h-5 w-5 items-center justify-center rounded-full border ${
+                                selected
+                                  ? 'border-orange-500 bg-orange-500'
+                                  : 'border-slate-300 bg-white'
+                              }`}
+                            >
+                              {selected ? (
+                                <span className="h-2 w-2 rounded-full bg-white" />
+                              ) : null}
+                            </span>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-sm font-semibold text-slate-900">
+                                {card.name_on_card}
+                              </span>
+                              <span className="font-mono text-sm text-slate-600">
+                                {maskCardNo(card.card_no)}
+                              </span>
+                              <span className="text-xs text-slate-500">
+                                SKT {card.expire_month}/{card.expire_year}
+                              </span>
+                            </div>
+                          </div>
+                          <div
+                            className="flex gap-3 text-xs"
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
+                            role="presentation"
+                          >
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => handleCardEdit(card)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleCardEdit(card)}
+                              className="cursor-pointer font-semibold text-orange-500"
+                            >
+                              Düzenle
+                            </span>
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => handleCardDelete(card.id)}
+                              onKeyDown={(e) =>
+                                e.key === 'Enter' && handleCardDelete(card.id)
+                              }
+                              className="cursor-pointer font-semibold text-rose-500"
+                            >
+                              Sil
+                            </span>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {selectedCardId ? (
+                  <div className="flex w-full flex-col gap-2 rounded-xl border border-orange-200 bg-orange-50 p-4 sm:max-w-sm">
+                    <label className="text-sm font-semibold text-slate-800">
+                      Güvenlik kodu (CVV)
+                    </label>
+                    <input
+                      ref={ccvInputRef}
+                      value={ccv}
+                      onChange={(e) => {
+                        setCcv(e.target.value.replace(/\D/g, '').slice(0, 4))
+                        if (ccvError) setCcvError('')
+                      }}
+                      placeholder="321"
+                      inputMode="numeric"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-base tracking-widest outline-none focus:border-orange-400"
+                    />
+                    {ccvError ? (
+                      <span className="text-xs text-rose-500">{ccvError}</span>
+                    ) : (
+                      <span className="text-xs text-slate-500">
+                        Test için CVV: <strong>321</strong>
+                      </span>
+                    )}
                   </div>
                 ) : null}
-                <div className="h-px w-full bg-slate-100" />
-                <div className="flex items-center justify-between text-base font-semibold text-slate-900">
-                  <span>Toplam</span>
-                  <span>{orderGrandTotal.toFixed(2)} TL</span>
-                </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="rounded bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white"
+            ) : (
+              <form
+                className="flex w-full flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                onSubmit={handleCardSubmit}
               >
-                Kaydet ve Devam Et
-              </button>
-            </aside>
-          </div>
-        ) : null}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-base font-semibold text-slate-900">
+                    {editingCardId ? 'Kartı Güncelle' : 'Yeni Kart Bilgileri'}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={handlePayWithSavedCard}
+                    className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700"
+                  >
+                    Kayıtlı kartımla ödeme yap
+                  </button>
+                </div>
 
-        {step === 2 ? (
-          <div className="flex w-full flex-col gap-6 lg:flex-row">
-            <div className="flex w-full flex-col gap-6 lg:w-[70%]">
-              <div className="flex w-full items-center justify-between">
-                <h2 className="text-lg font-semibold text-slate-900">Kart Bilgileri</h2>
-                <button
-                  type="button"
-                  onClick={() => setSelectedCardId(null)}
-                  className="text-xs font-semibold text-slate-500 underline"
-                >
-                  Kayitli kartimla odeme yap
-                </button>
-              </div>
-              <form className="flex w-full flex-col gap-4" onSubmit={handleCardSubmit}>
                 <div className="flex w-full flex-col gap-2">
-                  <label className="text-sm font-semibold text-slate-700">
-                    Kart Numarasi
-                  </label>
+                  <label className="text-sm font-semibold text-slate-700">Kart Numarası</label>
                   <input
                     value={cardForm.card_no}
-                    onChange={(event) =>
-                      setCardForm((prev) => ({ ...prev, card_no: event.target.value }))
+                    onChange={(e) =>
+                      setCardForm((prev) => ({ ...prev, card_no: e.target.value }))
                     }
-                    placeholder="Kart numarasi"
-                    className="w-full rounded border border-slate-200 px-3 py-3 text-sm"
+                    placeholder="1234123412341234"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-3 text-sm"
                   />
                   {cardErrors.card_no ? (
                     <span className="text-xs text-rose-500">{cardErrors.card_no}</span>
                   ) : null}
                 </div>
+
                 <div className="flex w-full flex-col gap-3 sm:flex-row">
-                  <div className="flex w-full flex-col gap-2 sm:w-[35%]">
+                  <div className="flex w-full flex-col gap-2 sm:w-[45%]">
                     <label className="text-sm font-semibold text-slate-700">
                       Son Kullanma Tarihi
                     </label>
-                    <div className="flex w-full gap-2">
+                    <div className="flex gap-2">
                       <select
                         value={cardForm.expire_month}
-                        onChange={(event) =>
+                        onChange={(e) =>
                           setCardForm((prev) => ({
                             ...prev,
-                            expire_month: event.target.value,
+                            expire_month: e.target.value,
                           }))
                         }
-                        className="w-full rounded border border-slate-200 bg-white px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
                       >
                         <option value="">Ay</option>
                         {months.map((month) => (
@@ -835,15 +1242,15 @@ const CreateOrderPage = () => {
                       </select>
                       <select
                         value={cardForm.expire_year}
-                        onChange={(event) =>
+                        onChange={(e) =>
                           setCardForm((prev) => ({
                             ...prev,
-                            expire_year: event.target.value,
+                            expire_year: e.target.value,
                           }))
                         }
-                        className="w-full rounded border border-slate-200 bg-white px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
                       >
-                        <option value="">Yil</option>
+                        <option value="">Yıl</option>
                         {years.map((year) => (
                           <option key={year} value={year}>
                             {year}
@@ -851,199 +1258,67 @@ const CreateOrderPage = () => {
                         ))}
                       </select>
                     </div>
-                    {cardErrors.expire_month || cardErrors.expire_year ? (
-                      <span className="text-xs text-rose-500">
-                        {cardErrors.expire_month || cardErrors.expire_year}
-                      </span>
-                    ) : null}
                   </div>
-                  <div className="flex w-full flex-col gap-2 sm:w-[25%]">
+                  <div className="flex w-full flex-col gap-2 sm:w-[30%]">
                     <label className="text-sm font-semibold text-slate-700">CVV</label>
                     <input
+                      ref={ccvInputRef}
                       value={ccv}
-                      onChange={(event) => {
-                        setCcv(event.target.value)
+                      onChange={(e) => {
+                        setCcv(e.target.value.replace(/\D/g, '').slice(0, 4))
                         if (ccvError) setCcvError('')
                       }}
-                      placeholder="CVV"
-                      className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
+                      placeholder="321"
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                     />
-                    {ccvError ? (
-                      <span className="text-xs text-rose-500">{ccvError}</span>
-                    ) : null}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <input type="checkbox" className="h-4 w-4" />
-                  3D Secure ile odemek istiyorum
-                </div>
+
                 <div className="flex w-full flex-col gap-2">
                   <label className="text-sm font-semibold text-slate-700">
-                    Kart Uzerindeki Isim
+                    Kart Üzerindeki İsim
                   </label>
                   <input
                     value={cardForm.name_on_card}
-                    onChange={(event) =>
+                    onChange={(e) =>
                       setCardForm((prev) => ({
                         ...prev,
-                        name_on_card: event.target.value,
+                        name_on_card: e.target.value,
                       }))
                     }
-                    placeholder="Kart uzerindeki isim"
-                    className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
+                    placeholder="Ali Bas"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                   />
                   {cardErrors.name_on_card ? (
-                    <span className="text-xs text-rose-500">
-                      {cardErrors.name_on_card}
-                    </span>
+                    <span className="text-xs text-rose-500">{cardErrors.name_on_card}</span>
                   ) : null}
                 </div>
-                <button
-                  type="submit"
-                  className="w-full rounded bg-slate-900 px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white"
-                >
-                  {cardButtonLabel}
-                </button>
-              </form>
 
-              <div className="flex w-full flex-col gap-4">
-                <h3 className="text-sm font-semibold text-slate-700">
-                  Kayitli Kartlar
-                </h3>
-              {isLoading ? (
-                <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                  Loading
-                </span>
-              ) : null}
-              <div className="flex w-full flex-wrap gap-4">
-                {cards.length === 0 ? (
-                  <span className="text-sm text-slate-400">Kart bulunamadi.</span>
-                ) : (
-                  cards.map((card) => (
-                    <div
-                      key={card.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => setSelectedCardId(card.id)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault()
-                          setSelectedCardId(card.id)
-                        }
-                      }}
-                      className={`flex w-full flex-col gap-2 rounded border p-3 text-left sm:w-[calc(50%-8px)] ${
-                        idEquals(selectedCardId, card.id)
-                          ? 'border-amber-500'
-                          : 'border-slate-200'
-                      }`}
-                    >
-                      <span className="text-sm font-semibold text-slate-800">
-                        {card.name_on_card}
-                      </span>
-                      <span className="text-xs text-slate-500">
-                        {maskCardNo(card.card_no)}
-                      </span>
-                      <span className="text-xs text-slate-500">
-                        {card.expire_month}/{card.expire_year}
-                      </span>
-                      <div className="flex items-center gap-2 text-xs">
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation()
-                            handleCardEdit(card)
-                          }}
-                          className="text-sky-500"
-                        >
-                          Duzenle
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation()
-                            handleCardDelete(card.id)
-                          }}
-                          className="text-rose-500"
-                        >
-                          Sil
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-            <div className="flex w-full flex-col gap-4">
-              <h3 className="text-sm font-semibold text-slate-700">Taksit Secenekleri</h3>
-              <div className="flex w-full flex-col rounded border border-slate-200 bg-white">
-                <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2 text-xs font-semibold text-slate-500">
-                  <span>Taksit Sayisi</span>
-                  <span>Aylik Odeme</span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
+                  >
+                    {editingCardId ? 'Kartı Güncelle' : 'Kayıtlı kart olarak ekle'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePayWithSavedCard}
+                    className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600"
+                  >
+                    İptal
+                  </button>
                 </div>
-                <div className="flex items-center justify-between px-4 py-3 text-sm">
-                  <span className="text-orange-500">Tek Cekim</span>
-                  <span className="font-semibold text-slate-700">
-                    {orderGrandTotal.toFixed(2)} TL
-                  </span>
-                </div>
-              </div>
-            </div>
-            </div>
-            <aside className="flex w-full flex-col gap-4 lg:w-[30%]">
-              <label className="flex items-start gap-2 rounded border border-slate-200 bg-white p-3 text-xs text-slate-600">
-                <input
-                  type="checkbox"
-                  checked={termsAccepted}
-                  onChange={(event) => setTermsAccepted(event.target.checked)}
-                  className="mt-0.5 h-4 w-4"
-                />
-                <span>
-                  <Link to="/pages" className="font-semibold text-slate-700">
-                    On Bilgilendirme Kosullari
-                  </Link>{' '}
-                  ve{' '}
-                  <Link to="/pages" className="font-semibold text-slate-700">
-                    Mesafeli Satis Sozlesmesi
-                  </Link>{' '}
-                  metnini okudum, onayliyorum.
-                </span>
-              </label>
-              <div className="flex w-full flex-col gap-3 rounded border border-slate-200 bg-white p-4">
-                <h2 className="text-lg font-semibold text-slate-900">Siparis Ozeti</h2>
-                <div className="flex items-center justify-between text-sm text-slate-600">
-                  <span>Urunun Toplami</span>
-                  <span>{orderSubtotal.toFixed(2)} TL</span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-slate-600">
-                  <span>Kargo Toplam</span>
-                  <span>{shipping.toFixed(2)} TL</span>
-                </div>
-                {(freeShippingDiscount > 0 || couponDiscount > 0) ? (
-                  <div className="flex items-center justify-between text-sm text-emerald-600">
-                    <span>Indirim</span>
-                    <span>
-                      -{(freeShippingDiscount + couponDiscount).toFixed(2)} TL
-                    </span>
-                  </div>
-                ) : null}
-                <div className="h-px w-full bg-slate-100" />
-                <div className="flex items-center justify-between text-base font-semibold text-slate-900">
-                  <span>Toplam</span>
-                  <span>{orderGrandTotal.toFixed(2)} TL</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleCreateOrder}
-                disabled={!canSubmitOrder}
-                className="rounded bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white disabled:opacity-70"
-              >
-                {isSubmitting ? 'Siparis Olusturuluyor...' : 'Siparis Olustur'}
-              </button>
-            </aside>
+              </form>
+            )}
           </div>
-        ) : null}
-      </div>
+
+          <OrderSummaryAside
+            primaryAction={handleCreateOrder}
+            primaryLabel={isSubmitting ? 'Sipariş Oluşturuluyor...' : 'Sipariş Oluştur'}
+          />
+        </div>
+      ) : null}
     </section>
   )
 }

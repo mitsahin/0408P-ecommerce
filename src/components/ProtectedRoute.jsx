@@ -3,7 +3,9 @@ import { Redirect, Route } from 'react-router-dom'
 
 const ProtectedRoute = ({ component: RouteComponent, ...rest }) => {
   const user = useSelector((state) => state.client?.user ?? {})
-  const isAuthenticated = Boolean(user && (user.id || user.email))
+  const hasUser = Boolean(user && (user.id || user.email))
+  const hasToken = Boolean(localStorage.getItem('token'))
+  const isAuthenticated = hasUser || hasToken
 
   return (
     <Route
