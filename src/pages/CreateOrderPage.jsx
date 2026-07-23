@@ -517,7 +517,7 @@ const CreateOrderPage = () => {
           ...(index === 0 ? { orderSummary } : {}),
         }
         return {
-          product_id: Number.isFinite(numericId) ? numericId : 0,
+          product_id: Number.isFinite(numericId) && numericId > 0 ? numericId : null,
           count: item.count,
           detail: JSON.stringify(snapshot),
         }

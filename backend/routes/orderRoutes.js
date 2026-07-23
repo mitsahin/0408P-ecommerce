@@ -31,6 +31,13 @@ router.get('/', requireAuth, async (req, res) => {
   }
 })
 
+async function resolveProductId(rawId) {
+  const numericId = Number(rawId)
+  if (!Number.isFinite(numericId) || numericId <= 0) return null
+  const found = await query('SELECT id FROM products WHERE id = $1 LIMIT 1', [numericId])
+  return found.rows.length ? numericId : null
+}
+
 router.post('/', requireAuth, async (req, res) => {
   const {
     address_id,
@@ -59,43 +66,53 @@ router.post('/', requireAuth, async (req, res) => {
       return
     }
 
-    const orderResult = await query(
-      `INSERT INTO orders (
-         user_id, address_id, order_date, price,
-         card_no, card_name, card_expire_month, card_expire_year, card_ccv
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       RETURNING id, address_id, order_date, price,
-                 card_no, card_name, card_expire_month, card_expire_year`,
-      [
-        req.user.id,
-        address_id,
-        order_date || new Date().toISOString(),
-        price,
-        String(card_no ?? ''),
-        card_name,
-        card_expire_month,
-        card_expire_year,
-        card_ccv,
-      ]
-    )
+    await query('BEGIN')
 
-    const order = orderResult.rows[0]
-    const orderProducts = []
-
-    for (const item of products) {
-      const itemResult = await query(
-        `INSERT INTO order_items (order_id, product_id, count, detail)
-         VALUES ($1, $2, $3, $4)
-         RETURNING product_id, count, detail`,
-        [order.id, item.product_id, item.count, item.detail ?? '']
+    try {
+      const orderResult = await query(
+        `INSERT INTO orders (
+           user_id, address_id, order_date, price,
+           card_no, card_name, card_expire_month, card_expire_year, card_ccv
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         RETURNING id, address_id, order_date, price,
+                   card_no, card_name, card_expire_month, card_expire_year`,
+        [
+          req.user.id,
+          address_id,
+          order_date || new Date().toISOString(),
+          price,
+          String(card_no ?? ''),
+          card_name,
+          card_expire_month,
+          card_expire_year,
+          card_ccv,
+        ]
       )
-      orderProducts.push(itemResult.rows[0])
-    }
 
-    res.status(201).json({
-      ...order,
-      products: orderProducts,
-    })
+      const order = orderResult.rows[0]
+      const orderProducts = []
+
+      for (const item of products) {
+        const productId = await resolveProductId(item.product_id)
+        const itemResult = await query(
+          `INSERT INTO order_items (order_id, product_id, count, detail)
+           VALUES ($1, $2, $3, $4)
+           RETURNING product_id, count, detail`,
+          [order.id, productId, item.count ?? 1, item.detail ?? '']
+        )
+        orderProducts.push(itemResult.rows[0])
+      }
+
+      await query('COMMIT')
+
+      res.status(201).json({
+        ...order,
+        products: orderProducts,
+      })
+    } catch (innerError) {
+      await query('ROLLBACK')
+      throw innerError
+    }
   } catch (error) {
     res.status(500).json({ message: 'Sipariş oluşturulamadı', error: error.message })
   }
