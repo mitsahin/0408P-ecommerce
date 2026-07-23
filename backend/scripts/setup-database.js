@@ -115,6 +115,43 @@ async function seedDemoUsers() {
   }
 }
 
+async function seedDemoCustomerProfile() {
+  const userResult = await query(
+    `SELECT id FROM users WHERE email = 'customer@commerce.com' LIMIT 1`
+  )
+  if (!userResult.rows.length) return
+
+  const userId = userResult.rows[0].id
+
+  const addressCount = await query(
+    'SELECT COUNT(*)::int AS count FROM user_addresses WHERE user_id = $1',
+    [userId]
+  )
+  if ((addressCount.rows[0]?.count ?? 0) === 0) {
+    await query(
+      `INSERT INTO user_addresses (user_id, title, name, surname, phone, city, district, neighborhood)
+       VALUES
+         ($1, 'Shipping - Ev', 'Demo', 'Customer', '05321234567', 'İstanbul', 'Kadıköy', 'Caferağa Mah. Örnek Sok. No:1'),
+         ($1, 'Billing - Ev', 'Demo', 'Customer', '05321234567', 'İstanbul', 'Kadıköy', 'Caferağa Mah. Örnek Sok. No:1')`,
+      [userId]
+    )
+    console.log('Demo adresler eklendi (customer@commerce.com).')
+  }
+
+  const cardCount = await query(
+    'SELECT COUNT(*)::int AS count FROM user_cards WHERE user_id = $1',
+    [userId]
+  )
+  if ((cardCount.rows[0]?.count ?? 0) === 0) {
+    await query(
+      `INSERT INTO user_cards (user_id, card_no, expire_month, expire_year, name_on_card)
+       VALUES ($1, '1234123412341234', 12, 2025, 'Ali Bas')`,
+      [userId]
+    )
+    console.log('Demo kart eklendi (1234123412341234 / CVV 321).')
+  }
+}
+
 export async function setupDatabase({ seedCatalog = true } = {}) {
   let initialized = false
   try {
@@ -151,6 +188,7 @@ export async function setupDatabase({ seedCatalog = true } = {}) {
   }
 
   await seedDemoUsers()
+  await seedDemoCustomerProfile()
 }
 
 export async function initDatabaseCli() {
