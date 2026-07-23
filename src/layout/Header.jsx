@@ -218,10 +218,10 @@ const Header = () => {
             </span>
           </div>
           <span className="text-center text-xs font-semibold">
-            Follow Us and get a chance to win 80% off
+            Bizi takip edin, %80 indirim şansı yakalayın
           </span>
           <div className="flex items-center justify-center gap-3">
-            <span className="text-xs">Follow Us :</span>
+            <span className="text-xs">Bizi takip edin:</span>
             <a href="https://instagram.com" target="_blank" rel="noreferrer">
               <Instagram className="h-4 w-4" />
             </a>
@@ -241,7 +241,7 @@ const Header = () => {
         <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4 px-4 py-4 sm:px-6 lg:h-[68px] lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div className="flex w-full items-center justify-between lg:w-auto">
             <Link to="/" className="text-[24px] font-bold leading-none text-slate-900">
-              Bandage
+              Bandaj
             </Link>
             <div className="flex items-center gap-4 text-slate-700 lg:hidden">
               <Link to="/search" className="flex items-center">
@@ -274,7 +274,7 @@ const Header = () => {
                   onClick={goAllProducts}
                   className="transition hover:text-slate-900"
                 >
-                  Shop
+                  Mağaza
                 </button>
                 <div className="flex w-full flex-wrap gap-2 text-xs">
                   <Link
@@ -303,7 +303,7 @@ const Header = () => {
                     onClick={closeMobileMenu}
                     className="w-[calc(50%-0.25rem)] rounded border border-slate-200 bg-white px-3 py-2 text-center font-semibold uppercase tracking-[0.12em] text-slate-600"
                   >
-                    Accessories
+                    Aksesuar
                   </Link>
                   <button
                     type="button"
@@ -387,7 +387,7 @@ const Header = () => {
                   className="transition hover:text-slate-900"
                   activeClassName="text-slate-900"
                 >
-                  About
+                  Hakkında
                 </NavLink>
                 <NavLink
                   to="/blog"
@@ -403,7 +403,7 @@ const Header = () => {
                   className="transition hover:text-slate-900"
                   activeClassName="text-slate-900"
                 >
-                  Contact
+                  İletişim
                 </NavLink>
                 <NavLink
                   to="/pages"
@@ -411,7 +411,7 @@ const Header = () => {
                   className="transition hover:text-slate-900"
                   activeClassName="text-slate-900"
                 >
-                  Pages
+                  Sayfalar
                 </NavLink>
                 <NavLink
                   to="/team"
@@ -419,7 +419,7 @@ const Header = () => {
                   className="transition hover:text-slate-900"
                   activeClassName="text-slate-900"
                 >
-                  Team
+                  Ekip
                 </NavLink>
             </nav>
             <div className="flex flex-col items-center gap-5 pb-6 pt-6 text-sky-500">
@@ -489,14 +489,14 @@ const Header = () => {
                 onClick={goAllProducts}
                 className="text-slate-600 transition hover:text-slate-900"
               >
-                Shop
+                Mağaza
               </button>
               <button
                 type="button"
                 className="flex items-center text-slate-600 transition hover:text-slate-900"
                 onClick={() => setIsDesktopShopOpen((prev) => !prev)}
                 aria-expanded={isDesktopShopOpen}
-                aria-label="Shop menu"
+                aria-label="Mağaza menüsü"
               >
                 <ChevronDown
                   className={`h-4 w-4 transition-transform ${
@@ -536,7 +536,7 @@ const Header = () => {
                     onClick={closeAllMenus}
                     className="flex min-w-0 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-700 transition hover:border-slate-300"
                   >
-                    Accessories
+                    Aksesuar
                   </Link>
                   <button
                     type="button"
@@ -603,7 +603,7 @@ const Header = () => {
                     onClick={goAllProducts}
                     className="flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-700 transition hover:text-slate-900"
                   >
-                    Tümüne Gör
+                    Tümünü Gör
                     <ChevronRight className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -614,7 +614,7 @@ const Header = () => {
               className="text-slate-600 transition hover:text-slate-900"
               activeClassName="text-slate-900"
             >
-              About
+              Hakkında
             </NavLink>
             <NavLink
               to="/blog"
@@ -628,21 +628,21 @@ const Header = () => {
               className="text-slate-600 transition hover:text-slate-900"
               activeClassName="text-slate-900"
             >
-              Contact
+              İletişim
             </NavLink>
             <NavLink
               to="/pages"
               className="text-slate-600 transition hover:text-slate-900"
               activeClassName="text-slate-900"
             >
-              Pages
+              Sayfalar
             </NavLink>
             <NavLink
               to="/team"
               className="text-slate-600 transition hover:text-slate-900"
               activeClassName="text-slate-900"
             >
-              Team
+              Ekip
             </NavLink>
           </nav>
           <div className="hidden flex-wrap items-center gap-6 text-[14px] font-semibold text-sky-500 lg:flex">
