@@ -155,6 +155,86 @@ const KIDS_SWEAT_IMAGES = [
   'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80',
 ]
 
+const WOMEN_DRESS_IMAGES = [
+  'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=900&q=80',
+]
+
+const WOMEN_SKIRT_IMAGES = [
+  'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1551163943-3f6a855d1153?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80',
+]
+
+const WOMEN_SHOE_IMAGES = [
+  'https://images.unsplash.com/photo-1543163521-1bf560c89c5e?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1518049362265-d5b2a6467637?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1603808033192-082d5957d3e6?auto=format&fit=crop&w=900&q=80',
+]
+
+const WOMEN_TOP_IMAGES = [
+  'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=900&q=80',
+]
+
+const WOMEN_SHIRT_IMAGES = [
+  'https://images.unsplash.com/photo-1596755094514-f87e34085b69?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1485462537746-7912f1c0a1c2?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1434389677669-e08bb4dd6512?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1554568218-0f1715e72254?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=900&q=80',
+]
+
+const WOMEN_JACKET_IMAGES = [
+  'https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1521223890158-f9f7c3d5d504?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80',
+]
+
+const WOMEN_DEFAULT_IMAGES = [
+  'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=80',
+]
+
+const MEN_DEFAULT_IMAGES = [
+  'https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1488161628813-04466f872be2?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?auto=format&fit=crop&w=900&q=80',
+]
+
+const MEN_SHOE_IMAGES = [
+  'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1600269452121-4f2416e55c28?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1491553895911-0055eca6402d?auto=format&fit=crop&w=900&q=80',
+]
+
+const MEN_SHIRT_IMAGES = [
+  'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1603252109303-1100ae3c2c98?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1625910513413-d7a22670a6f1?auto=format&fit=crop&w=900&q=80',
+  'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=900&q=80',
+]
+
 const resolveKidsVisualSet = (slug) => {
   if (slug.includes('ayakkab')) {
     return { images: KIDS_SHOE_IMAGES, department: 'Kids Shoes' }
@@ -176,6 +256,43 @@ const resolveKidsVisualSet = (slug) => {
   return null
 }
 
+const resolveGenderVisualSet = (slug, gender) => {
+  const key = String(slug ?? '')
+  if (gender === 'kadin') {
+    if (key.includes('elbise') || key.includes('dress')) {
+      return { images: WOMEN_DRESS_IMAGES, department: 'Kadın Elbise' }
+    }
+    if (key.includes('etek') || key.includes('skirt')) {
+      return { images: WOMEN_SKIRT_IMAGES, department: 'Kadın Etek' }
+    }
+    if (key.includes('ayakkab') || key.includes('shoe')) {
+      return { images: WOMEN_SHOE_IMAGES, department: 'Kadın Ayakkabı' }
+    }
+    if (key.includes('gomlek') || key.includes('shirt')) {
+      return { images: WOMEN_SHIRT_IMAGES, department: 'Kadın Gömlek' }
+    }
+    if (key.includes('ceket') || key.includes('jacket') || key.includes('mont')) {
+      return { images: WOMEN_JACKET_IMAGES, department: 'Kadın Ceket' }
+    }
+    if (key.includes('tisort') || key.includes('tshirt') || key.includes('kazak')) {
+      return { images: WOMEN_TOP_IMAGES, department: 'Kadın Giyim' }
+    }
+    return { images: WOMEN_DEFAULT_IMAGES, department: 'Kadın Koleksiyonu' }
+  }
+
+  if (gender === 'erkek') {
+    if (key.includes('ayakkab') || key.includes('shoe')) {
+      return { images: MEN_SHOE_IMAGES, department: 'Erkek Ayakkabı' }
+    }
+    if (key.includes('gomlek') || key.includes('shirt') || key.includes('tisort')) {
+      return { images: MEN_SHIRT_IMAGES, department: 'Erkek Gömlek' }
+    }
+    return { images: MEN_DEFAULT_IMAGES, department: 'Erkek Koleksiyonu' }
+  }
+
+  return null
+}
+
 const ShopPage = () => {
   const dispatch = useDispatch()
   const history = useHistory()
@@ -188,6 +305,12 @@ const ShopPage = () => {
     String(value ?? '')
       .trim()
       .toLowerCase()
+      .replace(/[ıİ]/g, 'i')
+      .replace(/[şŞ]/g, 's')
+      .replace(/[ğĞ]/g, 'g')
+      .replace(/[üÜ]/g, 'u')
+      .replace(/[öÖ]/g, 'o')
+      .replace(/[çÇ]/g, 'c')
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
@@ -307,18 +430,60 @@ const ShopPage = () => {
 
   const catalog = useMemo(() => {
     const list = Array.isArray(productList) && productList.length > 0 ? productList : localProducts
-    const normalizedList = list.map(normalizeProduct)
+    let normalizedList = list.map(normalizeProduct)
     const categorySlug = toSlug(categoryName)
-    const isKidsPage = activeGender === 'kids'
-    const kidsVisualPreset = resolveKidsVisualSet(categorySlug)
-    if (!isKidsPage || !kidsVisualPreset) return normalizedList
 
-    return normalizedList.map((item, index) => ({
-      ...item,
-      image: kidsVisualPreset.images[index % kidsVisualPreset.images.length],
-      department: kidsVisualPreset.department,
-    }))
-  }, [productList, activeGender, categoryName])
+    // Keep only products that belong to the active gender's categories
+    if (activeGender === 'kadin' || activeGender === 'erkek') {
+      const genderCategoryIds = new Set(
+        visibleCategories.map((category) => String(category.id))
+      )
+      const byGender = normalizedList.filter(
+        (item) =>
+          item.categoryId != null &&
+          genderCategoryIds.has(String(item.categoryId))
+      )
+      const byActiveCategory = activeCategoryId
+        ? normalizedList.filter(
+            (item) => String(item.categoryId) === activeCategoryId
+          )
+        : []
+
+      if (byActiveCategory.length > 0) {
+        normalizedList = byActiveCategory
+      } else if (byGender.length > 0) {
+        normalizedList = byGender
+      }
+    }
+
+    if (activeGender === 'kids') {
+      const kidsVisualPreset = resolveKidsVisualSet(categorySlug)
+      if (!kidsVisualPreset) return normalizedList
+      return normalizedList.map((item, index) => ({
+        ...item,
+        image: kidsVisualPreset.images[index % kidsVisualPreset.images.length],
+        department: kidsVisualPreset.department,
+      }))
+    }
+
+    if (activeGender === 'kadin' || activeGender === 'erkek') {
+      const genderVisual = resolveGenderVisualSet(categorySlug, activeGender)
+      if (!genderVisual) return normalizedList
+      return normalizedList.map((item, index) => ({
+        ...item,
+        image: genderVisual.images[index % genderVisual.images.length],
+        department: genderVisual.department,
+      }))
+    }
+
+    return normalizedList
+  }, [
+    productList,
+    activeGender,
+    categoryName,
+    visibleCategories,
+    activeCategoryId,
+  ])
 
   const totalPages = Math.max(1, Math.ceil((total ?? catalog.length) / defaultLimit))
 
