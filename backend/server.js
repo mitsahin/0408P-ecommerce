@@ -29,6 +29,7 @@ app.get('/', (_req, res) => {
     name: '0408p-ecommerce-api',
     status: 'ok',
     health: '/health',
+    frontend: 'https://0408p-ecommerce.vercel.app',
     docs: 'Use /categories, /products, /login, /order',
   })
 })
