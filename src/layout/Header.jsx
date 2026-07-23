@@ -424,14 +424,37 @@ const Header = () => {
             </nav>
             <div className="flex flex-col items-center gap-5 pb-6 pt-6 text-sky-500">
               {userName ? (
-                <button
-                  type="button"
-                  onClick={() => dispatch(logoutUser())}
-                  className="flex items-center gap-2 text-sky-400"
-                >
-                  <User className="h-5 w-5" />
-                  Logout
-                </button>
+                <div className="flex flex-col items-center gap-3 text-sm text-slate-700">
+                  <span className="flex items-center gap-2 font-semibold text-slate-800">
+                    <User className="h-5 w-5 text-sky-400" />
+                    Hesabım
+                  </span>
+                  <span className="text-xs text-slate-500">{userName}</span>
+                  <Link
+                    to="/orders"
+                    onClick={closeMobileMenu}
+                    className="text-sky-500 transition hover:text-sky-600"
+                  >
+                    Tüm Siparişlerim
+                  </Link>
+                  <Link
+                    to="/account"
+                    onClick={closeMobileMenu}
+                    className="text-sky-500 transition hover:text-sky-600"
+                  >
+                    Kullanıcı Bilgilerim
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      dispatch(logoutUser())
+                      closeMobileMenu()
+                    }}
+                    className="text-rose-500"
+                  >
+                    Çıkış Yap
+                  </button>
+                </div>
               ) : (
                 <Link to="/login" onClick={closeMobileMenu} className="flex items-center gap-2 text-sky-400">
                   <User className="h-5 w-5" />
@@ -635,18 +658,24 @@ const Header = () => {
                   <User className="h-4 w-4" />
                 )}
                 <span className="max-w-[120px] truncate text-xs font-semibold text-slate-700">
-                  {userName}
+                  Hesabım
                 </span>
-                <div className="absolute right-0 top-full z-20 hidden w-[200px] flex-col gap-2 rounded border border-slate-200 bg-white p-3 text-xs text-slate-600 shadow-lg group-hover:flex">
+                <div className="absolute right-0 top-full z-20 hidden w-[220px] flex-col gap-2 rounded border border-slate-200 bg-white p-3 text-xs text-slate-600 shadow-lg group-hover:flex">
+                  <span className="border-b border-slate-100 pb-2 font-semibold text-slate-800">
+                    {userName}
+                  </span>
                   <Link to="/orders" className="transition hover:text-slate-900">
-                    Previous orders
+                    Tüm Siparişlerim
+                  </Link>
+                  <Link to="/account" className="transition hover:text-slate-900">
+                    Kullanıcı Bilgilerim
                   </Link>
                   <button
                     type="button"
                     onClick={() => dispatch(logoutUser())}
                     className="text-left text-rose-500 transition hover:text-rose-600"
                   >
-                    Logout
+                    Çıkış Yap
                   </button>
                 </div>
               </div>

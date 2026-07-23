@@ -16,6 +16,7 @@ import SignupPage from '../pages/SignupPage.js'
 import ProtectedRoute from '../components/ProtectedRoute.js'
 import CreateOrderPage from '../pages/CreateOrderPage.js'
 import OrdersPage from '../pages/OrdersPage.js'
+import AccountInfoPage from '../pages/AccountInfoPage.js'
 import NotFound from '../pages/NotFound.js'
 
 const PageContent = () => {
@@ -50,6 +51,7 @@ const PageContent = () => {
         <Route path="/cart" component={CartPage} />
         <ProtectedRoute path="/order" component={CreateOrderPage} />
         <ProtectedRoute path="/orders" component={OrdersPage} />
+        <ProtectedRoute path="/account" component={AccountInfoPage} />
         <Route path="/wishlist" component={WishlistPage} />
         <Route path="/search" component={SearchPage} />
         <Route path="/team" component={TeamPage} />
