@@ -117,10 +117,10 @@ const HomePage = () => {
     return '/shop'
   }
 
-  const featuredProducts = useMemo(() => {
-    const source = productList?.length ? productList : allProducts
-    return source.map(normalizeProduct).slice(0, 8)
-  }, [productList])
+  const featuredProducts = useMemo(
+    () => allProducts.map(normalizeProduct).slice(0, 8),
+    []
+  )
 
   const topCategories = useMemo(
     () =>
