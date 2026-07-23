@@ -24,6 +24,15 @@ let bootError = null
 app.use(cors())
 app.use(express.json())
 
+app.get('/', (_req, res) => {
+  res.json({
+    name: '0408p-ecommerce-api',
+    status: 'ok',
+    health: '/health',
+    docs: 'Use /categories, /products, /login, /order',
+  })
+})
+
 app.get('/health', async (_req, res) => {
   // Return 200 while booting so Render health checks pass during schema/seed.
   if (!dbReady) {
