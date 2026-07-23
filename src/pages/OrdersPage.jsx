@@ -126,7 +126,15 @@ const OrdersPage = () => {
       try {
         setIsLoading(true)
         const response = await axiosClient.get('/order')
-        setOrders(Array.isArray(response?.data) ? response.data : [])
+        const list = Array.isArray(response?.data) ? response.data : []
+        // Demo: sadece en güncel siparişi göster
+        const sorted = [...list].sort((a, b) => {
+          const dateA = new Date(a.order_date || 0).getTime()
+          const dateB = new Date(b.order_date || 0).getTime()
+          if (dateB !== dateA) return dateB - dateA
+          return Number(b.id ?? 0) - Number(a.id ?? 0)
+        })
+        setOrders(sorted.slice(0, 1))
       } catch (error) {
         toast.error(error?.message || 'Siparişler yüklenemedi.')
       } finally {
