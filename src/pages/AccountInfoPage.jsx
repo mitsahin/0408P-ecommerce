@@ -2,6 +2,15 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import {
+  CreditCard,
+  MapPin,
+  Pencil,
+  Phone,
+  Plus,
+  Trash2,
+  UserRound,
+} from 'lucide-react'
 import axiosClient from '../api/axiosClient'
 
 const emptyAddress = {
@@ -70,6 +79,30 @@ const maskCardNo = (cardNo) => {
   const digits = String(cardNo ?? '').replace(/\s+/g, '')
   if (digits.length < 4) return '****'
   return `**** **** **** ${digits.slice(-4)}`
+}
+
+const toTitleCase = (value) =>
+  String(value ?? '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/\w+/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+
+const formatAddressTitle = (title) => {
+  const raw = String(title ?? '').trim()
+  if (!raw) return 'Kayıtlı adres'
+  return raw
+    .replace(/^shipping\s*[-–:]?\s*/i, '')
+    .replace(/^billing\s*[-–:]?\s*/i, '')
+    .replace(/^teslimat\s*[-–:]?\s*/i, '')
+    .replace(/^fatura\s*[-–:]?\s*/i, '')
+    .trim() || raw
+}
+
+const getAddressKindLabel = (title) => {
+  const raw = String(title ?? '').toLowerCase()
+  if (raw.includes('billing') || raw.includes('fatura')) return 'Fatura'
+  if (raw.includes('shipping') || raw.includes('teslimat')) return 'Teslimat'
+  return 'Adres'
 }
 
 const AccountInfoPage = () => {
@@ -205,6 +238,7 @@ const AccountInfoPage = () => {
   }
 
   const handleDeleteAddress = async (addressId) => {
+    if (!window.confirm('Bu adresi silmek istediğinize emin misiniz?')) return
     try {
       await axiosClient.delete(`/user/address/${addressId}`)
       setAddresses((prev) => prev.filter((item) => !idEquals(item.id, addressId)))
@@ -281,6 +315,7 @@ const AccountInfoPage = () => {
   }
 
   const handleDeleteCard = async (cardId) => {
+    if (!window.confirm('Bu kartı silmek istediğinize emin misiniz?')) return
     try {
       await axiosClient.delete(`/user/card/${cardId}`)
       setCards((prev) => prev.filter((item) => !idEquals(item.id, cardId)))
@@ -291,105 +326,136 @@ const AccountInfoPage = () => {
     }
   }
 
+  const displayName = toTitleCase(user?.name || user?.email?.split('@')[0] || 'Müşteri')
+
   return (
-    <section className="mx-auto flex w-full max-w-[960px] flex-col gap-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Kullanıcı Bilgilerim
-          </h1>
-          <p className="text-sm text-slate-500">
-            {user?.name || user?.email || 'Hesap'} — kayıtlı adres ve ödeme bilgileriniz
-          </p>
+    <section className="mx-auto flex w-full max-w-[1000px] flex-col gap-8">
+      <div className="flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div className="flex items-start gap-4">
+          <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-slate-900 text-white">
+            <UserRound className="h-5 w-5" />
+          </span>
+          <div className="flex flex-col gap-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              Hesabım
+            </p>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+              Kullanıcı Bilgilerim
+            </h1>
+            <p className="text-sm text-slate-500">
+              Merhaba <span className="font-medium text-slate-700">{displayName}</span>
+              {' — '}
+              kayıtlı adres ve ödeme bilgilerinizi buradan yönetebilirsiniz.
+            </p>
+          </div>
         </div>
         <Link
           to="/orders"
-          className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600"
+          className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-slate-300 hover:bg-white"
         >
           Tüm Siparişlerim
         </Link>
       </div>
 
-      <div className="flex gap-2 border-b border-slate-200">
+      <div className="flex w-full gap-2 rounded-xl bg-slate-100 p-1">
         <button
           type="button"
           onClick={() => setActiveTab('addresses')}
-          className={`px-4 py-2 text-sm font-semibold transition ${
+          className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${
             activeTab === 'addresses'
-              ? 'border-b-2 border-orange-500 text-orange-600'
+              ? 'bg-white text-slate-900 shadow-sm'
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
+          <MapPin className="h-4 w-4" />
           Kayıtlı Adreslerim
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('payments')}
-          className={`px-4 py-2 text-sm font-semibold transition ${
+          className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${
             activeTab === 'payments'
-              ? 'border-b-2 border-orange-500 text-orange-600'
+              ? 'bg-white text-slate-900 shadow-sm'
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
+          <CreditCard className="h-4 w-4" />
           Kayıtlı Ödemelerim
         </button>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-slate-500">Yükleniyor...</p>
+        <div className="rounded-2xl border border-slate-200 bg-white px-6 py-10 text-center text-sm text-slate-500 shadow-sm">
+          Bilgileriniz yükleniyor...
+        </div>
       ) : null}
 
       {activeTab === 'addresses' ? (
-        <div className="flex flex-col gap-4">
-          <button
-            type="button"
-            onClick={() => {
-              setEditingAddressId(null)
-              setAddressForm(emptyAddress)
-              setAddressErrors({})
-              setShowAddressForm(true)
-            }}
-            className="w-full rounded-xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700"
-          >
-            + Yeni adres ekle
-          </button>
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Teslimat adresleri</h2>
+              <p className="text-sm text-slate-500">
+                Siparişlerinizde kullanılacak kayıtlı adreslerinizi düzenleyin.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setEditingAddressId(null)
+                setAddressForm(emptyAddress)
+                setAddressErrors({})
+                setShowAddressForm(true)
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-slate-800"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Yeni adres
+            </button>
+          </div>
 
           {showAddressForm ? (
             <form
               onSubmit={handleSaveAddress}
-              className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+              className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
             >
-              <h2 className="text-sm font-semibold text-slate-900">
-                {editingAddressId ? 'Adresi düzenle' : 'Yeni adres'}
-              </h2>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex flex-col gap-1 border-b border-slate-100 pb-4">
+                <h3 className="text-base font-semibold text-slate-900">
+                  {editingAddressId ? 'Adresi düzenle' : 'Yeni adres ekle'}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Tüm alanları eksiksiz doldurmanız teslimatı hızlandırır.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
                 {[
-                  ['title', 'Adres başlığı', 'text'],
-                  ['name', 'Ad', 'text'],
-                  ['surname', 'Soyad', 'text'],
-                  ['phone', 'Telefon', 'tel'],
-                  ['district', 'İlçe', 'text'],
-                  ['neighborhood', 'Mahalle', 'text'],
-                ].map(([key, label, type]) => (
-                  <label key={key} className="flex flex-col gap-1 text-xs text-slate-600">
+                  ['title', 'Adres başlığı', 'text', 'Ev, iş yeri...'],
+                  ['name', 'Ad', 'text', ''],
+                  ['surname', 'Soyad', 'text', ''],
+                  ['phone', 'Telefon', 'tel', '05XXXXXXXXX'],
+                  ['district', 'İlçe', 'text', ''],
+                  ['neighborhood', 'Mahalle', 'text', ''],
+                ].map(([key, label, type, placeholder]) => (
+                  <label key={key} className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
                     {label}
                     <input
                       type={type}
                       value={addressForm[key]}
+                      placeholder={placeholder}
                       onChange={(event) =>
                         setAddressForm((prev) => ({
                           ...prev,
                           [key]: event.target.value,
                         }))
                       }
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                      className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white"
                     />
                     {addressErrors[key] ? (
-                      <span className="text-rose-500">{addressErrors[key]}</span>
+                      <span className="font-normal text-rose-500">{addressErrors[key]}</span>
                     ) : null}
                   </label>
                 ))}
-                <label className="flex flex-col gap-1 text-xs text-slate-600">
+                <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
                   İl
                   <select
                     value={addressForm.city}
@@ -399,9 +465,9 @@ const AccountInfoPage = () => {
                         city: event.target.value,
                       }))
                     }
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white"
                   >
-                    <option value="">Seçin</option>
+                    <option value="">İl seçin</option>
                     {turkishCities.map((city) => (
                       <option key={city} value={city}>
                         {city}
@@ -409,14 +475,15 @@ const AccountInfoPage = () => {
                     ))}
                   </select>
                   {addressErrors.city ? (
-                    <span className="text-rose-500">{addressErrors.city}</span>
+                    <span className="font-normal text-rose-500">{addressErrors.city}</span>
                   ) : null}
                 </label>
               </div>
-              <label className="flex flex-col gap-1 text-xs text-slate-600">
+              <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
                 Açık adres
                 <textarea
                   value={addressForm.address}
+                  placeholder="Sokak, bina no, daire..."
                   onChange={(event) =>
                     setAddressForm((prev) => ({
                       ...prev,
@@ -424,24 +491,24 @@ const AccountInfoPage = () => {
                     }))
                   }
                   rows={3}
-                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white"
                 />
                 {addressErrors.neighborhood ? (
-                  <span className="text-rose-500">{addressErrors.neighborhood}</span>
+                  <span className="font-normal text-rose-500">{addressErrors.neighborhood}</span>
                 ) : null}
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 pt-1">
                 <button
                   type="submit"
                   disabled={isSavingAddress}
-                  className="rounded-full bg-slate-900 px-5 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                  className="rounded-full bg-slate-900 px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white disabled:opacity-60"
                 >
                   {isSavingAddress ? 'Kaydediliyor...' : 'Kaydet'}
                 </button>
                 <button
                   type="button"
                   onClick={resetAddressForm}
-                  className="rounded-full border border-slate-200 px-5 py-2 text-xs font-semibold text-slate-600"
+                  className="rounded-full border border-slate-200 px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600"
                 >
                   Vazgeç
                 </button>
@@ -450,49 +517,91 @@ const AccountInfoPage = () => {
           ) : null}
 
           {!isLoading && addresses.length === 0 ? (
-            <p className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-              Henüz kayıtlı adresiniz yok.
-            </p>
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-12 text-center">
+              <MapPin className="h-8 w-8 text-slate-300" />
+              <p className="text-sm font-medium text-slate-700">Henüz kayıtlı adresiniz yok</p>
+              <p className="max-w-sm text-xs text-slate-500">
+                Sipariş sürecini hızlandırmak için teslimat adresinizi ekleyin.
+              </p>
+            </div>
           ) : (
             <div className="flex flex-wrap gap-4">
               {addresses.map((address) => {
                 const parsed = parseNeighborhood(address.neighborhood)
+                const kind = getAddressKindLabel(address.title)
+                const title = formatAddressTitle(address.title)
+                const cityLine = [
+                  parsed.mahalle || null,
+                  toTitleCase(address.district),
+                  toTitleCase(address.city),
+                ]
+                  .filter(Boolean)
+                  .join(', ')
                 return (
-                  <div
+                  <article
                     key={address.id}
-                    className="flex min-h-[150px] w-full flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:w-[calc(50%-8px)]"
+                    className="flex w-full flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 sm:w-[calc(50%-8px)]"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="text-sm font-semibold text-slate-900">
-                        {address.title}
-                      </span>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <span className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                          <MapPin className="h-4 w-4" />
+                        </span>
+                        <div className="flex min-w-0 flex-col gap-1">
+                          <span className="w-fit rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                            {kind}
+                          </span>
+                          <h3 className="truncate text-base font-semibold text-slate-900">
+                            {title}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 border-t border-slate-100 pt-4 text-sm">
+                      <p className="font-medium text-slate-800">
+                        {toTitleCase(address.name)} {toTitleCase(address.surname)}
+                      </p>
+                      <p className="flex items-center gap-2 text-slate-500">
+                        <Phone className="h-3.5 w-3.5 flex-shrink-0" />
+                        {maskPhone(address.phone)}
+                      </p>
+                      <p className="leading-relaxed text-slate-500">
+                        {cityLine}
+                        {parsed.mahalle && parsed.address ? (
+                          <>
+                            <br />
+                            <span className="text-slate-600">{parsed.address}</span>
+                          </>
+                        ) : null}
+                        {!parsed.mahalle && parsed.address ? (
+                          <>
+                            <br />
+                            <span className="text-slate-600">{parsed.address}</span>
+                          </>
+                        ) : null}
+                      </p>
+                    </div>
+
+                    <div className="mt-auto flex items-center gap-2 border-t border-slate-100 pt-4">
                       <button
                         type="button"
                         onClick={() => handleEditAddress(address)}
-                        className="text-xs font-semibold text-sky-600"
+                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                       >
+                        <Pencil className="h-3.5 w-3.5" />
                         Düzenle
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteAddress(address.id)}
+                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-rose-100 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Sil
+                      </button>
                     </div>
-                    <div className="flex flex-col gap-1 text-sm text-slate-600">
-                      <span>
-                        {address.name} {address.surname}
-                      </span>
-                      <span>{maskPhone(address.phone)}</span>
-                      <span className="text-xs text-slate-500">
-                        {[parsed.mahalle || parsed.address, address.district, address.city]
-                          .filter(Boolean)
-                          .join(' / ')}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteAddress(address.id)}
-                      className="mt-auto self-start text-xs font-semibold text-rose-500"
-                    >
-                      Sil
-                    </button>
-                  </div>
+                  </article>
                 )
               })}
             </div>
@@ -501,49 +610,65 @@ const AccountInfoPage = () => {
       ) : null}
 
       {activeTab === 'payments' ? (
-        <div className="flex flex-col gap-4">
-          <button
-            type="button"
-            onClick={() => {
-              setEditingCardId(null)
-              setCardForm(emptyCard)
-              setCardErrors({})
-              setShowCardForm(true)
-            }}
-            className="w-full rounded-xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700"
-          >
-            + Yeni kart ekle
-          </button>
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Kayıtlı kartlar</h2>
+              <p className="text-sm text-slate-500">
+                Ödeme için kaydettiğiniz kartları güvenli şekilde yönetin.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setEditingCardId(null)
+                setCardForm(emptyCard)
+                setCardErrors({})
+                setShowCardForm(true)
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-slate-800"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Yeni kart
+            </button>
+          </div>
 
           {showCardForm ? (
             <form
               onSubmit={handleSaveCard}
-              className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+              className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
             >
-              <h2 className="text-sm font-semibold text-slate-900">
-                {editingCardId ? 'Kartı düzenle' : 'Yeni kart'}
-              </h2>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="flex flex-col gap-1 text-xs text-slate-600 sm:col-span-2">
+              <div className="flex flex-col gap-1 border-b border-slate-100 pb-4">
+                <h3 className="text-base font-semibold text-slate-900">
+                  {editingCardId ? 'Kartı düzenle' : 'Yeni kart ekle'}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Kart bilgileriniz yalnızca sipariş ödemesi için kullanılır.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600 sm:col-span-2">
                   Kart üzerindeki isim
                   <input
                     value={cardForm.name_on_card}
+                    placeholder="Ad Soyad"
                     onChange={(event) =>
                       setCardForm((prev) => ({
                         ...prev,
                         name_on_card: event.target.value,
                       }))
                     }
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white"
                   />
                   {cardErrors.name_on_card ? (
-                    <span className="text-rose-500">{cardErrors.name_on_card}</span>
+                    <span className="font-normal text-rose-500">{cardErrors.name_on_card}</span>
                   ) : null}
                 </label>
-                <label className="flex flex-col gap-1 text-xs text-slate-600 sm:col-span-2">
+                <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600 sm:col-span-2">
                   Kart numarası
                   <input
                     value={cardForm.card_no}
+                    placeholder="16 haneli kart numarası"
                     onChange={(event) =>
                       setCardForm((prev) => ({
                         ...prev,
@@ -552,14 +677,14 @@ const AccountInfoPage = () => {
                     }
                     inputMode="numeric"
                     maxLength={19}
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white"
                   />
                   {cardErrors.card_no ? (
-                    <span className="text-rose-500">{cardErrors.card_no}</span>
+                    <span className="font-normal text-rose-500">{cardErrors.card_no}</span>
                   ) : null}
                 </label>
-                <label className="flex flex-col gap-1 text-xs text-slate-600">
-                  Ay
+                <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
+                  Son kullanma ayı
                   <input
                     value={cardForm.expire_month}
                     onChange={(event) =>
@@ -569,14 +694,14 @@ const AccountInfoPage = () => {
                       }))
                     }
                     placeholder="MM"
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white"
                   />
                   {cardErrors.expire_month ? (
-                    <span className="text-rose-500">{cardErrors.expire_month}</span>
+                    <span className="font-normal text-rose-500">{cardErrors.expire_month}</span>
                   ) : null}
                 </label>
-                <label className="flex flex-col gap-1 text-xs text-slate-600">
-                  Yıl
+                <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
+                  Son kullanma yılı
                   <input
                     value={cardForm.expire_year}
                     onChange={(event) =>
@@ -586,25 +711,25 @@ const AccountInfoPage = () => {
                       }))
                     }
                     placeholder="YYYY"
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                    className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:bg-white"
                   />
                   {cardErrors.expire_year ? (
-                    <span className="text-rose-500">{cardErrors.expire_year}</span>
+                    <span className="font-normal text-rose-500">{cardErrors.expire_year}</span>
                   ) : null}
                 </label>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 pt-1">
                 <button
                   type="submit"
                   disabled={isSavingCard}
-                  className="rounded-full bg-slate-900 px-5 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                  className="rounded-full bg-slate-900 px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white disabled:opacity-60"
                 >
                   {isSavingCard ? 'Kaydediliyor...' : 'Kaydet'}
                 </button>
                 <button
                   type="button"
                   onClick={resetCardForm}
-                  className="rounded-full border border-slate-200 px-5 py-2 text-xs font-semibold text-slate-600"
+                  className="rounded-full border border-slate-200 px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600"
                 >
                   Vazgeç
                 </button>
@@ -613,43 +738,68 @@ const AccountInfoPage = () => {
           ) : null}
 
           {!isLoading && cards.length === 0 ? (
-            <p className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-              Henüz kayıtlı kartınız yok.
-            </p>
+            <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-12 text-center">
+              <CreditCard className="h-8 w-8 text-slate-300" />
+              <p className="text-sm font-medium text-slate-700">Henüz kayıtlı kartınız yok</p>
+              <p className="max-w-sm text-xs text-slate-500">
+                Ödemeyi hızlandırmak için bir kart ekleyebilirsiniz.
+              </p>
+            </div>
           ) : (
             <div className="flex flex-wrap gap-4">
               {cards.map((card) => (
-                <div
+                <article
                   key={card.id}
-                  className="flex w-full flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:w-[calc(50%-8px)]"
+                  className="flex w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:w-[calc(50%-8px)]"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-mono text-sm font-semibold tracking-wide text-slate-900">
+                  <div className="flex flex-col gap-6 bg-gradient-to-br from-slate-800 to-slate-950 px-5 py-6 text-white">
+                    <div className="flex items-center justify-between">
+                      <CreditCard className="h-5 w-5 text-white/80" />
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">
+                        Kayıtlı kart
+                      </span>
+                    </div>
+                    <p className="font-mono text-lg tracking-[0.2em]">
                       {maskCardNo(card.card_no)}
-                    </span>
+                    </p>
+                    <div className="flex items-end justify-between gap-3">
+                      <div className="flex min-w-0 flex-col gap-0.5">
+                        <span className="text-[10px] uppercase tracking-[0.16em] text-white/50">
+                          Kart sahibi
+                        </span>
+                        <span className="truncate text-sm font-medium">
+                          {toTitleCase(card.name_on_card)}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-0.5 text-right">
+                        <span className="text-[10px] uppercase tracking-[0.16em] text-white/50">
+                          Son kul.
+                        </span>
+                        <span className="text-sm font-medium">
+                          {String(card.expire_month).padStart(2, '0')}/{card.expire_year}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 p-4">
                     <button
                       type="button"
                       onClick={() => handleEditCard(card)}
-                      className="text-xs font-semibold text-sky-600"
+                      className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                     >
+                      <Pencil className="h-3.5 w-3.5" />
                       Düzenle
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteCard(card.id)}
+                      className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-rose-100 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Sil
+                    </button>
                   </div>
-                  <div className="flex flex-col gap-1 text-sm text-slate-600">
-                    <span>{card.name_on_card}</span>
-                    <span className="text-xs text-slate-500">
-                      SKT: {String(card.expire_month).padStart(2, '0')}/
-                      {card.expire_year}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteCard(card.id)}
-                    className="mt-auto self-start text-xs font-semibold text-rose-500"
-                  >
-                    Sil
-                  </button>
-                </div>
+                </article>
               ))}
             </div>
           )}
