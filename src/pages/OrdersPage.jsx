@@ -151,9 +151,7 @@ const OrdersPage = () => {
           if (dateB !== dateA) return dateB - dateA
           return Number(b.id ?? 0) - Number(a.id ?? 0)
         })
-        // Demo: en güncel siparişi göster; ürünü olanı tercih et
-        const withProducts = sorted.find((order) => (order.products ?? []).length > 0)
-        setOrders(withProducts ? [withProducts] : sorted.slice(0, 1))
+        setOrders(sorted)
       } catch (error) {
         toast.error(
           error?.response?.data?.message ||
