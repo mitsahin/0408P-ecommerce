@@ -17,19 +17,38 @@ dotenv.config({ path: path.join(__dirname, '../.env') })
 const app = express()
 const PORT = process.env.PORT || 3000
 
+let dbReady = false
+let catalogReady = false
+let bootError = null
+
 app.use(cors())
 app.use(express.json())
 
 app.get('/health', async (_req, res) => {
+  // Return 200 while booting so Render health checks pass during schema/seed.
+  if (!dbReady) {
+    return res.status(200).json({
+      status: bootError ? 'degraded' : 'starting',
+      database: getDbMode() ?? 'pending',
+      catalog: catalogReady ? 'ready' : 'pending',
+      message: bootError || undefined,
+    })
+  }
+
   try {
     const db = await testConnection()
     res.json({
       status: 'ok',
       database: getDbMode() ?? 'connected',
+      catalog: catalogReady ? 'ready' : 'seeding',
       connected_at: db.connected_at,
     })
   } catch (error) {
-    res.status(503).json({ status: 'error', database: 'disconnected', message: error.message })
+    res.status(503).json({
+      status: 'error',
+      database: 'disconnected',
+      message: error.message,
+    })
   }
 })
 
@@ -61,12 +80,25 @@ app.post('/chat', async (req, res) => {
 async function initializeDatabase() {
   try {
     await ensureDb()
-    await setupDatabase({ seedCatalog: true })
+    // Schema + demo users first (fast) so /health and auth work quickly.
+    await setupDatabase({ seedCatalog: false })
+    dbReady = true
     const db = await testConnection()
     const mode = getDbMode()
     console.log(`Veritabanı OK (${mode}) — ${db.connected_at}`)
     console.log('Demo giriş: customer@commerce.com / 123456')
+
+    // Full catalog seed in background (can take several minutes on first boot).
+    setupDatabase({ seedCatalog: true })
+      .then(() => {
+        catalogReady = true
+        console.log('Katalog seed tamamlandı.')
+      })
+      .catch((error) => {
+        console.error('Katalog seed başarısız:', error.message)
+      })
   } catch (error) {
+    bootError = error.message
     console.error('Veritabanı kurulumu başarısız:', error.message)
   }
 }

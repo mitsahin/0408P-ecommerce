@@ -7,8 +7,8 @@ React + Vite storefront with Express + PostgreSQL backend, Redux, React Router v
 | Servis | URL | Durum |
 |--------|-----|-------|
 | Frontend (Vercel) | https://0408p-ecommerce.vercel.app | Canlı |
-| Backend (Render) | https://zero408p-ecommerce-api.onrender.com | Canlı |
-| Fallback API | https://workintech-fe-ecommerce.onrender.com | Canlı (587 ürün) |
+| Backend (Render) | https://0408p-ecommerce-api.onrender.com | Blueprint ile kurulmalı |
+| Fallback API | https://workintech-fe-ecommerce.onrender.com | Canlı (prod şu an buna bağlı) |
 
 **Demo giriş:** `customer@commerce.com` / `123456`
 
@@ -30,16 +30,19 @@ GitHub `main` branch'e push → Vercel otomatik deploy eder.
 Production API adresi `.env.production` içinde tanımlıdır. Kendi Render API'niz hazır olunca:
 
 ```env
-VITE_API_BASE_URL=https://zero408p-ecommerce-api.onrender.com
+VITE_API_BASE_URL=https://0408p-ecommerce-api.onrender.com
 ```
 
-### Render (backend + PostgreSQL) — tek seferlik kurulum
+### Render (backend + PostgreSQL) — tek seferlik kurulum (sizin hesabınızda)
 
-1. [Render Blueprint deploy](https://render.com/deploy?repo=https://github.com/mitsahin/0408P-ecommerce) linkine gidin
-2. GitHub ile giriş yapın → **Apply** / **Deploy Blueprint**
-3. 5–10 dk bekleyin (DB oluşturma + 587 ürün seed)
-4. `/health` endpoint'ini kontrol edin
-5. `.env.production` URL'sini kendi API'nize çevirip push edin
+Bu adımı **Render Dashboard**'dan sizin yapmanız gerekir (API anahtarı olmadan buradan kurulamaz):
+
+1. [Blueprint deploy](https://dashboard.render.com/blueprint/new?repo=https%3A%2F%2Fgithub.com%2Fmitsahin%2F0408P-ecommerce) linkine gidin
+2. GitHub ile giriş → **Apply** / **Deploy Blueprint**
+3. Free Postgres kotası: workspace’te **yalnızca 1** ücretsiz DB olabilir; eski DB varsa silin veya upgrade edin
+4. 5–10 dk bekleyin (DB + ilk seed)
+5. `https://0408p-ecommerce-api.onrender.com/health` → `status: ok`
+6. `.env.production` URL’sini kendi API’nize çevirip `main`’e push edin (Vercel yeniden deploy olur)
 
 `render.yaml` otomatik olarak şunları kurar:
 - Node.js web servisi (`0408p-ecommerce-api`)

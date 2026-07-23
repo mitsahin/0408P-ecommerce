@@ -11,6 +11,8 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "20"
+      - key: NODE_ENV
+        value: production
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
@@ -27,3 +29,4 @@ databases:
     databaseName: ecommerce
     user: ecommerce
     plan: free
+    region: frankfurt

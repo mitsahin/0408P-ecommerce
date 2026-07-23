@@ -16,6 +16,8 @@ let dbMode = null
 let initPromise = null
 
 async function createClient() {
+  const onRender = Boolean(process.env.RENDER || process.env.RENDER_EXTERNAL_URL)
+
   if (process.env.DATABASE_URL) {
     const pg = await import('pg')
     const poolConfig = {
@@ -31,6 +33,12 @@ async function createClient() {
     })
     dbMode = 'postgres'
     return
+  }
+
+  if (onRender) {
+    throw new Error(
+      'DATABASE_URL gerekli (Render). Blueprint ile ecommerce-db bağlandığından emin olun.'
+    )
   }
 
   const { PGlite } = await import('@electric-sql/pglite')
