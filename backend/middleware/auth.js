@@ -2,7 +2,10 @@ import { verifyToken } from '../utils/token.js'
 import { query } from '../db.js'
 
 export async function requireAuth(req, res, next) {
-  const token = req.headers.authorization
+  const raw = req.headers.authorization
+  const token = String(raw ?? '')
+    .replace(/^Bearer\s+/i, '')
+    .trim()
 
   if (!token) {
     res.status(401).json({ message: 'Yetkilendirme gerekli' })
