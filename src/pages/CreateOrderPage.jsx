@@ -484,11 +484,27 @@ const CreateOrderPage = () => {
       card_expire_year: Number(selectedCard.expire_year),
       card_ccv: Number(ccv),
       price: Math.round(Math.max(0, orderGrandTotal)),
-      products: selectedItems.map((item) => ({
-        product_id: Number(item.product?.id),
-        count: item.count,
-        detail: item.product?.detail ?? 'default',
-      })),
+      products: selectedItems.map((item) => {
+        const rawId = item.product?.id
+        const numericId = Number(rawId)
+        const snapshot = {
+          id: rawId,
+          name: item.product?.name ?? item.product?.title ?? 'Ürün',
+          image:
+            item.product?.images?.[0]?.url ??
+            item.product?.image ??
+            item.product?.thumbnail ??
+            item.product?.img ??
+            '',
+          price: Number(item.product?.price ?? 0),
+          detail: item.product?.detail ?? '',
+        }
+        return {
+          product_id: Number.isFinite(numericId) ? numericId : 0,
+          count: item.count,
+          detail: JSON.stringify(snapshot),
+        }
+      }),
     }
 
     try {

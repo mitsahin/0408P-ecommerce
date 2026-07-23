@@ -5,7 +5,7 @@ import { toast } from 'react-toastify'
 import { Heart, ShoppingBag } from 'lucide-react'
 import { products } from '../data/products'
 import ProductCard from '../components/ProductCard.js'
-import { fetchProductById } from '../store/actions/productActions'
+import { fetchProductById, setFetchState, setProduct } from '../store/actions/productActions'
 import { setCart } from '../store/actions/shoppingCartActions'
 import { addWishlistItem } from '../utils/wishlist'
 import thumbOne from '../assets/product-cover-5.png'
@@ -23,24 +23,54 @@ const ProductDetailPage = () => {
   const history = useHistory()
   const location = useLocation()
   const { productId, id } = useParams()
+  const routeId = productId || id
   const { product, fetchState } = useSelector((state) => state.products ?? {})
   const cartItems = useSelector((state) => state.shoppingCart?.cart ?? [])
   const isLoading = fetchState === 'FETCHING'
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const [activeTab, setActiveTab] = useState('description')
+
+  const isNumericId = /^\d+$/.test(String(routeId ?? ''))
+  const localProduct = useMemo(
+    () => products.find((item) => String(item.id) === String(routeId)),
+    [routeId]
+  )
+  const routeSnapshot = location?.state?.productSnapshot
+  const matchingSnapshot =
+    routeSnapshot && String(routeSnapshot.id) === String(routeId)
+      ? routeSnapshot
+      : null
+
+  // Only trust Redux product when it matches the current route id
+  const matchingApiProduct =
+    product && String(product.id) === String(routeId) ? product : null
 
   useEffect(() => {
-    const resolvedId = productId || id
-    if (resolvedId && /^\d+$/.test(String(resolvedId))) {
-      dispatch(fetchProductById(resolvedId))
-    }
-  }, [dispatch, productId, id])
+    if (!routeId) return
 
-  const routeSnapshot = location?.state?.productSnapshot
-  const fallbackProduct = products.find((item) => String(item.id) === String(id)) || products[0]
-  const activeProduct = product || routeSnapshot || fallbackProduct
+    if (isNumericId) {
+      dispatch(fetchProductById(routeId))
+      return
+    }
+
+    // Local catalog ids like "product-7" — clear stale API product
+    dispatch(setProduct(null))
+    dispatch(setFetchState('FETCHED'))
+  }, [dispatch, routeId, isNumericId])
+
+  useEffect(() => {
+    setActiveImageIndex(0)
+    setActiveTab('description')
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [routeId])
+
+  const activeProduct =
+    matchingApiProduct || matchingSnapshot || localProduct || products[0]
   const productName = activeProduct?.title ?? activeProduct?.name ?? 'Product'
   const productDescription =
-    activeProduct?.description ||
-    'Product details will be available soon.'
+    activeProduct?.description || 'Product details will be available soon.'
   const currentPrice = Number(activeProduct?.price ?? 0)
   const oldPriceValue = activeProduct?.oldPrice
     ? Number(activeProduct.oldPrice)
@@ -49,7 +79,7 @@ const ProductDetailPage = () => {
   const galleryImages = useMemo(
     () =>
       [
-        activeProduct?.images?.[0]?.url || activeProduct.image,
+        activeProduct?.images?.[0]?.url || activeProduct?.image,
         thumbOne,
         thumbTwo,
         thumbThree,
@@ -57,13 +87,11 @@ const ProductDetailPage = () => {
       ].filter(Boolean),
     [activeProduct]
   )
-  const [activeImageIndex, setActiveImageIndex] = useState(0)
   const resolvedImageIndex = Math.min(
     activeImageIndex,
     Math.max(galleryImages.length - 1, 0)
   )
   const activeImage = galleryImages[resolvedImageIndex] || galleryImages[0]
-  const [activeTab, setActiveTab] = useState('description')
   const brandLogos = [brandOne, brandTwo, brandThree, brandFour, brandFive]
 
   const handleAddToCart = () => {
@@ -325,7 +353,13 @@ const ProductDetailPage = () => {
                 key={item.id}
                 className="flex w-full sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)]"
               >
-                <ProductCard product={item} />
+                <ProductCard
+                  product={item}
+                  to={{
+                    pathname: `/product/${item.id}`,
+                    state: { productSnapshot: item },
+                  }}
+                />
               </div>
             ))}
           </div>

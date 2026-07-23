@@ -121,6 +121,7 @@ export const fetchProductById = (productId) => async (dispatch) => {
     dispatch(setProduct(response?.data ?? null))
     dispatch(setFetchState('FETCHED'))
   } catch (_error) {
+    dispatch(setProduct(null))
     dispatch(setFetchState('FAILED'))
   }
 }
