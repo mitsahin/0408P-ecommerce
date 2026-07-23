@@ -660,20 +660,26 @@ const Header = () => {
                 <span className="max-w-[120px] truncate text-xs font-semibold text-slate-700">
                   Hesabım
                 </span>
-                <div className="absolute right-0 top-full z-20 hidden w-[220px] flex-col gap-2 rounded border border-slate-200 bg-white p-3 text-xs text-slate-600 shadow-lg group-hover:flex">
-                  <span className="border-b border-slate-100 pb-2 font-semibold text-slate-800">
+                <div className="absolute right-0 top-full z-20 hidden w-[220px] flex-col gap-2 rounded border border-slate-200 bg-white p-3 text-xs text-slate-600 shadow-lg group-hover:flex group-hover:flex-col">
+                  <span className="block w-full border-b border-slate-100 pb-2 font-semibold text-slate-800">
                     {userName}
                   </span>
-                  <Link to="/orders" className="transition hover:text-slate-900">
+                  <Link
+                    to="/orders"
+                    className="block w-full py-1 transition hover:text-slate-900"
+                  >
                     Tüm Siparişlerim
                   </Link>
-                  <Link to="/account" className="transition hover:text-slate-900">
+                  <Link
+                    to="/account"
+                    className="block w-full py-1 transition hover:text-slate-900"
+                  >
                     Kullanıcı Bilgilerim
                   </Link>
                   <button
                     type="button"
                     onClick={() => dispatch(logoutUser())}
-                    className="text-left text-rose-500 transition hover:text-rose-600"
+                    className="block w-full py-1 text-left text-rose-500 transition hover:text-rose-600"
                   >
                     Çıkış Yap
                   </button>
