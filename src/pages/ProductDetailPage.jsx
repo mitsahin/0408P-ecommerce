@@ -5,14 +5,9 @@ import { toast } from 'react-toastify'
 import { Heart, ShoppingBag } from 'lucide-react'
 import { products } from '../data/products'
 import ProductCard from '../components/ProductCard.js'
-import {
-  fetchProductById,
-  setFetchState,
-  setProduct,
-} from '../store/actions/productActions'
+import { fetchProductById, setFetchState, setProduct } from '../store/actions/productActions'
 import { setCart } from '../store/actions/shoppingCartActions'
 import { addWishlistItem } from '../utils/wishlist'
-import axiosClient from '../api/axiosClient'
 import thumbOne from '../assets/product-cover-5.png'
 import thumbTwo from '../assets/product-cover-5 (1).png'
 import thumbThree from '../assets/product-cover-5 (2).png'
@@ -23,69 +18,17 @@ import brandThree from '../assets/fa-brands-3.png'
 import brandFour from '../assets/fa-brands-4.png'
 import brandFive from '../assets/fa-brands-5.png'
 
-const WOMEN_RELATED_IMAGES = [
-  'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1543163521-1bf560c89c5e?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1596755094514-f87e34085b69?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=900&q=80',
-]
-
-const MEN_RELATED_IMAGES = [
-  'https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1488161628813-04466f872be2?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=900&q=80',
-  'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?auto=format&fit=crop&w=900&q=80',
-]
-
-const normalizeGender = (value) => {
-  const raw = String(value ?? '')
-    .trim()
-    .toLowerCase()
-    .replace(/[ıİ]/g, 'i')
-  if (raw === 'k' || raw === 'kadin' || raw === 'women' || raw === 'female') {
-    return 'kadin'
-  }
-  if (raw === 'e' || raw === 'erkek' || raw === 'men' || raw === 'male') {
-    return 'erkek'
-  }
-  if (raw === 'kids' || raw === 'kid' || raw === 'cocuk') return 'kids'
-  return raw
-}
-
-const normalizeCardProduct = (p) => ({
-  id: String(p?.id ?? p?.name ?? Math.random()),
-  image:
-    p?.images?.[0]?.url ?? p?.image ?? p?.thumbnail ?? p?.img ?? '',
-  title: p?.title ?? p?.name ?? 'Product',
-  department: p?.department ?? p?.brand ?? p?.category?.name ?? '',
-  price: String(p?.price ?? p?.list_price ?? '0'),
-  oldPrice: String(p?.oldPrice ?? p?.sale_price ?? p?.price ?? '0'),
-  colors: p?.colors ?? ['bg-sky-500', 'bg-emerald-500'],
-  categoryId: p?.category_id ?? p?.category?.id,
-})
-
 const ProductDetailPage = () => {
   const dispatch = useDispatch()
   const history = useHistory()
   const location = useLocation()
-  const { productId, id, gender, categoryId, categoryName } = useParams()
+  const { productId, id } = useParams()
   const routeId = productId || id
-  const { product, fetchState, categories } = useSelector(
-    (state) => state.products ?? {}
-  )
+  const { product, fetchState } = useSelector((state) => state.products ?? {})
   const cartItems = useSelector((state) => state.shoppingCart?.cart ?? [])
   const isLoading = fetchState === 'FETCHING'
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [activeTab, setActiveTab] = useState('description')
-  const [relatedSource, setRelatedSource] = useState([])
 
   const isNumericId = /^\d+$/.test(String(routeId ?? ''))
   const localProduct = useMemo(
@@ -125,135 +68,6 @@ const ProductDetailPage = () => {
 
   const activeProduct =
     matchingApiProduct || matchingSnapshot || localProduct || products[0]
-
-  const productCategoryId =
-    activeProduct?.category_id ??
-    activeProduct?.category?.id ??
-    activeProduct?.categoryId ??
-    categoryId
-
-  const productGender = useMemo(() => {
-    const fromRoute = normalizeGender(gender)
-    if (['kadin', 'erkek', 'kids'].includes(fromRoute)) return fromRoute
-
-    const category = (categories ?? []).find(
-      (item) => String(item.id) === String(productCategoryId)
-    )
-    return normalizeGender(category?.gender) || 'kadin'
-  }, [gender, categories, productCategoryId])
-
-  useEffect(() => {
-    let cancelled = false
-
-    const loadRelated = async () => {
-      try {
-        const params = { limit: 25 }
-        if (productCategoryId) params.category = productCategoryId
-        const query = new URLSearchParams(
-          Object.entries(params).map(([key, value]) => [key, String(value)])
-        ).toString()
-        const response = await axiosClient.get(`/products?${query}`)
-        const list = response?.data?.products ?? response?.data ?? []
-        if (!cancelled) setRelatedSource(Array.isArray(list) ? list : [])
-      } catch (_error) {
-        if (!cancelled) setRelatedSource([])
-      }
-    }
-
-    loadRelated()
-    return () => {
-      cancelled = true
-    }
-  }, [productCategoryId])
-
-  const relatedProducts = useMemo(() => {
-    const genderCategoryIds = new Set(
-      (categories ?? [])
-        .filter((category) => normalizeGender(category.gender) === productGender)
-        .map((category) => String(category.id))
-    )
-
-    const source =
-      Array.isArray(relatedSource) && relatedSource.length > 0
-        ? relatedSource
-        : products
-
-    let related = source
-      .map(normalizeCardProduct)
-      .filter((item) => String(item.id) !== String(routeId))
-
-    if (genderCategoryIds.size > 0) {
-      const byGender = related.filter(
-        (item) =>
-          item.categoryId != null &&
-          genderCategoryIds.has(String(item.categoryId))
-      )
-      if (byGender.length > 0) related = byGender
-    }
-
-    if (productCategoryId) {
-      const byCategory = related.filter(
-        (item) => String(item.categoryId) === String(productCategoryId)
-      )
-      if (byCategory.length > 0) related = byCategory
-    }
-
-    related = related.slice(0, 8)
-
-    while (related.length < 8) {
-      const index = related.length
-      related.push({
-        id: `related-${productGender}-${index}`,
-        image: '',
-        title:
-          productGender === 'kadin'
-            ? 'Kadın Öneri Ürünü'
-            : productGender === 'erkek'
-              ? 'Erkek Öneri Ürünü'
-              : 'Benzer Ürün',
-        department:
-          categoryName ||
-          (productGender === 'kadin'
-            ? 'Kadın'
-            : productGender === 'erkek'
-              ? 'Erkek'
-              : 'Shop'),
-        price: String(Number(activeProduct?.price ?? 49.9).toFixed(2)),
-        oldPrice: String(
-          (Number(activeProduct?.price ?? 49.9) * 1.4).toFixed(2)
-        ),
-        colors: ['bg-sky-500', 'bg-emerald-500'],
-        categoryId: productCategoryId,
-      })
-    }
-
-    const visuals =
-      productGender === 'kadin'
-        ? WOMEN_RELATED_IMAGES
-        : productGender === 'erkek'
-          ? MEN_RELATED_IMAGES
-          : WOMEN_RELATED_IMAGES
-
-    return related.map((item, index) => ({
-      ...item,
-      image: visuals[index % visuals.length] || item.image,
-      department:
-        productGender === 'kadin'
-          ? item.department || 'Kadın Koleksiyonu'
-          : productGender === 'erkek'
-            ? item.department || 'Erkek Koleksiyonu'
-            : item.department,
-    }))
-  }, [
-    categories,
-    relatedSource,
-    productGender,
-    productCategoryId,
-    routeId,
-    categoryName,
-    activeProduct?.price,
-  ])
-
   const productName = activeProduct?.title ?? activeProduct?.name ?? 'Product'
   const productDescription =
     activeProduct?.description || 'Product details will be available soon.'
@@ -531,30 +345,23 @@ const ProductDetailPage = () => {
 
         <div className="flex w-full flex-col gap-6">
           <h2 className="text-lg font-semibold text-slate-900">
-            {productGender === 'kadin'
-              ? 'Benzer Kadın Ürünleri'
-              : productGender === 'erkek'
-                ? 'Benzer Erkek Ürünleri'
-                : 'Benzer Ürünler'}
+            BESTSELLER PRODUCTS
           </h2>
           <div className="flex w-full flex-wrap gap-[30px]">
-            {relatedProducts.map((item) => {
-              const isSynthetic = String(item.id).startsWith('related-')
-              const linkTarget = isSynthetic
-                ? `/shop/${productGender || 'kadin'}`
-                : {
+            {products.slice(0, 8).map((item) => (
+              <div
+                key={item.id}
+                className="flex w-full sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)]"
+              >
+                <ProductCard
+                  product={item}
+                  to={{
                     pathname: `/product/${item.id}`,
                     state: { productSnapshot: item },
-                  }
-              return (
-                <div
-                  key={item.id}
-                  className="flex w-full sm:w-[calc(50%-15px)] lg:w-[calc(25%-22.5px)]"
-                >
-                  <ProductCard product={item} to={linkTarget} />
-                </div>
-              )
-            })}
+                  }}
+                />
+              </div>
+            ))}
           </div>
         </div>
 
