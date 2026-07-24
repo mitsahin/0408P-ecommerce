@@ -70,7 +70,7 @@ router.post('/signup', async (req, res) => {
 })
 
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body
+  const { email, password, remember } = req.body
 
   if (!email || !password) {
     res.status(400).json({ message: 'E-posta ve şifre zorunludur' })
@@ -104,10 +104,12 @@ router.post('/login', async (req, res) => {
       return
     }
 
-    const token = signToken(user.id)
+    const token = signToken(user.id, { remember: Boolean(remember) })
     res.json({
       token,
       user: formatUser(user),
+      remember: Boolean(remember),
+      expires_in: remember ? '7d' : '2h',
     })
   } catch (error) {
     res.status(500).json({ message: 'Giriş yapılamadı', error: error.message })
@@ -115,10 +117,13 @@ router.post('/login', async (req, res) => {
 })
 
 router.get('/verify', requireAuth, async (req, res) => {
-  const token = signToken(req.user.id)
+  const remember = Boolean(req.auth?.remember)
+  const token = signToken(req.user.id, { remember })
   res.json({
     token,
     user: formatUser(req.user),
+    remember,
+    expires_in: remember ? '7d' : '2h',
   })
 })
 

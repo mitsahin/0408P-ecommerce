@@ -17,6 +17,8 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
+      - key: JWT_EXPIRES_SESSION
+        value: 2h
       - key: SEED_API_URL
         value: https://workintech-fe-ecommerce.onrender.com
       - key: DATABASE_URL

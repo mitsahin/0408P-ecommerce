@@ -34,6 +34,7 @@ export async function requireAuth(req, res, next) {
     }
 
     req.user = user
+    req.auth = payload
     next()
   } catch {
     res.status(401).json({ message: 'Geçersiz veya süresi dolmuş token' })

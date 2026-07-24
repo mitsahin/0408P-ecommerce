@@ -3,7 +3,6 @@ import {
   clearStoredToken,
   getStoredToken,
   persistToken,
-  renewStoredToken,
 } from '../../utils/authStorage'
 import { clearWishlistIds } from '../../utils/wishlist'
 
@@ -41,7 +40,11 @@ export const fetchRolesIfNeeded = () => async (dispatch, getState) => {
 
 export const loginUser = ({ email, password, remember }) => async (dispatch) => {
   try {
-    const response = await axiosClient.post('/login', { email, password })
+    const response = await axiosClient.post('/login', {
+      email,
+      password,
+      remember: Boolean(remember),
+    })
     const token = response?.data?.token
     const user = response?.data?.user ?? response?.data
 
@@ -62,13 +65,19 @@ export const verifyTokenIfExists = () => async (dispatch) => {
   const token = getStoredToken()
   if (!token) return null
 
+  const wasRemembered = Boolean(localStorage.getItem('token'))
+
   try {
     setAuthToken(token)
     const response = await axiosClient.get('/verify')
     const user = response?.data?.user ?? response?.data
     const renewedToken = response?.data?.token
     const nextToken = renewedToken || token
-    renewStoredToken(nextToken)
+    const remember =
+      typeof response?.data?.remember === 'boolean'
+        ? response.data.remember
+        : wasRemembered
+    persistToken(nextToken, remember)
     setAuthToken(nextToken)
     dispatch(setUser(user ?? {}))
     return user
