@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>0408P Ecommerce — Proje Sunumu</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --accent: #38bdf8;
+        --accent-2: #f97316;
+        --ok: #34d399;
+        --line: #334155;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .deck {
+        height: 100%;
+        overflow: hidden;
+        position: relative;
+      }
+      .slide {
+        display: none;
+        height: 100%;
+        padding: 48px 64px 72px;
+        flex-direction: column;
+        justify-content: center;
+        gap: 20px;
+        background:
+          radial-gradient(1200px 600px at 10% -10%, rgba(56,189,248,.18), transparent 55%),
+          radial-gradient(900px 500px at 100% 0%, rgba(249,115,22,.12), transparent 50%),
+          var(--bg);
+      }
+      .slide.active { display: flex; }
+      h1 { font-size: clamp(2rem, 4vw, 3.2rem); margin: 0; line-height: 1.15; }
+      h2 { font-size: clamp(1.6rem, 3vw, 2.4rem); margin: 0; color: var(--accent); }
+      h3 { margin: 0 0 8px; color: var(--accent); font-size: 1.15rem; }
+      p, li { font-size: clamp(1rem, 1.6vw, 1.25rem); line-height: 1.55; color: var(--muted); }
+      ul { margin: 0; padding-left: 1.2rem; }
+      li { margin: 0.35rem 0; }
+      .brand { color: var(--accent-2); letter-spacing: .04em; font-weight: 800; }
+      .grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      .card {
+        background: rgba(30,41,59,.9);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 18px 20px;
+        min-width: 220px;
+        flex: 1 1 240px;
+      }
+      .card strong { color: var(--text); display: block; margin-bottom: 6px; }
+      .pill {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(56,189,248,.15);
+        color: var(--accent);
+        font-size: .9rem;
+        font-weight: 600;
+      }
+      .ok { color: var(--ok); }
+      .mono {
+        font-family: ui-monospace, Consolas, monospace;
+        color: #e2e8f0;
+        background: #0b1220;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: .95rem;
+      }
+      a { color: var(--accent); }
+      .footer-bar {
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 24px;
+        background: rgba(15,23,42,.85);
+        border-top: 1px solid var(--line);
+        font-size: .9rem;
+        color: var(--muted);
+        backdrop-filter: blur(8px);
+      }
+      .footer-bar button {
+        background: var(--card);
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+      .footer-bar button:hover { border-color: var(--accent); color: var(--accent); }
+      .hint { font-size: .85rem; color: #64748b; }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: clamp(.95rem, 1.4vw, 1.1rem);
+      }
+      th, td {
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        padding: 10px 8px;
+        color: var(--muted);
+      }
+      th { color: var(--text); }
+      .two-col {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+      }
+      .two-col > div { flex: 1 1 280px; }
+    </style>
+  </head>
+  <body>
+    <div class="deck" id="deck">
+      <!-- 1 -->
+      <section class="slide active">
+        <span class="pill">0408P · Full Stack Ecommerce</span>
+        <h1><span class="brand">Bandaj</span> Ecommerce Projesi</h1>
+        <p>React + Express + PostgreSQL · Canlı deploy · Uçtan uca sipariş akışı</p>
+        <div class="grid">
+          <div class="card"><strong>Frontend</strong>Vercel</div>
+          <div class="card"><strong>Backend + DB</strong>Render + PostgreSQL</div>
+          <div class="card"><strong>Repo</strong>mitsahin/0408P-ecommerce</div>
+        </div>
+      </section>
+
+      <!-- 2 -->
+      <section class="slide">
+        <h2>Gündem</h2>
+        <ul>
+          <li>Proje amacı ve kapsam</li>
+          <li>Teknoloji yığını</li>
+          <li>Mimari (Frontend ↔ API ↔ DB)</li>
+          <li>Öne çıkan özellikler</li>
+          <li>Auth & güvenlik</li>
+          <li>Deploy & demo</li>
+          <li>Canlı test senaryosu</li>
+        </ul>
+      </section>
+
+      <!-- 3 -->
+      <section class="slide">
+        <h2>Proje amacı</h2>
+        <p>Figma tabanlı ecommerce arayüzü + Workintech API uyumlu backend ile tam alışveriş deneyimi.</p>
+        <div class="grid">
+          <div class="card"><strong>Katalog</strong>Kategori, ürün listesi, filtre, sayfalama</div>
+          <div class="card"><strong>Sepet & sipariş</strong>Adres, kart, kupon, sipariş özeti</div>
+          <div class="card"><strong>Hesap</strong>Adresler, kartlar, siparişler, favoriler</div>
+          <div class="card"><strong>Deploy</strong>Vercel + Render production</div>
+        </div>
+      </section>
+
+      <!-- 4 -->
+      <section class="slide">
+        <h2>Teknoloji yığını</h2>
+        <div class="two-col">
+          <div>
+            <h3>Frontend</h3>
+            <ul>
+              <li>React + Vite</li>
+              <li>Redux + Thunk</li>
+              <li>React Router v5</li>
+              <li>Tailwind (yalnızca Flex)</li>
+              <li>Axios · Toastify · Lucide</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Backend</h3>
+            <ul>
+              <li>Node.js + Express</li>
+              <li>PostgreSQL</li>
+              <li>JWT auth</li>
+              <li>REST API (/products, /order…)</li>
+              <li>Seed: 14 kategori · 587 ürün</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5 -->
+      <section class="slide">
+        <h2>Mimari</h2>
+        <div class="mono">
+          Tarayıcı (Vercel)<br />
+          &nbsp;&nbsp;↓ HTTPS · Axios + JWT<br />
+          Express API (Render)<br />
+          &nbsp;&nbsp;↓ DATABASE_URL<br />
+          PostgreSQL (ecommerce-db)
+        </div>
+        <ul>
+          <li>Frontend DB’ye doğrudan bağlanmaz</li>
+          <li>Tüm iş kuralları API + SQL şemasında</li>
+          <li><code>/health</code> → database: postgres · catalog: ready</li>
+        </ul>
+      </section>
+
+      <!-- 6 -->
+      <section class="slide">
+        <h2>Öne çıkan özellikler</h2>
+        <div class="grid">
+          <div class="card"><strong>Mağaza</strong>Cinsiyet / kategori / sıralama / pagination</div>
+          <div class="card"><strong>Sepet</strong>Seçili ürünler, kupon SAVE10, kargo bedava</div>
+          <div class="card"><strong>Sipariş</strong>Protected route · adres & kart · CVV</div>
+          <div class="card"><strong>Siparişlerim</strong>Ürün görseli, indirim ve kart detayı</div>
+          <div class="card"><strong>Hesabım</strong>Adres / kart CRUD · Gravatar</div>
+          <div class="card"><strong>Favoriler</strong>Wishlist · logout’ta temizlenir</div>
+        </div>
+      </section>
+
+      <!-- 7 -->
+      <section class="slide">
+        <h2>Auth & güvenlik</h2>
+        <table>
+          <thead>
+            <tr><th>Özellik</th><th>Davranış</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Login / Signup / Verify</td><td>JWT header ile korumalı uçlar</td></tr>
+            <tr><td>Remember me kapalı</td><td>Oturum <strong>2 saat</strong> · sessionStorage</td></tr>
+            <tr><td>Remember me açık</td><td>Oturum <strong>7 gün</strong> · localStorage</td></tr>
+            <tr><td>401</td><td>Token temizlenir → yeniden giriş</td></tr>
+            <tr><td>Protected routes</td><td>/order, /orders, /account</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 8 -->
+      <section class="slide">
+        <h2>Veritabanı</h2>
+        <ul>
+          <li>roles · users · stores · categories · products</li>
+          <li>user_addresses · user_cards</li>
+          <li>orders · order_items (görsel + indirim snapshot JSON)</li>
+        </ul>
+        <p class="ok">Canlıda: PostgreSQL bağlı · katalog seed tamam · demo adres/kart hazır</p>
+      </section>
+
+      <!-- 9 -->
+      <section class="slide">
+        <h2>Deploy</h2>
+        <div class="grid">
+          <div class="card">
+            <strong>Frontend — Vercel</strong>
+            <a href="https://0408p-ecommerce.vercel.app" target="_blank" rel="noreferrer">0408p-ecommerce.vercel.app</a>
+            <p>main push → otomatik deploy</p>
+          </div>
+          <div class="card">
+            <strong>Backend — Render</strong>
+            <a href="https://zero408p-ecommerce-api.onrender.com/health" target="_blank" rel="noreferrer">/health</a>
+            <p>Web service + Postgres blueprint</p>
+          </div>
+          <div class="card">
+            <strong>GitHub</strong>
+            <a href="https://github.com/mitsahin/0408P-ecommerce" target="_blank" rel="noreferrer">mitsahin/0408P-ecommerce</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10 -->
+      <section class="slide">
+        <h2>Demo bilgileri</h2>
+        <div class="mono">
+          Site: https://0408p-ecommerce.vercel.app<br /><br />
+          Giriş: customer@commerce.com / 123456<br />
+          Kupon: SAVE10 (−%10)<br />
+          Kart: 1234 1234 1234 1234 · Ali Bas · 12/2025 · CVV 321
+        </div>
+        <p class="hint">Sunumda Google Translate kapalı tutun — site Türkçe.</p>
+      </section>
+
+      <!-- 11 -->
+      <section class="slide">
+        <h2>Canlı demo akışı (3 dk)</h2>
+        <ol style="color:var(--muted); font-size:clamp(1rem,1.6vw,1.25rem); line-height:1.6;">
+          <li>Ana sayfa + kategori menüsü</li>
+          <li>Ürün ekle → sepet → SAVE10</li>
+          <li>Sipariş ver (adres + kayıtlı kart + CVV)</li>
+          <li>Tüm Siparişlerim: foto + indirim detayı</li>
+          <li>Hesabım: adres / kart</li>
+          <li>Çıkış → favori sayacı sıfır</li>
+        </ol>
+      </section>
+
+      <!-- 12 -->
+      <section class="slide">
+        <h2>Assignment uyumu</h2>
+        <ul>
+          <li class="ok">✓ Flex layout · Tailwind · Redux yapısı</li>
+          <li class="ok">✓ Auth (remember me, toast, verify, gravatar)</li>
+          <li class="ok">✓ Shop / product / cart / order / orders</li>
+          <li class="ok">✓ Kendi API + PostgreSQL production</li>
+          <li class="ok">✓ Vercel + Render deploy</li>
+        </ul>
+      </section>
+
+      <!-- 13 -->
+      <section class="slide">
+        <h2>Teşekkürler</h2>
+        <p>Sorularınız?</p>
+        <div class="grid">
+          <div class="card"><strong>Canlı site</strong><a href="https://0408p-ecommerce.vercel.app" target="_blank" rel="noreferrer">vercel.app</a></div>
+          <div class="card"><strong>API health</strong><a href="https://zero408p-ecommerce-api.onrender.com/health" target="_blank" rel="noreferrer">/health</a></div>
+          <div class="card"><strong>Repo</strong><a href="https://github.com/mitsahin/0408P-ecommerce" target="_blank" rel="noreferrer">GitHub</a></div>
+        </div>
+        <p class="hint">← → veya boşluk: slayt · F ile tam ekran</p>
+      </section>
+    </div>
+
+    <div class="footer-bar">
+      <button type="button" id="prev">← Önceki</button>
+      <span id="counter">1 / 13</span>
+      <div>
+        <span class="hint" style="margin-right:12px">Klavye: ← → Space</span>
+        <button type="button" id="next">Sonraki →</button>
+      </div>
+    </div>
+
+    <script>
+      const slides = [...document.querySelectorAll('.slide')]
+      let i = 0
+      const counter = document.getElementById('counter')
+
+      function show(n) {
+        i = (n + slides.length) % slides.length
+        slides.forEach((s, idx) => s.classList.toggle('active', idx === i))
+        counter.textContent = `${i + 1} / ${slides.length}`
+      }
+
+      document.getElementById('prev').onclick = () => show(i - 1)
+      document.getElementById('next').onclick = () => show(i + 1)
+
+      window.addEventListener('keydown', (e) => {
+        if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) {
+          e.preventDefault()
+          show(i + 1)
+        }
+        if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) {
+          e.preventDefault()
+          show(i - 1)
+        }
+        if (e.key === 'f' || e.key === 'F') {
+          if (!document.fullscreenElement) document.documentElement.requestFullscreen?.()
+          else document.exitFullscreen?.()
+        }
+        if (e.key === 'Home') show(0)
+        if (e.key === 'End') show(slides.length - 1)
+      })
+    </script>
+  </body>
+</html>
