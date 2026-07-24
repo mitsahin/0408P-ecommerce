@@ -31,6 +31,7 @@ app.get('/', (_req, res) => {
     health: '/health',
     frontend: 'https://0408p-ecommerce.vercel.app',
     docs: 'Use /categories, /products, /login, /order',
+    session: '2h default · 7d with remember-me',
   })
 })
 
