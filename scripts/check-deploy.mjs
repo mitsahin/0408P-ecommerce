@@ -24,8 +24,18 @@ console.log('Deploy durumu kontrol ediliyor...\n')
 
 const frontendOk = await check('Vercel frontend', FRONTEND)
 const ownApiOk = await check('Kendi Render API', `${OWN_API}/health`, {
-  parse: (d) => `status=${d.status} database=${d.database ?? 'unknown'}`,
+  parse: (d) =>
+    `status=${d.status} database=${d.database ?? 'unknown'}${
+      d.message ? ` (${d.message})` : ''
+    }`,
+  acceptStatus: [200],
 })
+const ownApiHealthy =
+  ownApiOk &&
+  (await fetch(`${OWN_API}/health`)
+    .then((r) => r.json())
+    .then((d) => d.status === 'ok' && d.database === 'postgres')
+    .catch(() => false))
 const fallbackOk = await check('Workintech API (fallback)', `${FALLBACK_API}/categories`, {
   parse: (d) => `${d.length} kategori`,
 })
@@ -39,13 +49,13 @@ await check('Login (fallback API)', `${FALLBACK_API}/login`, {
 
 console.log('\nÖzet:')
 console.log(`  Frontend: ${frontendOk ? 'CANLI' : 'KAPALI'}`)
-console.log(`  Kendi API: ${ownApiOk ? 'CANLI' : 'HENÜZ KURULMADI'}`)
+console.log(`  Kendi API: ${ownApiHealthy ? 'CANLI' : ownApiOk ? 'DEGRADED' : 'KAPALI'}`)
 console.log(`  Fallback API: ${fallbackOk ? 'CANLI' : 'KAPALI'}`)
 
-if (!ownApiOk) {
+if (!ownApiHealthy) {
   console.log('\nRender backend kurmak için (tek tık):')
   console.log(`  ${DEPLOY_URL}`)
   console.log('  → Apply / Deploy Blueprint → 5–10 dk bekle → /health kontrol et')
 }
 
-process.exit(frontendOk && (ownApiOk || fallbackOk) ? 0 : 1)
+process.exit(frontendOk && (ownApiHealthy || fallbackOk) ? 0 : 1)
